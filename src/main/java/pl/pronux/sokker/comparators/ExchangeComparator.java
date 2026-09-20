@@ -43,7 +43,7 @@ public class ExchangeComparator implements SVComparator<Exchange>, Sort {
 		// on that field
 		switch (column) {
 			case ID:
-				rc = (ex1.getId() < ex2.getId()) ? -1 : 1;
+				rc = Compare.values(ex1.getId(), ex2.getId());
 				break;
 			case NAME:
 				rc = coll.compare(ex1.getName(), ex2.getName());
@@ -58,7 +58,7 @@ public class ExchangeComparator implements SVComparator<Exchange>, Sort {
 //				rc = ex1.getCurrency().compareTo(ex2.getCurrency());
 				break;
 			case VALUE:
-				rc = (ex1.getValue() < ex2.getValue()) ? -1 : 1;
+				rc = Compare.values(ex1.getValue(), ex2.getValue());
 				break;
 		}
 

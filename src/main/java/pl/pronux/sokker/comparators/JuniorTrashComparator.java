@@ -54,13 +54,13 @@ public class JuniorTrashComparator implements SVComparator<Junior>, Sort {
 //				rc = j1.getSurname().compareTo(j2.getSurname());
 				break;
 			case FORMATION:
-				rc = j1.getFormation() < j2.getFormation() ? -1 : 1;
+				rc = Compare.values(j1.getFormation(), j2.getFormation());
 				break;
 			case SKILL:
-				rc = (j1.getSkills()[j1.getSkills().length-1].getSkill() < j2.getSkills()[j2.getSkills().length-1].getSkill()) ? -1 : 1;
+				rc = Compare.values(j1.getSkills()[j1.getSkills().length-1].getSkill(), j2.getSkills()[j2.getSkills().length-1].getSkill());
 				break;
 			case STATUS:
-				rc = (j1.getStatus() < j2.getStatus()) ? -1 : 1;
+				rc = Compare.values(j1.getStatus(), j2.getStatus());
 				break;
 		}
 

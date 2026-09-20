@@ -56,22 +56,22 @@ public class LeagueComparator implements SVComparator<LeagueTeam>, Sort {
 //				rc = c1.getName().compareTo(c2.getName());
 				break;
 			case POINTS:
-				rc = (l1.getPoints() < l2.getPoints()) ? -1 : 1;
+				rc = Compare.values(l1.getPoints(), l2.getPoints());
 				break;
 			case WINS:
-				rc = (l1.getWins() < l2.getWins()) ? -1 : 1;
+				rc = Compare.values(l1.getWins(), l2.getWins());
 				break;
 			case DRAWS:
-				rc = (l1.getDraws() < l2.getDraws()) ? -1 : 1;
+				rc = Compare.values(l1.getDraws(), l2.getDraws());
 				break;
 			case LOSSES:
-				rc = (l1.getLosses() < l2.getLosses()) ? -1 : 1;
+				rc = Compare.values(l1.getLosses(), l2.getLosses());
 				break;
 			case GOALS_SCORED:
-				rc = (l1.getGoalsScored() < l2.getGoalsScored()) ? -1 : 1;
+				rc = Compare.values(l1.getGoalsScored(), l2.getGoalsScored());
 				break;
 			case GOALS_LOST:
-				rc = (l1.getGoalsLost() < l2.getGoalsLost()) ? -1 : 1;
+				rc = Compare.values(l1.getGoalsLost(), l2.getGoalsLost());
 				break;
 			case RANK_TOTAL:
 				rc = coll.compare(l1.getRankTotal(), l2.getRankTotal());

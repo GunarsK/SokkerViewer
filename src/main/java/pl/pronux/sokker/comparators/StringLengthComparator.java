@@ -26,7 +26,7 @@ public class StringLengthComparator implements Comparator<String>, Sort {
 		int rc = 0;
 
 		if (column == LENGTH) {
-			rc = (text1.length() < text2.length()) ? -1 : 1;
+			rc = Compare.values(text1.length(), text2.length());
 		}
 
 		// Check the direction for sort and flip the sign

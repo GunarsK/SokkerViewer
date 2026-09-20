@@ -80,103 +80,103 @@ public class JuniorsTrainedComparator implements SVComparator<Junior>, Sort {
 				rc = coll.compare(j1.getSurname(),j2.getSurname());
 				break;
 			case FORMATION:
-				rc = j1.getFormation() < j2.getFormation() ? -1 : 1;
+				rc = Compare.values(j1.getFormation(), j2.getFormation());
 				break;
 			case SKILL:
-				rc = (j1.getSkills()[j1.getSkills().length-1].getSkill() < j2.getSkills()[j2.getSkills().length-1].getSkill()) ? -1 : 1;
+				rc = Compare.values(j1.getSkills()[j1.getSkills().length-1].getSkill(), j2.getSkills()[j2.getSkills().length-1].getSkill());
 				break;
 			case WEEKS:
-				rc = (j1.getSkills()[0].getWeeks() < j2.getSkills()[0].getWeeks()) ? -1 : 1;
+				rc = Compare.values(j1.getSkills()[0].getWeeks(), j2.getSkills()[0].getWeeks());
 				break;
 			case COSTS:
-				rc = (j1.getAllMoneyToSpend().toInt() < j2.getAllMoneyToSpend().toInt()) ? -1 : 1;
+				rc = Compare.values(j1.getAllMoneyToSpend().toInt(), j2.getAllMoneyToSpend().toInt());
 				break;
 			case AGE:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getAge() < p2.getSkills()[0].getAge()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getAge(), p2.getSkills()[0].getAge());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case STAMINA:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getStamina() < p2.getSkills()[0].getStamina()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getStamina(), p2.getSkills()[0].getStamina());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case PACE:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getPace() < p2.getSkills()[0].getPace()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getPace(), p2.getSkills()[0].getPace());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case TECHNIQUE:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getTechnique() < p2.getSkills()[0].getTechnique()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getTechnique(), p2.getSkills()[0].getTechnique());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case PASSING:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getPassing() < p2.getSkills()[0].getPassing()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getPassing(), p2.getSkills()[0].getPassing());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case KEEPER:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getKeeper() < p2.getSkills()[0].getKeeper()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getKeeper(), p2.getSkills()[0].getKeeper());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case DEFENDER:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getDefender() < p2.getSkills()[0].getDefender()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getDefender(), p2.getSkills()[0].getDefender());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case PLAYMAKER:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getPlaymaker() < p2.getSkills()[0].getPlaymaker()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getPlaymaker(), p2.getSkills()[0].getPlaymaker());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case SCORER:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getScorer() < p2.getSkills()[0].getScorer()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getScorer(), p2.getSkills()[0].getScorer());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case SUM:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getSummarySkill() + p1.getSkills()[0].getStamina() < p2.getSkills()[0].getSummarySkill() + p2.getSkills()[0].getStamina()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getSummarySkill() + p1.getSkills()[0].getStamina(), p2.getSkills()[0].getSummarySkill() + p2.getSkills()[0].getStamina());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case SUM_WITHOUT_STAMINA:
 				if(p1 != null && p2 != null) {
-					rc = (p1.getSkills()[0].getSummarySkill() < p2.getSkills()[0].getSummarySkill()) ? -1 : 1;
+					rc = Compare.values(p1.getSkills()[0].getSummarySkill(), p2.getSkills()[0].getSummarySkill());
 				} else {
 					rc = comparePlayers(p1, p2);
 				}
 				break;
 			case AVERAGE_JUMP:
 				if (j1.getPops() < 2 && j2.getPops() < 2) {
-					rc = (j1.getAveragePops() < j2.getAveragePops()) ? -1 : 1;
+					rc = Compare.values(j1.getAveragePops(), j2.getAveragePops());
 				} else if (j1.getPops() < 2 && j2.getPops() >= 2) {
 					rc = 1;
 				} else if (j1.getPops() >= 2 && j2.getPops() < 2) {
 					rc = -1;
 				} else {
-					rc = (j1.getAveragePops() < j2.getAveragePops()) ? -1 : 1;
+					rc = Compare.values(j1.getAveragePops(), j2.getAveragePops());
 				}
 				break;
 			default:

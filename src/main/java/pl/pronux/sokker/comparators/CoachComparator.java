@@ -80,49 +80,49 @@ public class CoachComparator implements SVComparator<Coach>, Sort {
 //				rc = c1.getSurname().compareTo(c2.getSurname());
 				break;
 			case SIGNED:
-				rc = (c1.getSigned() < c2.getSigned()) ? -1 : 1;
+				rc = Compare.values(c1.getSigned(), c2.getSigned());
 				break;
 			case JOB:
 				rc = c1.getJob().compareTo(c2.getJob());
 				break;
 			case AGE:
-				rc = (c1.getAge() < c2.getAge()) ? -1 : 1;
+				rc = Compare.values(c1.getAge(), c2.getAge());
 				break;
 			case SALARY:
 				rc = c1.getSalary().compareTo(c2.getSalary());
 				break;
 			case GENERAL_SKILL:
-				rc = (c1.getGeneralskill() < c2.getGeneralskill()) ? -1 : 1;
+				rc = Compare.values(c1.getGeneralskill(), c2.getGeneralskill());
 				break;
 			case STAMINA:
-				rc = (c1.getStamina() < c2.getStamina()) ? -1 : 1;
+				rc = Compare.values(c1.getStamina(), c2.getStamina());
 				break;
 			case PACE:
-				rc = (c1.getPace() < c2.getPace()) ? -1 : 1;
+				rc = Compare.values(c1.getPace(), c2.getPace());
 				break;
 			case TECHNIQUE:
-				rc = (c1.getTechnique() < c2.getTechnique()) ? -1 : 1;
+				rc = Compare.values(c1.getTechnique(), c2.getTechnique());
 				break;
 			case PASSING:
-				rc = (c1.getPassing() < c2.getPassing()) ? -1 : 1;
+				rc = Compare.values(c1.getPassing(), c2.getPassing());
 				break;
 			case KEEPERS:
-				rc = (c1.getKeepers() < c2.getKeepers()) ? -1 : 1;
+				rc = Compare.values(c1.getKeepers(), c2.getKeepers());
 				break;
 			case DEFENDERS:
-				rc = (c1.getDefenders() < c2.getDefenders()) ? -1 : 1;
+				rc = Compare.values(c1.getDefenders(), c2.getDefenders());
 				break;
 			case PLAYMAKERS:
-				rc = (c1.getPlaymakers() < c2.getPlaymakers()) ? -1 : 1;
+				rc = Compare.values(c1.getPlaymakers(), c2.getPlaymakers());
 				break;
 			case SCORERS:
-				rc = (c1.getScorers() < c2.getScorers()) ? -1 : 1;
+				rc = Compare.values(c1.getScorers(), c2.getScorers());
 				break;
 			case NOTE:
 				rc = c1.getNote().compareTo(c2.getNote());
 				break;
 			case ID:
-				rc = (c1.getId() < c2.getId()) ? -1 : 1;
+				rc = Compare.values(c1.getId(), c2.getId());
 				break;
 			default: 
 				//TODO: Implement 'default' statement

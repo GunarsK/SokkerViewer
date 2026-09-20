@@ -74,7 +74,7 @@ public class MatchesComparator implements SVComparator<Match>, Sort {
 			} else if(m1.getWeek() > m2.getWeek()) {
 				rc = 1;
 			} else {
-				rc = (m1.getDay() < m2.getDay()) ? -1 : 1;
+				rc = Compare.values(m1.getDay(), m2.getDay());
 			}
 			break;
 

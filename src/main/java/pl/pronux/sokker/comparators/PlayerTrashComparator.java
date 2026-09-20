@@ -77,13 +77,13 @@ public class PlayerTrashComparator implements SVComparator<Player>, Sort {
 //				rc = p1.getSurname().compareTo(p2.getSurname());
 				break;
 			case HEIGHT:
-				rc = p1.getHeight() < p2.getHeight() ? -1 : 1;
+				rc = Compare.values(p1.getHeight(), p2.getHeight());
 				break;
 			case WEIGHT:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getWeight() < p2.getSkills()[p2.getSkills().length-1].getWeight()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getWeight(), p2.getSkills()[p2.getSkills().length-1].getWeight());
 				break;
 			case BMI:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getBmi() < p2.getSkills()[p2.getSkills().length-1].getBmi()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getBmi(), p2.getSkills()[p2.getSkills().length-1].getBmi());
 				break;
 			case VALUE:
 				rc = p1.getSkills()[p1.getSkills().length-1].getValue().compareTo(p2.getSkills()[p2.getSkills().length-1].getValue());
@@ -92,34 +92,34 @@ public class PlayerTrashComparator implements SVComparator<Player>, Sort {
 				rc = p1.getSkills()[p1.getSkills().length-1].getSalary().compareTo(p2.getSkills()[p2.getSkills().length-1].getSalary());
 				break;
 			case AGE:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getAge() < p2.getSkills()[p2.getSkills().length-1].getAge()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getAge(), p2.getSkills()[p2.getSkills().length-1].getAge());
 				break;
 			case FORM:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getForm() < p2.getSkills()[p2.getSkills().length-1].getForm()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getForm(), p2.getSkills()[p2.getSkills().length-1].getForm());
 				break;
 			case STAMINA:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getStamina() < p2.getSkills()[p2.getSkills().length-1].getStamina()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getStamina(), p2.getSkills()[p2.getSkills().length-1].getStamina());
 				break;
 			case PACE:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getPace() < p2.getSkills()[p2.getSkills().length-1].getPace()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getPace(), p2.getSkills()[p2.getSkills().length-1].getPace());
 				break;
 			case TECHNIQUE:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getTechnique() < p2.getSkills()[p2.getSkills().length-1].getTechnique()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getTechnique(), p2.getSkills()[p2.getSkills().length-1].getTechnique());
 				break;
 			case PASSING:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getPassing() < p2.getSkills()[p2.getSkills().length-1].getPassing()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getPassing(), p2.getSkills()[p2.getSkills().length-1].getPassing());
 				break;
 			case KEEPER:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getKeeper() < p2.getSkills()[p2.getSkills().length-1].getKeeper()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getKeeper(), p2.getSkills()[p2.getSkills().length-1].getKeeper());
 				break;
 			case DEFENDER:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getDefender() < p2.getSkills()[p2.getSkills().length-1].getDefender()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getDefender(), p2.getSkills()[p2.getSkills().length-1].getDefender());
 				break;
 			case PLAYMAKER:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getPlaymaker() < p2.getSkills()[p2.getSkills().length-1].getPlaymaker()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getPlaymaker(), p2.getSkills()[p2.getSkills().length-1].getPlaymaker());
 				break;
 			case SCORER:
-				rc = (p1.getSkills()[p1.getSkills().length-1].getScorer() < p2.getSkills()[p2.getSkills().length-1].getScorer()) ? -1 : 1;
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length-1].getScorer(), p2.getSkills()[p2.getSkills().length-1].getScorer());
 				break;
 			case SOLD:
 				if(p1.getTransferSell() != null && p2.getTransferSell() != null) {

@@ -79,68 +79,68 @@ public class JuniorsComparator implements SVComparator<Junior>, Sort {
 			// rc = j1.getSurname().compareTo(j2.getSurname());
 			break;
 		case FORMATION:
-			rc = j1.getFormation() < j2.getFormation() ? -1 : 1;
+			rc = Compare.values(j1.getFormation(), j2.getFormation());
 			break;
 		case SKILL:
-			rc = (j1.getSkills()[j1.getSkills().length - 1].getSkill() < j2.getSkills()[j2.getSkills().length - 1].getSkill()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[j1.getSkills().length - 1].getSkill(), j2.getSkills()[j2.getSkills().length - 1].getSkill());
 			break;
 		case WEEKS:
-			rc = (j1.getSkills()[j1.getSkills().length - 1].getWeeks() < j2.getSkills()[j2.getSkills().length - 1].getWeeks()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[j1.getSkills().length - 1].getWeeks(), j2.getSkills()[j2.getSkills().length - 1].getWeeks());
 			break;
 		case WITHOUT_JUMP:
-			rc = (j1.getWeeksWithoutJump() < j2.getWeeksWithoutJump()) ? -1 : 1;
+			rc = Compare.values(j1.getWeeksWithoutJump(), j2.getWeeksWithoutJump());
 			break;
 		case BEGIN_LEVEL:
-			rc = (j1.getSkills()[0].getSkill() < j2.getSkills()[0].getSkill()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[0].getSkill(), j2.getSkills()[0].getSkill());
 			break;
 		case ESTIMATED_LEVEL:
 			if (j1.getPops() < 2 && j2.getPops() < 2) {
-				rc = (j1.getEstimatedSkill() < j2.getEstimatedSkill()) ? -1 : 1;
+				rc = Compare.values(j1.getEstimatedSkill(), j2.getEstimatedSkill());
 			} else if (j1.getPops() < 2 && j2.getPops() >= 2) {
 				rc = 1;
 			} else if (j1.getPops() >= 2 && j2.getPops() < 2) {
 				rc = -1;
 			} else {
-				rc = (j1.getEstimatedSkill() < j2.getEstimatedSkill()) ? -1 : 1;
+				rc = Compare.values(j1.getEstimatedSkill(), j2.getEstimatedSkill());
 			}
 			break;
 		case AVERAGE_JUMP:
 			if (j1.getPops() < 2 && j2.getPops() < 2) {
-				rc = (j1.getAveragePops() < j2.getAveragePops()) ? -1 : 1;
+				rc = Compare.values(j1.getAveragePops(), j2.getAveragePops());
 			} else if (j1.getPops() < 2 && j2.getPops() >= 2) {
 				rc = 1;
 			} else if (j1.getPops() >= 2 && j2.getPops() < 2) {
 				rc = -1;
 			} else {
-				rc = (j1.getAveragePops() < j2.getAveragePops()) ? -1 : 1;
+				rc = Compare.values(j1.getAveragePops(), j2.getAveragePops());
 			}
 			break;
 		case JUMPS:
-			rc = (j1.getPops() < j2.getPops()) ? -1 : 1;
+			rc = Compare.values(j1.getPops(), j2.getPops());
 			break;
 		case EXIT_WEEK:
-			rc = (j1.getEndDate().getSeason().getSeasonWeek() < j2.getEndDate().getSeason().getSeasonWeek()) ? -1 : 1;
+			rc = Compare.values(j1.getEndDate().getSeason().getSeasonWeek(), j2.getEndDate().getSeason().getSeasonWeek());
 			break;
 		case EXIT_DATE:
 			rc = j1.getEndDate().compareTo(j2.getEndDate());
 			break;
 		case MONEY_SPENT:
-			rc = (j1.getSkills()[0].getWeeks() - j1.getSkills()[j1.getSkills().length - 1].getWeeks() < j2.getSkills()[0].getWeeks() - j2.getSkills()[j2.getSkills().length - 1].getWeeks()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[0].getWeeks() - j1.getSkills()[j1.getSkills().length - 1].getWeeks(), j2.getSkills()[0].getWeeks() - j2.getSkills()[j2.getSkills().length - 1].getWeeks());
 			break;
 		case MONEY_LEFT:
-			rc = (j1.getSkills()[j1.getSkills().length - 1].getWeeks() < j2.getSkills()[j2.getSkills().length - 1].getWeeks()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[j1.getSkills().length - 1].getWeeks(), j2.getSkills()[j2.getSkills().length - 1].getWeeks());
 			break;
 		case MONEY_ALL:
-			rc = (j1.getSkills()[0].getWeeks() < j2.getSkills()[0].getWeeks()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[0].getWeeks(), j2.getSkills()[0].getWeeks());
 			break;
 		case NOTE:
 			rc = j1.getNote().compareTo(j2.getNote());
 			break;
 		case ESTIMATED_AGE:
-			rc = (j1.getEstimatedAge() < j2.getEstimatedAge()) ? -1 : 1;
+			rc = Compare.values(j1.getEstimatedAge(), j2.getEstimatedAge());
 			break;
 		case AGE:
-			rc = (j1.getSkills()[j1.getSkills().length - 1].getAge() < j2.getSkills()[j2.getSkills().length - 1].getAge()) ? -1 : 1;
+			rc = Compare.values(j1.getSkills()[j1.getSkills().length - 1].getAge(), j2.getSkills()[j2.getSkills().length - 1].getAge());
 			break;
 		}
 

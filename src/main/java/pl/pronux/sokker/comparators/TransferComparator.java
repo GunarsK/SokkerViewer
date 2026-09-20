@@ -48,7 +48,7 @@ public class TransferComparator implements SVComparator<Transfer>, Sort {
 		// on that field
 		switch (column) {
 			case IN_OUT:
-				rc = (t1.getIsInOut() < t2.getIsInOut()) ? -1 : 1;
+				rc = Compare.values(t1.getIsInOut(), t2.getIsInOut());
 				break;
 			case DATE:
 				rc = t1.getDate().compareTo(t2.getDate());

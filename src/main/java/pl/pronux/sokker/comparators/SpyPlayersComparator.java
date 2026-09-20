@@ -87,16 +87,16 @@ public class SpyPlayersComparator implements SVComparator<Player>, Sort {
 			// rc = p1.getSurname().compareTo(p2.getSurname());
 			break;
 		case HEIGHT:
-			rc = p1.getHeight() < p2.getHeight() ? -1 : 1;
+			rc = Compare.values(p1.getHeight(), p2.getHeight());
 			break;
 		case WEIGHT:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getWeight() < p2.getSkills()[p2.getSkills().length - 1].getWeight()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getWeight(), p2.getSkills()[p2.getSkills().length - 1].getWeight());
 			break;
 		case BMI:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getBmi() < p2.getSkills()[p2.getSkills().length - 1].getBmi()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getBmi(), p2.getSkills()[p2.getSkills().length - 1].getBmi());
 			break;
 		case COUNTRY:
-			rc = (p1.getCountryfrom() < p2.getCountryfrom()) ? -1 : 1;
+			rc = Compare.values(p1.getCountryfrom(), p2.getCountryfrom());
 			break;
 		case VALUE:
 			rc = p1.getSkills()[p1.getSkills().length - 1].getValue().compareTo(p2.getSkills()[p2.getSkills().length - 1].getValue());
@@ -105,28 +105,28 @@ public class SpyPlayersComparator implements SVComparator<Player>, Sort {
 			rc = p1.getSkills()[p1.getSkills().length - 1].getSalary().compareTo(p2.getSkills()[p2.getSkills().length - 1].getSalary());
 			break;
 		case AGE:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getAge() < p2.getSkills()[p2.getSkills().length - 1].getAge()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getAge(), p2.getSkills()[p2.getSkills().length - 1].getAge());
 			break;
 		case FORM:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getForm() < p2.getSkills()[p2.getSkills().length - 1].getForm()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getForm(), p2.getSkills()[p2.getSkills().length - 1].getForm());
 			break;
 		case DISCIPLINE:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getDiscipline() < p2.getSkills()[p2.getSkills().length - 1].getDiscipline()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getDiscipline(), p2.getSkills()[p2.getSkills().length - 1].getDiscipline());
 			break;
 		case EXPERIENCE:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getExperience() < p2.getSkills()[p2.getSkills().length - 1].getExperience()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getExperience(), p2.getSkills()[p2.getSkills().length - 1].getExperience());
 			break;
 		case TEAMWORK:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getTeamwork() < p2.getSkills()[p2.getSkills().length - 1].getTeamwork()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getTeamwork(), p2.getSkills()[p2.getSkills().length - 1].getTeamwork());
 			break;
 		case MATCHES:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getMatches() < p2.getSkills()[p2.getSkills().length - 1].getMatches()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getMatches(), p2.getSkills()[p2.getSkills().length - 1].getMatches());
 			break;
 		case GOALS:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getGoals() < p2.getSkills()[p2.getSkills().length - 1].getGoals()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getGoals(), p2.getSkills()[p2.getSkills().length - 1].getGoals());
 			break;
 		case ASSISTS:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getAssists() < p2.getSkills()[p2.getSkills().length - 1].getAssists()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getAssists(), p2.getSkills()[p2.getSkills().length - 1].getAssists());
 			break;
 		case NOTE:
 			if (p1.getNote() == null && p2.getNote() == null) {
@@ -140,16 +140,16 @@ public class SpyPlayersComparator implements SVComparator<Player>, Sort {
 			}
 			break;
 		case CARDS:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getCards() < p2.getSkills()[p2.getSkills().length - 1].getCards()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getCards(), p2.getSkills()[p2.getSkills().length - 1].getCards());
 			break;
 		case INJURY:
-			rc = (p1.getSkills()[p1.getSkills().length - 1].getInjurydays() < p2.getSkills()[p2.getSkills().length - 1].getInjurydays()) ? -1 : 1;
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getInjurydays(), p2.getSkills()[p2.getSkills().length - 1].getInjurydays());
 			break;
 		case RANKING_AVG:
-			rc = (p1.getAvgRating() < p2.getAvgRating()) ? -1 : 1;
+			rc = Compare.values(p1.getAvgRating(), p2.getAvgRating());
 			break;
 		case PREFERRED_POSITION:
-			rc = (p1.getPreferredPosition() < p2.getPreferredPosition()) ? -1 : 1;
+			rc = Compare.values(p1.getPreferredPosition(), p2.getPreferredPosition());
 			break;
 		case RANKING_MAX:
 			if (p1.getPlayerMatchStatistics().size() == 0 && p2.getPlayerMatchStatistics().size() == 0) {
@@ -161,7 +161,7 @@ public class SpyPlayersComparator implements SVComparator<Player>, Sort {
 			} else {
 				PlayerStats p1max = Collections.max(p1.getPlayerMatchStatistics(), new PlayerStatsComparator(PlayerStatsComparator.RATING, PlayerStatsComparator.ASCENDING));
 				PlayerStats p2max = Collections.max(p2.getPlayerMatchStatistics(), new PlayerStatsComparator(PlayerStatsComparator.RATING, PlayerStatsComparator.ASCENDING));
-				rc = (p1max.getRating() < p2max.getRating()) ? -1 : 1;
+				rc = Compare.values(p1max.getRating(), p2max.getRating());
 			}
 			break;
 		case RANKING_MIN:
@@ -174,7 +174,7 @@ public class SpyPlayersComparator implements SVComparator<Player>, Sort {
 			} else {
 				PlayerStats p1min = Collections.min(p1.getPlayerMatchStatistics(), new PlayerStatsComparator(PlayerStatsComparator.RATING, PlayerStatsComparator.ASCENDING));
 				PlayerStats p2min = Collections.min(p2.getPlayerMatchStatistics(), new PlayerStatsComparator(PlayerStatsComparator.RATING, PlayerStatsComparator.ASCENDING));
-				rc = (p1min.getRating() < p2min.getRating()) ? -1 : 1;
+				rc = Compare.values(p1min.getRating(), p2min.getRating());
 			}
 			break;			
 		default:

@@ -45,7 +45,7 @@ public class NoteComparator implements SVComparator<Note>, Sort {
 //				rc = (c1.getId() < c2.getId()) ? -1 : 1;
 //				break;
 			case DATE:
-				rc = n1.getDate().getMillis() < n2.getDate().getMillis() ? -1 : 1;
+				rc = Compare.values(n1.getDate().getMillis(), n2.getDate().getMillis());
 				break;
 			case TITLE:
 				rc = coll.compare(n1.getTitle(), n2.getTitle());
@@ -57,7 +57,7 @@ public class NoteComparator implements SVComparator<Note>, Sort {
 				break;
 			case ALERT_DATE:
 				if(n1.getAlertDate() != null && n2.getAlertDate() != null) {
-					rc = n1.getAlertDate().getMillis() < n2.getAlertDate().getMillis() ? -1 : 1;
+					rc = Compare.values(n1.getAlertDate().getMillis(), n2.getAlertDate().getMillis());
 					
 				} else if(n1.getAlertDate() == null && n2.getAlertDate() == null) {
 					rc = 0;
@@ -69,7 +69,7 @@ public class NoteComparator implements SVComparator<Note>, Sort {
 				}
 				break;
 			case MODIFICATION_DATE:
-				rc = n1.getModificationDate().getMillis() < n2.getModificationDate().getMillis() ? -1 : 1;
+				rc = Compare.values(n1.getModificationDate().getMillis(), n2.getModificationDate().getMillis());
 				break;
 		}
 

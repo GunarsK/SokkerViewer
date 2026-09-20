@@ -34,7 +34,7 @@ public class BackupDBComparator implements SVComparator<File>, Sort {
 		// on that field
 		switch (column) {
 			case DATE:
-				rc = (file1.lastModified() < file2.lastModified()) ? -1 : 1;
+				rc = Compare.values(file1.lastModified(), file2.lastModified());
 				break;
 			case NAME:
 				rc = file1.getName().compareTo(file2.getName());

@@ -67,31 +67,31 @@ public class PlayerStatsComparator implements SVComparator<PlayerStats>, Sort {
 			rc = coll.compare(ps1.getMatch().getAwayTeamName(), ps2.getMatch().getAwayTeamName());
 			break;
 		case FORMATION:
-			rc = (ps1.getFormation() < ps2.getFormation()) ? -1 : 1;
+			rc = Compare.values(ps1.getFormation(), ps2.getFormation());
 			break;
 		case RATING:
-			rc = (ps1.getRating() < ps2.getRating()) ? -1 : 1;
+			rc = Compare.values(ps1.getRating(), ps2.getRating());
 			break;
 		case STARS:
-			rc = (ps1.getRating() < ps2.getRating()) ? -1 : 1;
+			rc = Compare.values(ps1.getRating(), ps2.getRating());
 			break;
 		case GOALS:
-			rc = (ps1.getGoals() < ps2.getGoals()) ? -1 : 1;
+			rc = Compare.values(ps1.getGoals(), ps2.getGoals());
 			break;
 		case SHOOTS:
-			rc = (ps1.getShoots() < ps2.getShoots()) ? -1 : 1;
+			rc = Compare.values(ps1.getShoots(), ps2.getShoots());
 			break;
 		case ASSISTS:
-			rc = (ps1.getAssists() < ps2.getAssists()) ? -1 : 1;
+			rc = Compare.values(ps1.getAssists(), ps2.getAssists());
 			break;
 		case FOULS:
-			rc = (ps1.getFouls() < ps2.getFouls()) ? -1 : 1;
+			rc = Compare.values(ps1.getFouls(), ps2.getFouls());
 			break;
 		case INJURY:
-			rc = (ps1.getIsInjured() < ps2.getIsInjured()) ? -1 : 1;
+			rc = Compare.values(ps1.getIsInjured(), ps2.getIsInjured());
 			break;
 		case TIME:
-			rc = (ps1.getTimePlayed() < ps2.getTimePlayed()) ? -1 : 1;
+			rc = Compare.values(ps1.getTimePlayed(), ps2.getTimePlayed());
 			break;
 		case CARDS:
 			if(ps1.getRedCards() < ps2.getRedCards()) {

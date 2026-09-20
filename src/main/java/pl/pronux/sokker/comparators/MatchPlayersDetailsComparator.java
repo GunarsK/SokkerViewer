@@ -58,16 +58,12 @@ public class MatchPlayersDetailsComparator implements SVComparator<PlayerStats>,
 			} else if(ps1.getNumber() > ps2.getNumber()) {
 				rc = 1;
 			} else {
-				if(ps1.getTimeIn() < ps2.getTimeIn()) {
-					rc = -1;
-				} else {
-					rc = 1;
-				}
+				rc = Compare.values(ps1.getTimeIn(), ps2.getTimeIn());
 			}
 			break;
 		case PLAYER:
 			if(ps1.getPlayer() == null && ps2.getPlayer() == null) {
-				rc = (ps1.getPlayerId() < ps2.getPlayerId()) ? -1 : 1;
+				rc = Compare.values(ps1.getPlayerId(), ps2.getPlayerId());
 			} else if(ps1.getPlayer() != null && ps2.getPlayer() == null) {
 				rc = 1;
 			} else if(ps1.getPlayer() == null && ps2.getPlayer() != null) {
@@ -77,28 +73,28 @@ public class MatchPlayersDetailsComparator implements SVComparator<PlayerStats>,
 			}
 			break;
 		case FORMATION:
-			rc = (ps1.getFormation() < ps2.getFormation()) ? -1 : 1;
+			rc = Compare.values(ps1.getFormation(), ps2.getFormation());
 			break;
 		case STARS:
-			rc = (ps1.getRating() < ps2.getRating()) ? -1 : 1;
+			rc = Compare.values(ps1.getRating(), ps2.getRating());
 			break;
 		case GOALS:
-			rc = (ps1.getGoals() < ps2.getGoals()) ? -1 : 1;
+			rc = Compare.values(ps1.getGoals(), ps2.getGoals());
 			break;
 		case SHOOTS:
-			rc = (ps1.getShoots() < ps2.getShoots()) ? -1 : 1;
+			rc = Compare.values(ps1.getShoots(), ps2.getShoots());
 			break;
 		case ASSISTS:
-			rc = (ps1.getAssists() < ps2.getAssists()) ? -1 : 1;
+			rc = Compare.values(ps1.getAssists(), ps2.getAssists());
 			break;
 		case FOULS:
-			rc = (ps1.getFouls() < ps2.getFouls()) ? -1 : 1;
+			rc = Compare.values(ps1.getFouls(), ps2.getFouls());
 			break;
 		case INJURY:
-			rc = (ps1.getIsInjured() < ps2.getIsInjured()) ? -1 : 1;
+			rc = Compare.values(ps1.getIsInjured(), ps2.getIsInjured());
 			break;
 		case TIME:
-			rc = (ps1.getTimePlayed() < ps2.getTimePlayed()) ? -1 : 1;
+			rc = Compare.values(ps1.getTimePlayed(), ps2.getTimePlayed());
 			break;
 		case CARDS:
 			if(ps1.getRedCards() < ps2.getRedCards()) {

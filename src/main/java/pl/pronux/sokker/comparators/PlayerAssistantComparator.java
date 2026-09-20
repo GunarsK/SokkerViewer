@@ -114,40 +114,40 @@ public class PlayerAssistantComparator implements SVComparator<Player>, Sort {
 //				rc = (p1.getSkills()[p1.getSkills().length-1].getScorer() < p2.getSkills()[p2.getSkills().length-1].getScorer()) ? -1 : 1;
 //				break;
 			case POSITION1:
-				rc = (p1.getPositionTable()[0] < p2.getPositionTable()[0]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[0], p2.getPositionTable()[0]);
 				break;
 			case POSITION2:
-				rc = (p1.getPositionTable()[1] < p2.getPositionTable()[1]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[1], p2.getPositionTable()[1]);
 				break;
 			case POSITION3:
-				rc = (p1.getPositionTable()[2] < p2.getPositionTable()[2]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[2], p2.getPositionTable()[2]);
 				break;
 			case POSITION4:
-				rc = (p1.getPositionTable()[3] < p2.getPositionTable()[3]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[3], p2.getPositionTable()[3]);
 				break;
 			case POSITION5:
-				rc = (p1.getPositionTable()[4] < p2.getPositionTable()[4]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[4], p2.getPositionTable()[4]);
 				break;
 			case POSITION6:
-				rc = (p1.getPositionTable()[5] < p2.getPositionTable()[5]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[5], p2.getPositionTable()[5]);
 				break;
 			case POSITION7:
-				rc = (p1.getPositionTable()[6] < p2.getPositionTable()[6]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[6], p2.getPositionTable()[6]);
 				break;
 			case POSITION8:
-				rc = (p1.getPositionTable()[7] < p2.getPositionTable()[7]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[7], p2.getPositionTable()[7]);
 				break;
 			case POSITION9:
-				rc = (p1.getPositionTable()[8] < p2.getPositionTable()[8]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[8], p2.getPositionTable()[8]);
 				break;
 			case POSITION10:
-				rc = (p1.getPositionTable()[9] < p2.getPositionTable()[9]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[9], p2.getPositionTable()[9]);
 				break;
 			case POSITION11:
-				rc = (p1.getPositionTable()[10] < p2.getPositionTable()[10]) ? -1 : 1;
+				rc = Compare.values(p1.getPositionTable()[10], p2.getPositionTable()[10]);
 				break;
 			case POSITION:
-				rc = (p1.getPosition() < p2.getPosition()) ? -1 : 1;
+				rc = Compare.values(p1.getPosition(), p2.getPosition());
 				break;
 		}
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -433,6 +434,10 @@ public class Viewer extends Shell {
 
 	private void getVersionInfo() {
 
+		if (settings != null && !settings.isInfoUpdate()) {
+			return;
+		}
+
 		new Thread() {
 
 			public void run() {
@@ -461,6 +466,10 @@ public class Viewer extends Shell {
 							}
 						});
 					}
+				} catch (UnknownHostException e) {
+					// the update site is not always reachable, and no longer exists at all,
+					// so this is not worth a stack trace on every start
+					Log.info("Version Info: " + e.getMessage() + " is not reachable");
 				} catch (Exception e) {
 					Log.warning("Version Info", e);
 				}
