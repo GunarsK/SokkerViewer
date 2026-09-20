@@ -116,6 +116,109 @@
 				<sv.os.type name="os.name.value">mac-x86_64</sv.os.type>
 			</properties>
 		</profile>
+		<profile>
+			<!--
+				Ready to run bundle for Windows x64: the application, a trimmed Java runtime
+				and SokkerViewer.exe, so nothing has to be installed.
+
+				mvn -Pbundle clean verify
+				-> packages/release/stable/windows/sokker-${project.version}-win64-with-java.zip
+
+				Needs a JDK (not a JRE) as JAVA_HOME, because it runs jlink.
+				The normal build is not affected by this profile.
+			-->
+			<id>bundle</id>
+			<properties>
+				<bundle.dir>${basedir}/packages/bundle/SokkerViewer</bundle.dir>
+				<!-- the languages SokkerViewer is translated into, see src/main/resources/lang -->
+				<bundle.locales>en,bg,cs,da,de,el,es,et,fr,hu,it,pl,pt,ro,ru,tr,zh</bundle.locales>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.1</version>
+						<executions>
+							<execution>
+								<id>bundle-runtime</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<tasks>
+										<delete dir="${bundle.dir}" />
+										<mkdir dir="${bundle.dir}" />
+										<copy todir="${bundle.dir}">
+											<fileset dir="${basedir}/packages/windows/sokker" />
+										</copy>
+										<!-- cour.ttf is Microsoft's Courier New and may not be redistributed -->
+										<delete file="${bundle.dir}/fonts/cour.ttf" />
+										<exec executable="${java.home}/bin/jlink" failonerror="true">
+											<arg value="--add-modules" />
+											<arg value="java.base,java.desktop,java.naming,java.sql,jdk.charsets,jdk.crypto.ec,jdk.localedata" />
+											<arg value="--include-locales=${bundle.locales}" />
+											<arg value="--strip-debug" />
+											<arg value="--no-header-files" />
+											<arg value="--no-man-pages" />
+											<arg value="--compress=zip-6" />
+											<arg value="--output" />
+											<arg value="${bundle.dir}/runtime" />
+										</exec>
+									</tasks>
+								</configuration>
+							</execution>
+							<execution>
+								<id>bundle-zip</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<tasks>
+										<zip
+											destfile="${basedir}/packages/release/stable/windows/sokker-${project.version}-win64-with-java.zip">
+											<zipfileset dir="${bundle.dir}" prefix="SokkerViewer"
+												excludes="SokkerViewer.exe" />
+											<zipfileset dir="${bundle.dir}" prefix="SokkerViewer"
+												includes="SokkerViewer.exe" filemode="755" />
+										</zip>
+									</tasks>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.akathist.maven.plugins.launch4j</groupId>
+						<artifactId>launch4j-maven-plugin</artifactId>
+						<version>2.5.2</version>
+						<executions>
+							<execution>
+								<id>bundle-exe</id>
+								<phase>package</phase>
+								<goals>
+									<goal>launch4j</goal>
+								</goals>
+								<configuration>
+									<headerType>gui</headerType>
+									<!-- the jar stays a normal file next to the exe, it is not wrapped -->
+									<dontWrapJar>true</dontWrapJar>
+									<jar>Launcher.jar</jar>
+									<outfile>${bundle.dir}/SokkerViewer.exe</outfile>
+									<icon>${basedir}/src/main/resources/images/installSokkerViewer.ico</icon>
+									<!-- SokkerViewer keeps its data next to the exe, so start there -->
+									<chdir>.</chdir>
+									<jre>
+										<path>runtime</path>
+										<requiresJdk>false</requiresJdk>
+									</jre>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 	<build>
 		<plugins>

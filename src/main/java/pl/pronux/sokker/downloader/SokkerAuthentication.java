@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import pl.pronux.sokker.exceptions.SVException;
 import pl.pronux.sokker.model.ProxySettings;
+import pl.pronux.sokker.utils.Log;
 
 public class SokkerAuthentication extends AbstractDownloader {
 
@@ -19,6 +20,9 @@ public class SokkerAuthentication extends AbstractDownloader {
 	public static final String FAILED = "FAILED"; 
 	
 	public static final int TIMEOUT_MS = 15000;
+
+	/** cookie sokker.org logs the xml session in with */
+	private static final String SESSION_COOKIE = "XMLSESSID";
 
 	private String errorno;
 
@@ -201,6 +205,26 @@ v	 */
 		}
 	}
 
+	/**
+	 * sokker.org sends several cookies on log-in (lang, lang_ID, _html_rtl, hide_promotion
+	 * and the session XMLSESSID). getHeaderField("Set-Cookie") returns only the last of
+	 * them, which is no longer the session, so the session is lost and every later request
+	 * is answered with the "not logged in" html page instead of xml. Collect all of them,
+	 * keeping only the name=value part of each, the way a browser would send them back.
+	 */
+	private static String extractCookies(HttpURLConnection connection) {
+		StringBuilder cookies = new StringBuilder();
+		for (int i = 1; connection.getHeaderFieldKey(i) != null || connection.getHeaderField(i) != null; i++) {
+			if ("Set-Cookie".equalsIgnoreCase(connection.getHeaderFieldKey(i))) {
+				if (cookies.length() > 0) {
+					cookies.append("; ");
+				}
+				cookies.append(connection.getHeaderField(i).split(";", 2)[0]);
+			}
+		}
+		return cookies.toString();
+	}
+
 	private String postDataToPage(String urlString, String parameters, String referer) throws IOException, SVException {
 		StringBuilder buffer = new StringBuilder();
 		DataOutputStream out = null;
@@ -231,7 +255,12 @@ v	 */
 				buffer.append('\n');
 			}
 
-			this.sessionId = connection.getHeaderField("Set-Cookie"); 
+			this.sessionId = extractCookies(connection);
+			if (!this.sessionId.contains(SESSION_COOKIE + "=")) {
+				// without it every later request is answered with the "not logged in" html page,
+				// which would otherwise surface as an unrelated looking xml parsing error
+				Log.warning("sokker.org did not send the " + SESSION_COOKIE + " cookie on log-in");
+			}
 		} finally {
 			if (in != null) {
 				in.close();
