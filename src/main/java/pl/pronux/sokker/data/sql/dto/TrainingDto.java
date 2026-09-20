@@ -20,7 +20,11 @@ public class TrainingDto extends Training {
 		this.setFormation(rs.getInt("formation")); 
 		this.setNote(rs.getString("note")); 
 		this.getDate().setSokkerDate(new SokkerDate(rs.getInt("day"), rs.getInt("week")));  
-		this.setReported(rs.getBoolean("reported")); 
+		this.setReported(rs.getBoolean("reported"));
+		this.setTypeGk(rs.getInt("type_gk"));
+		this.setTypeDef(rs.getInt("type_def"));
+		this.setTypeMid(rs.getInt("type_mid"));
+		this.setTypeAtt(rs.getInt("type_att"));
 		return this;
 	}
 }

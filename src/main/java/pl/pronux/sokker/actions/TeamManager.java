@@ -114,6 +114,10 @@ public final class TeamManager {
 				training.setStatus(Training.NO_TRAINING);
 				training.setType(lastTraining.getType());
 				training.setFormation(lastTraining.getFormation());
+				training.setTypeGk(lastTraining.getTypeGk());
+				training.setTypeDef(lastTraining.getTypeDef());
+				training.setTypeMid(lastTraining.getTypeMid());
+				training.setTypeAtt(lastTraining.getTypeAtt());
 			}
 		}
 	}
@@ -135,6 +139,10 @@ public final class TeamManager {
 				training.setStatus(Training.NO_TRAINING);
 				training.setType(trainingDB.getType());
 				training.setFormation(trainingDB.getFormation());
+				training.setTypeGk(trainingDB.getTypeGk());
+				training.setTypeDef(trainingDB.getTypeDef());
+				training.setTypeMid(trainingDB.getTypeMid());
+				training.setTypeAtt(trainingDB.getTypeAtt());
 			}
 			if (checkIsTraining(trainingDB.getDate().getSokkerDate(), training.getDate().getSokkerDate())) {
 				training.setStatus(training.getStatus() | Training.UPDATE_PLAYERS);

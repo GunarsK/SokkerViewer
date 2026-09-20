@@ -16,6 +16,7 @@ import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.NtSkills;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerSkills;
+import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.utils.Log;
 
 public class PlayerXmlParser {
@@ -93,6 +94,10 @@ public class PlayerXmlParser {
 	private static final int TAG_WEIGHT = 35;
 	
 	private static final int TAG_BMI = 36;
+	
+	private static final int TAG_TRAINING_POSITION = 37;
+	
+	private static final int TAG_IS_IN_TRAINING_SLOT = 38;
 	
 	private static int tagSwitch = 0;
 
@@ -217,6 +222,12 @@ public class PlayerXmlParser {
 				case TAG_BMI:
 					playerSkills[0].setBmi(Double.valueOf(message.toString()).doubleValue());
 					break;
+				case TAG_TRAINING_POSITION:
+					playerSkills[0].setTrainingPosition(Integer.valueOf(message.toString()).intValue());
+					break;
+				case TAG_IS_IN_TRAINING_SLOT:
+					playerSkills[0].setTrainingSlot(Boolean.valueOf(message.toString()).booleanValue() ? Training.SLOT_ADVANCED : Training.SLOT_FORMATION);
+					break;
 				default:
 					break;
 				}
@@ -331,6 +342,10 @@ public class PlayerXmlParser {
 						currentTag = TAG_WEIGHT;
 					} else if (localName.equals("BMI")) {
 						currentTag = TAG_BMI;
+					} else if (localName.equals("trainingPosition")) {
+						currentTag = TAG_TRAINING_POSITION;
+					} else if (localName.equals("isInTrainingSlot")) {
+						currentTag = TAG_IS_IN_TRAINING_SLOT;
 					}
 
 				}

@@ -12,6 +12,7 @@ import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.resources.ColorResources;
+import pl.pronux.sokker.ui.resources.TrainingLabels;
 
 public class TrainingSeasonField extends StyledText implements IDescription {
 
@@ -40,13 +41,7 @@ public class TrainingSeasonField extends StyledText implements IDescription {
 			this.addStyle(date.length(), this.getText().length() - date.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
 		} else {
 			if (training.getHeadCoach() != null && training.getAssistants().size() < 4) {
-				if (training.getType() == Training.TYPE_PACE || training.getType() == Training.TYPE_STAMINA) {
-					formation = Messages.getString("formation." + Training.FORMATION_ALL);
-				} else {
-					formation = Messages.getString("formation." + training.getFormation());
-				}
-
-				description = String.format("%s %s %s", date, formation, Messages.getString("training.type." + training.getType()));
+				description = String.format("%s %s", date, TrainingLabels.describe(training));
 
 				this.append(String.format("%-30s", description));
 

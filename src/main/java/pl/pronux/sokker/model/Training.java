@@ -23,6 +23,16 @@ public class Training implements Cloneable {
 	public static final int TYPE_STRIKER = 7;
 	public static final int TYPE_PACE = 8;
 
+	/** per position training type of a week that was recorded before sokker sent them */
+	public static final int TYPE_NOT_SET = -1;
+
+	/** training position of a player that was recorded before sokker sent it */
+	public static final int POSITION_NOT_SET = -1;
+
+	public static final int SLOT_NOT_SET = -1;
+	public static final int SLOT_FORMATION = 0;
+	public static final int SLOT_ADVANCED = 1;
+
 	public static final int NO_TRAINING = 1 << 1;
 	public static final int NEW_TRAINING = 1 << 2;
 	public static final int UPDATE_TRAINING = 1 << 3;
@@ -31,6 +41,14 @@ public class Training implements Cloneable {
 	private Date date;
 
 	private int formation;
+
+	private int typeGk = TYPE_NOT_SET;
+
+	private int typeDef = TYPE_NOT_SET;
+
+	private int typeMid = TYPE_NOT_SET;
+
+	private int typeAtt = TYPE_NOT_SET;
 
 	private int id;
 
@@ -116,6 +134,80 @@ public class Training implements Cloneable {
 		this.type = type;
 	}
 
+	public int getTypeGk() {
+		return typeGk;
+	}
+
+	public void setTypeGk(int typeGk) {
+		this.typeGk = typeGk;
+	}
+
+	public int getTypeDef() {
+		return typeDef;
+	}
+
+	public void setTypeDef(int typeDef) {
+		this.typeDef = typeDef;
+	}
+
+	public int getTypeMid() {
+		return typeMid;
+	}
+
+	public void setTypeMid(int typeMid) {
+		this.typeMid = typeMid;
+	}
+
+	public int getTypeAtt() {
+		return typeAtt;
+	}
+
+	public void setTypeAtt(int typeAtt) {
+		this.typeAtt = typeAtt;
+	}
+
+	/**
+	 * type trained by the given position in this week, or TYPE_NOT_SET when not known
+	 */
+	public int getTypeForPosition(int position) {
+		switch (position) {
+		case FORMATION_GK:
+			return typeGk;
+		case FORMATION_DEF:
+			return typeDef;
+		case FORMATION_MID:
+			return typeMid;
+		case FORMATION_ATT:
+			return typeAtt;
+		default:
+			return TYPE_NOT_SET;
+		}
+	}
+
+	/**
+	 * type the given position trained in this week, TYPE_NOT_SET when not known.
+	 * Weeks recorded before sokker sent a type per position only know their single type,
+	 * which applied to the whole squad when it was pace or stamina, and to one formation
+	 * otherwise.
+	 */
+	public int getEffectiveTypeForPosition(int position) {
+		if (hasPositionTypes()) {
+			return getTypeForPosition(position);
+		}
+		if (type == TYPE_UNKNOWN) {
+			return TYPE_NOT_SET;
+		}
+		boolean wholeSquad = type == TYPE_PACE || type == TYPE_STAMINA || formation == FORMATION_ALL;
+		return wholeSquad || formation == position ? type : TYPE_NOT_SET;
+	}
+
+	/**
+	 * true when this week was recorded with a training type per position
+	 */
+	public boolean hasPositionTypes() {
+		return typeGk != TYPE_NOT_SET || typeDef != TYPE_NOT_SET || typeMid != TYPE_NOT_SET || typeAtt != TYPE_NOT_SET;
+	}
+
 	public boolean isReported() {
 		return reported;
 	}
@@ -162,6 +254,10 @@ public class Training implements Cloneable {
 		this.setNote(training.getNote());
 		this.setReported(training.isReported());
 		this.setType(training.getType());
+		this.setTypeGk(training.getTypeGk());
+		this.setTypeDef(training.getTypeDef());
+		this.setTypeMid(training.getTypeMid());
+		this.setTypeAtt(training.getTypeAtt());
 	}
 
 	public Training clone() {
@@ -181,6 +277,10 @@ public class Training implements Cloneable {
 		training.setNote(this.getNote());
 		training.setReported(this.isReported());
 		training.setType(this.getType());
+		training.setTypeGk(this.getTypeGk());
+		training.setTypeDef(this.getTypeDef());
+		training.setTypeMid(this.getTypeMid());
+		training.setTypeAtt(this.getTypeAtt());
 		return training;
 	}
 

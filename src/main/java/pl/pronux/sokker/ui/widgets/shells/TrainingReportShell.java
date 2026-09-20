@@ -27,6 +27,7 @@ import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.resources.Fonts;
+import pl.pronux.sokker.ui.resources.TrainingLabels;
 
 public class TrainingReportShell extends Shell {
 
@@ -504,13 +505,8 @@ public class TrainingReportShell extends Shell {
 		// List the entries using entrySet()
 		item = new TreeItem(tree, SWT.NONE);
 		c = 0;
-		item.setText(c++, Messages.getString("formation")); 
-		item.setText(c++, Messages.getString("formation." + training.getFormation())); 
-
-		item = new TreeItem(tree, SWT.NONE);
-		c = 0;
-		item.setText(c++, Messages.getString("training.type")); 
-		item.setText(c++, Messages.getString("training.type." + training.getType())); 
+		item.setText(c++, Messages.getString("training.type"));
+		item.setText(c++, TrainingLabels.describe(training));
 
 		item = new TreeItem(tree, SWT.NONE);
 		c = 0;

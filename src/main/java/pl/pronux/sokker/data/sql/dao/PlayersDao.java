@@ -112,7 +112,7 @@ public class PlayersDao {
 
 	public void addPlayerSkills(int id, PlayerSkills skills, Date date) throws SQLException {
 		PreparedStatement ps = connection
-			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays,day,week,experience, teamwork, discipline, weight, bmi) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)"); 
+			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays,day,week,experience, teamwork, discipline, weight, bmi, training_position, training_slot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)");
 		ps.setInt(1, id);
 		ps.setLong(2, date.getMillis());
 		ps.setInt(3, skills.getAge());
@@ -139,13 +139,15 @@ public class PlayersDao {
 		ps.setInt(24, skills.getDiscipline());
 		ps.setDouble(25, skills.getWeight());
 		ps.setDouble(26, skills.getBmi());
+		ps.setInt(27, skills.getTrainingPosition());
+		ps.setInt(28, skills.getTrainingSlot());
 		ps.executeUpdate();
 		ps.close();
 	}
 
 	public void addPlayerSkills(int id, PlayerSkills skills, Date date, int trainingId) throws SQLException {
 		PreparedStatement ps = connection
-			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays, id_training_fk, day, week, experience, teamwork, discipline, pass_training, weight, bmi) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"); 
+			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays, id_training_fk, day, week, experience, teamwork, discipline, pass_training, weight, bmi, training_position, training_slot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setInt(1, id);
 		ps.setLong(2, date.getMillis());
 		ps.setInt(3, skills.getAge());
@@ -174,6 +176,8 @@ public class PlayersDao {
 		ps.setBoolean(26, skills.isPassTraining());
 		ps.setDouble(27, skills.getWeight());
 		ps.setDouble(28, skills.getBmi());
+		ps.setInt(29, skills.getTrainingPosition());
+		ps.setInt(30, skills.getTrainingSlot());
 		ps.executeUpdate();
 		ps.close();
 

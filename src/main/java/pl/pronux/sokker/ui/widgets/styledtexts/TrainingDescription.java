@@ -14,6 +14,7 @@ import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.resources.ColorResources;
+import pl.pronux.sokker.ui.resources.TrainingLabels;
 
 public class TrainingDescription extends StyledText implements IDescription {
 
@@ -44,13 +45,7 @@ public class TrainingDescription extends StyledText implements IDescription {
 		this.addText(NEW_LINE);
 		this.addText(NEW_LINE);
 		
-		String formation = Messages.getString("formation." + training.getFormation()); 
-		text = String.format("%s: %s", Messages.getString("formation"), formation);   
-		this.addText(text);
-		this.addStyle(this.getText().length() - formation.length(), formation.length(), ColorResources.getColor(48, 121, 182), this.getBackground(), SWT.NORMAL);
-		this.addText(NEW_LINE);
-		
-		String type = Messages.getString("training.type." + training.getType()); 
+		String type = TrainingLabels.describe(training);
 		text = String.format("%s: %s" , Messages.getString("training.type"), type);  
 		this.addText(text);
 		this.addStyle(this.getText().length() - type.length(), type.length(), ColorResources.getColor(48, 121, 182), this.getBackground(), SWT.NORMAL);

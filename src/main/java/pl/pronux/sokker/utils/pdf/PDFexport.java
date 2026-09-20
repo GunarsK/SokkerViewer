@@ -58,6 +58,16 @@ public class PDFexport {
 
 	private static int height;
 
+	/**
+	 * monospaced font to embed in the pdf. cour.ttf (Courier New) belongs to Microsoft and
+	 * is not shipped with SokkerViewer, so fall back to the bundled FreeMono when it is
+	 * not in the fonts directory.
+	 */
+	private static String getMonospacedFont() {
+		String fontsDir = SettingsHandler.getSokkerViewerSettings().getBaseDirectory() + File.separator + "fonts" + File.separator;
+		return new File(fontsDir + "cour.ttf").exists() ? fontsDir + "cour.ttf" : fontsDir + "FreeMono.ttf";
+	}
+
 	public static void export(String file, Player player) {
 		PdfContentByte cb;
 		width = 800;
@@ -78,7 +88,7 @@ public class PDFexport {
 
 			// document.setMargins(2,2,2,2);
 			// step 4: we add a paragraph to the document
-			BaseFont bfCourier = BaseFont.createFont(SettingsHandler.getSokkerViewerSettings().getBaseDirectory() + File.separator + "fonts" + File.separator + "cour.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);  
+			BaseFont bfCourier = BaseFont.createFont(getMonospacedFont(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 			Font font = new Font(bfCourier, 12);
 
 			Font fontBold = new Font(bfCourier, 14);
@@ -225,10 +235,9 @@ public class PDFexport {
 
   		mapper.insertDirectory(SettingsHandler.getSokkerViewerSettings().getBaseDirectory() + File.separator + "fonts" + File.separator); 
   		DefaultFontMapper.BaseFontParameters pp;
-  		if (SettingsHandler.IS_LINUX) {
-  			pp = mapper.getBaseFontParameters("Free Monospaced"); 
-  		} else {
-  			pp = mapper.getBaseFontParameters("Courier New"); 
+  		pp = mapper.getBaseFontParameters("Courier New");
+  		if (pp == null) {
+  			pp = mapper.getBaseFontParameters("Free Monospaced");
   		}
 
   		if (pp != null) {

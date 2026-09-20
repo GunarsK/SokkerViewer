@@ -50,7 +50,7 @@ public class PlayerTable extends SVTable<Player> {
 	
 	public static final int SCORER = 14;
 	
-	public static final int MATCH_INDEX_1ST = 18;
+	public static final int MATCH_INDEX_1ST = 19;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
 	
@@ -82,7 +82,8 @@ public class PlayerTable extends SVTable<Player> {
 				Messages.getString("table.experience"), 
 				Messages.getString("table.teamwork"), 
 				Messages.getString("table.formation"), 
-				Messages.getString("table.training.type"), 
+				Messages.getString("table.training.type"),
+				Messages.getString("table.training.slot"),
 				Messages.getString("table.1st"), 
 				Messages.getString("table.2nd"), 
 				Messages.getString("table.3rd"), 
@@ -135,16 +136,34 @@ public class PlayerTable extends SVTable<Player> {
 			item.setText(c++, String.valueOf(player.getSkills()[i].getDiscipline()));
 			item.setText(c++, String.valueOf(player.getSkills()[i].getExperience()));
 			item.setText(c++, String.valueOf(player.getSkills()[i].getTeamwork()));
-			if (player.getSkills()[i].getTraining() != null) {
-				if (player.getSkills()[i].getTraining().getType() == Training.TYPE_PACE || player.getSkills()[i].getTraining().getType() == Training.TYPE_STAMINA) {
-					item.setText(c++, Messages.getString("formation." + Training.FORMATION_ALL)); 
+			PlayerSkills skills = player.getSkills()[i];
+			Training training = skills.getTraining();
+			int position = skills.getTrainingPosition();
+			int positionType = training != null ? training.getTypeForPosition(position) : Training.TYPE_NOT_SET;
+
+			if (position != Training.POSITION_NOT_SET && positionType != Training.TYPE_NOT_SET) {
+				// the position this player trained as, and the type trained for it
+				item.setText(c++, Messages.getString("formation." + position));
+				item.setText(c++, Messages.getString("training.type." + positionType + ".short"));
+			} else if (training != null) {
+				// week recorded before sokker sent a training type per position
+				if (training.getType() == Training.TYPE_PACE || training.getType() == Training.TYPE_STAMINA) {
+					item.setText(c++, Messages.getString("formation." + Training.FORMATION_ALL));
 				} else {
-					item.setText(c++, Messages.getString("formation." + player.getSkills()[i].getTraining().getFormation())); 
+					item.setText(c++, Messages.getString("formation." + training.getFormation()));
 				}
-				item.setText(c++, Messages.getString("training.type." + player.getSkills()[i].getTraining().getType() + ".short"));  
+				item.setText(c++, Messages.getString("training.type." + training.getType() + ".short"));
 			} else {
-				item.setText(c++, ""); 
-				item.setText(c++, ""); 
+				item.setText(c++, "");
+				item.setText(c++, "");
+			}
+
+			if (skills.getTrainingSlot() == Training.SLOT_ADVANCED) {
+				item.setText(c++, Messages.getString("training.slot.advanced"));
+			} else if (skills.getTrainingSlot() == Training.SLOT_FORMATION) {
+				item.setText(c++, Messages.getString("training.slot.formation"));
+			} else {
+				item.setText(c++, "");
 			}
 
 			if (player.getPlayerMatchStatistics() != null) {

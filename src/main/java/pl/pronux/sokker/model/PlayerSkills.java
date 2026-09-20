@@ -66,6 +66,10 @@ public class PlayerSkills implements Serializable {
 	private double weight = 0;
 	
 	private double bmi = 0.0;
+
+	private int trainingPosition = Training.POSITION_NOT_SET;
+
+	private int trainingSlot = Training.SLOT_NOT_SET;
 	
 	public int[] getStatsTable() {
 		int[] intTable = {
@@ -320,5 +324,33 @@ public class PlayerSkills implements Serializable {
 	public void setBmi(double bmi) {
 		this.bmi = bmi;
 	}
-	
+
+	/**
+	 * position this player trained as in that week (Training.FORMATION_GK .. FORMATION_ATT),
+	 * or Training.POSITION_NOT_SET for weeks recorded before sokker sent it
+	 */
+	public int getTrainingPosition() {
+		return trainingPosition;
+	}
+
+	public void setTrainingPosition(int trainingPosition) {
+		this.trainingPosition = trainingPosition;
+	}
+
+	/**
+	 * Training.SLOT_ADVANCED when the player held one of the advanced training slots that
+	 * week, SLOT_FORMATION when he trained with the formation, SLOT_NOT_SET when not known
+	 */
+	public int getTrainingSlot() {
+		return trainingSlot;
+	}
+
+	public void setTrainingSlot(int trainingSlot) {
+		this.trainingSlot = trainingSlot;
+	}
+
+	public boolean isInTrainingSlot() {
+		return trainingSlot == Training.SLOT_ADVANCED;
+	}
+
 }

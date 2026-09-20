@@ -726,13 +726,17 @@ public class TeamsDao {
 	}
 
 	public void addTraining(Training training) throws SQLException {
-		PreparedStatement pstm = connection.prepareStatement("INSERT INTO training(millis, type, formation, note, day, week) VALUES (?,?,?,?,?,?)"); 
+		PreparedStatement pstm = connection.prepareStatement("INSERT INTO training(millis, type, formation, note, day, week, type_gk, type_def, type_mid, type_att) VALUES (?,?,?,?,?,?,?,?,?,?)");
 		pstm.setLong(1, training.getDate().getMillis());
 		pstm.setInt(2, training.getType());
 		pstm.setInt(3, training.getFormation());
 		pstm.setString(4, training.getNote());
 		pstm.setInt(5, training.getDate().getSokkerDate().getDay());
 		pstm.setInt(6, training.getDate().getSokkerDate().getWeek());
+		pstm.setInt(7, training.getTypeGk());
+		pstm.setInt(8, training.getTypeDef());
+		pstm.setInt(9, training.getTypeMid());
+		pstm.setInt(10, training.getTypeAtt());
 		pstm.executeUpdate();
 		pstm.close();
 
@@ -740,7 +744,7 @@ public class TeamsDao {
 
 	public List<Training> getTrainings() throws SQLException {
 		List<Training> alTraining = new ArrayList<Training>();
-		PreparedStatement pstm = connection.prepareStatement("SELECT id_training, millis, type, formation, note, day, week, reported FROM training ORDER BY week DESC,day DESC"); 
+		PreparedStatement pstm = connection.prepareStatement("SELECT id_training, millis, type, formation, note, day, week, reported, type_gk, type_def, type_mid, type_att FROM training ORDER BY week DESC,day DESC");
 		ResultSet rs = pstm.executeQuery();
 
 		while (rs.next()) {
@@ -818,11 +822,15 @@ public class TeamsDao {
 	}
 
 	public void updateTraining(Training training) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("UPDATE training SET type = ?, formation = ? WHERE id_training = ?"); 
+		PreparedStatement ps = connection.prepareStatement("UPDATE training SET type = ?, formation = ?, type_gk = ?, type_def = ?, type_mid = ?, type_att = ? WHERE id_training = ?");
 
 		ps.setInt(1, training.getType());
 		ps.setInt(2, training.getFormation());
-		ps.setInt(3, training.getId());
+		ps.setInt(3, training.getTypeGk());
+		ps.setInt(4, training.getTypeDef());
+		ps.setInt(5, training.getTypeMid());
+		ps.setInt(6, training.getTypeAtt());
+		ps.setInt(7, training.getId());
 
 		ps.executeUpdate();
 		ps.close();

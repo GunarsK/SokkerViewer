@@ -31,8 +31,9 @@ public class TrainingTree extends Tree {
 		this.setHeaderVisible(true);
 		this.setLinesVisible(true);
 
-		String[] columns = { Messages.getString("table.date"), Messages.getString("table.formation"), Messages.getString("table.trainingType"), Messages.getString("table.coach.head"),
-				Messages.getString("table.coach.juniors"), Messages.getString("table.coach.assistants"), " ", " ", " ", " ", " ", " ", "" };
+		String[] columns = { Messages.getString("table.date"), Messages.getString("formation." + Training.FORMATION_GK), Messages.getString("formation." + Training.FORMATION_DEF),
+				Messages.getString("formation." + Training.FORMATION_MID), Messages.getString("formation." + Training.FORMATION_ATT), Messages.getString("table.coach.head"),
+				Messages.getString("table.coach.juniors"), Messages.getString("table.coach.assistants"), " ", " ", " ", " ", "" };
 
 		this.setFont(ConfigBean.getFontTable());
 
@@ -74,12 +75,9 @@ public class TrainingTree extends Tree {
 			item.setData(Training.class.getName(), training);
 
 			item.setText(c++, training.getDate().getTrainingDate(SokkerDate.THURSDAY).toDateString());
-			if (training.getType() == Training.TYPE_PACE || training.getType() == Training.TYPE_STAMINA) {
-				item.setText(c++, Messages.getString("formation." + Training.FORMATION_ALL));
-			} else {
-				item.setText(c++, Messages.getString("formation." + training.getFormation()));
+			for (int position = Training.FORMATION_GK; position <= Training.FORMATION_ATT; position++) {
+				item.setText(c++, positionTypeText(training, position));
 			}
-			item.setText(c++, Messages.getString("training.type." + training.getType()));
 			if (training.getHeadCoach() != null) {
 				item.setText(c++, "1");
 			} else {
@@ -95,6 +93,14 @@ public class TrainingTree extends Tree {
 			fillTrainingNode(item, training);
 		}
 		this.setRedraw(true);
+	}
+
+	/**
+	 * short name of the type the given position trained in that week, empty when not known
+	 */
+	private String positionTypeText(Training training, int position) {
+		int type = training.getEffectiveTypeForPosition(position);
+		return type == Training.TYPE_NOT_SET ? "" : Messages.getString("training.type." + type + ".short");
 	}
 
 	private void fillTrainingNode(TreeItem treeItem, Training training) {

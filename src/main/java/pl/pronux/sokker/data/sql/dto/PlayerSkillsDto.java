@@ -48,6 +48,8 @@ public PlayerSkills getPlayerSkills() throws SQLException {
 	this.setPassTraining(rs.getBoolean("pass_training")); 
 	this.setWeight(rs.getDouble("weight"));
 	this.setBmi(rs.getDouble("bmi"));
+	this.setTrainingPosition(rs.getInt("training_position"));
+	this.setTrainingSlot(rs.getInt("training_slot"));
 	this.setSummarySkill();
 	return this;
 }

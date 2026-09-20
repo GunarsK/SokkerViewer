@@ -11,6 +11,7 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
@@ -38,9 +39,8 @@ public class TrainingEditShell extends Shell {
 	
 	private TeamManager teamManager = TeamManager.getInstance();
 	
-	private Combo typeCombo;
-
-	private Combo formationCombo;
+	/** one training type combo per position, indexed by Training.FORMATION_GK .. FORMATION_ATT */
+	private Combo[] positionCombos = new Combo[4];
 
 	private Display display;
 
@@ -103,6 +103,24 @@ public class TrainingEditShell extends Shell {
 		this.coaches = coaches;
 	}
 
+	/**
+	 * entry a position's combo starts on: its stored type, or for a week that only has the
+	 * single type sokker used to send, that type when it applied to this position. Entry 0
+	 * is empty, type N sits at index N.
+	 */
+	private int comboIndexFor(Training training, int position) {
+		int type = training.getEffectiveTypeForPosition(position);
+		return type == Training.TYPE_NOT_SET ? 0 : type;
+	}
+
+	/**
+	 * type chosen for a position, or TYPE_NOT_SET when the empty entry is selected
+	 */
+	private int selectedType(int position) {
+		int index = positionCombos[position].getSelectionIndex();
+		return index <= 0 ? Training.TYPE_NOT_SET : index;
+	}
+
 	private void addBody() {
 		int height = 15;
 
@@ -149,63 +167,42 @@ public class TrainingEditShell extends Shell {
 		labelSeason.setAlignment(SWT.CENTER);
 		labelSeason.setFont(fontDate);
 
-		formData = new FormData();
-		formData.left = new FormAttachment(0, 10);
-		formData.top = new FormAttachment(labelSeason, 5);
-		formData.width = 100;
+		// one combo per position, the way sokker sets training up now
+		Control previous = labelSeason;
+		for (int position = Training.FORMATION_GK; position <= Training.FORMATION_ATT; position++) {
+			formData = new FormData();
+			formData.left = new FormAttachment(0, 10);
+			formData.top = new FormAttachment(previous, 5);
+			formData.width = 100;
 
-		Label label1 = new Label(this, SWT.NONE);
-		label1.setLayoutData(formData);
-		label1.setText(Messages.getString("training.type")); 
-		label1.pack();
+			Label positionLabel = new Label(this, SWT.NONE);
+			positionLabel.setLayoutData(formData);
+			positionLabel.setText(Messages.getString("formation." + position));
+			positionLabel.pack();
 
-		formData = new FormData();
-		formData.left = new FormAttachment(label1, 15);
-		formData.right = new FormAttachment(100, -10);
-		formData.top = new FormAttachment(labelSeason, 5);
-		formData.height = height;
-		typeCombo = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
-		typeCombo.setLayoutData(formData);
+			formData = new FormData();
+			formData.left = new FormAttachment(positionLabel, 15);
+			formData.right = new FormAttachment(100, -10);
+			formData.top = new FormAttachment(previous, 5);
+			formData.height = height;
 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_STAMINA)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_KEEPER)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_PLAYMAKING)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_PASSING)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_TECHNIQUE)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_DEFENDING)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_STRIKER)); 
-		typeCombo.add(Messages.getString("training.type." + Training.TYPE_PACE)); 
-		typeCombo.setText(Messages.getString("training.type." + tempTraining.getType())); 
+			Combo combo = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
+			combo.setLayoutData(formData);
+			combo.add("");
+			for (int type = Training.TYPE_STAMINA; type <= Training.TYPE_PACE; type++) {
+				combo.add(Messages.getString("training.type." + type));
+			}
+			combo.setVisibleItemCount(10);
+			combo.select(comboIndexFor(tempTraining, position));
 
-		typeCombo.setVisibleItemCount(10);
-
-		formData = new FormData();
-		formData.left = new FormAttachment(0, 10);
-		formData.top = new FormAttachment(typeCombo, 5);
-		formData.width = 100;
-
-		Label label2 = new Label(this, SWT.NONE);
-		label2.setLayoutData(formData);
-		label2.setText(Messages.getString("formation")); 
-		label2.pack();
-
-		formData = new FormData();
-		formData.left = new FormAttachment(label2, 15);
-		formData.right = new FormAttachment(100, -10);
-		formData.top = new FormAttachment(typeCombo, 5);
-		formData.height = height;
-		formationCombo = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
-		formationCombo.setLayoutData(formData);
-		formationCombo.add(Messages.getString("formation." + Training.FORMATION_GK)); 
-		formationCombo.add(Messages.getString("formation." + Training.FORMATION_DEF)); 
-		formationCombo.add(Messages.getString("formation." + Training.FORMATION_MID)); 
-		formationCombo.add(Messages.getString("formation." + Training.FORMATION_ATT)); 
-		formationCombo.setText(Messages.getString("formation." + tempTraining.getFormation())); 
+			positionCombos[position] = combo;
+			previous = combo;
+		}
 
 		formData = new FormData();
 		formData.left = new FormAttachment(0, 10);
 		formData.right = new FormAttachment(50, -10);
-		formData.top = new FormAttachment(formationCombo, 15);
+		formData.top = new FormAttachment(positionCombos[Training.FORMATION_ATT], 15);
 		formData.width = 100;
 
 		Label label3 = new Label(this, SWT.NONE);
@@ -244,7 +241,7 @@ public class TrainingEditShell extends Shell {
 		formData = new FormData();
 		formData.left = new FormAttachment(50, 50);
 		formData.right = new FormAttachment(100, -10);
-		formData.top = new FormAttachment(formationCombo, 15);
+		formData.top = new FormAttachment(positionCombos[Training.FORMATION_ATT], 15);
 		formData.width = 100;
 
 		Label label4 = new Label(this, SWT.NONE);
@@ -393,8 +390,10 @@ public class TrainingEditShell extends Shell {
 
 			public void handleEvent(Event event) {
 
-				tempTraining.setFormation(formationCombo.getSelectionIndex());
-				tempTraining.setType(typeCombo.getSelectionIndex() + 1);
+				tempTraining.setTypeGk(selectedType(Training.FORMATION_GK));
+				tempTraining.setTypeDef(selectedType(Training.FORMATION_DEF));
+				tempTraining.setTypeMid(selectedType(Training.FORMATION_MID));
+				tempTraining.setTypeAtt(selectedType(Training.FORMATION_ATT));
 
 				training.copy(tempTraining);
 				if (tempTraining != null) {

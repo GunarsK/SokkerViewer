@@ -44,6 +44,14 @@ public class TeamXmlParser {
 
 	private static final int TAG_LOGIN = 32;
 
+	private static final int TAG_TRAINING_TYPE_GK = 33;
+
+	private static final int TAG_TRAINING_TYPE_DEF = 34;
+
+	private static final int TAG_TRAINING_TYPE_MID = 35;
+
+	private static final int TAG_TRAINING_TYPE_ATT = 36;
+
 	private static final int TAG_ARENA = 20;
 
 //	private static final int TAG_ARENA_STAND = 21;
@@ -155,6 +163,18 @@ public class TeamXmlParser {
 					break;
 				case TAG_TRAINING_TYPE:
 					training.setType(Integer.valueOf(message.toString()));
+					break;
+				case TAG_TRAINING_TYPE_GK:
+					training.setTypeGk(Integer.valueOf(message.toString()));
+					break;
+				case TAG_TRAINING_TYPE_DEF:
+					training.setTypeDef(Integer.valueOf(message.toString()));
+					break;
+				case TAG_TRAINING_TYPE_MID:
+					training.setTypeMid(Integer.valueOf(message.toString()));
+					break;
+				case TAG_TRAINING_TYPE_ATT:
+					training.setTypeAtt(Integer.valueOf(message.toString()));
 					break;
 				case TAG_ARENA_NAME:
 					clubArenaName.setArenaName(message.toString());
@@ -304,8 +324,16 @@ public class TeamXmlParser {
 
 					if (localName.equalsIgnoreCase("trainingFormation")) { 
 						currentTag = TAG_TRAINING_FORMATION;
-					} else if (localName.equalsIgnoreCase("trainingType")) { 
+					} else if (localName.equalsIgnoreCase("trainingType")) {
 						currentTag = TAG_TRAINING_TYPE;
+					} else if (localName.equalsIgnoreCase("trainingTypeGk")) {
+						currentTag = TAG_TRAINING_TYPE_GK;
+					} else if (localName.equalsIgnoreCase("trainingTypeDef")) {
+						currentTag = TAG_TRAINING_TYPE_DEF;
+					} else if (localName.equalsIgnoreCase("trainingTypeMid")) {
+						currentTag = TAG_TRAINING_TYPE_MID;
+					} else if (localName.equalsIgnoreCase("trainingTypeAtt")) {
+						currentTag = TAG_TRAINING_TYPE_ATT;
 					} else if (localName.equals("arenaName")) { 
 						currentTag = TAG_ARENA_NAME;
 					} else if (localName.equals("teamID")) { 
