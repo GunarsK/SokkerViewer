@@ -56,18 +56,19 @@ public class LeagueMatchesXmlManager extends XmlManager<Match> {
 				if (league.getType() == League.TYPE_LEAGUE && league.getIsCup() == League.NOT_CUP) {
 					int numbersOfTeams = league.getLeagueTeams().size();
 					LeagueDao leagueDao = new LeagueDao(SQLSession.getConnection());
-					int numberOfRoundsInDatabase = leagueDao.getNumberOfRounds(league);
+					int matchesPerRound = numbersOfTeams / 2;
 					int numberOfRounds = 0;
 
 					if (league.getIsOfficial() == League.OFFICIAL) {
-						
+
 						numberOfRounds = (numbersOfTeams - 1) * 2;
 
-						if (numberOfRoundsInDatabase == numberOfRounds) {
-							numberOfRounds = league.getRound();
+						// sokker bumps the league's round some hours after the round is played, so look one round past it
+						if (leagueDao.getRoundsInDatabase(league, matchesPerRound).size() == numberOfRounds) {
+							numberOfRounds = Math.min(numberOfRounds, league.getRound() + 1);
 						}
 
-						List<Integer> completedRounds = leagueDao.getCompletedRounds(league);
+						List<Integer> completedRounds = leagueDao.getCompletedRounds(league, matchesPerRound);
 
 						for (int j = 1; j <= numberOfRounds; j++) {
 							if (!completedRounds.contains(j)) {

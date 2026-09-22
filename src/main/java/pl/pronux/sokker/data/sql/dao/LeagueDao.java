@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import pl.pronux.sokker.bean.RoundState;
 import pl.pronux.sokker.data.sql.dto.LeagueDto;
 import pl.pronux.sokker.data.sql.dto.LeagueMatchDto;
 import pl.pronux.sokker.data.sql.dto.LeagueRoundDto;
@@ -82,19 +83,29 @@ public class LeagueDao {
 		pstm.close();
 	}
 
-	public List<Integer> getCompletedRounds(League league) throws SQLException {
-		List<Integer> completedRounds = new ArrayList<Integer>();
-		PreparedStatement ps = connection
-				.prepareStatement("SELECT round FROM leagues as l left join matches_team as mt on (l.league_id = mt.league_id) where l.league_id = ? and mt.is_finished = 1 group by round having count(round) = 4 order by round asc"); 
-		ps.setInt(1, league.getLeagueId());
+	/** rounds of this season whose matches are all in the database */
+	public List<Integer> getRoundsInDatabase(League league, int matchesPerRound) throws SQLException {
+		return fullRounds("SELECT round FROM matches_team WHERE league_id = ? AND season = ? GROUP BY round HAVING count(*) = ? ORDER BY round", league, matchesPerRound);
+	}
 
+	/** rounds of this season whose matches have all been played */
+	public List<Integer> getCompletedRounds(League league, int matchesPerRound) throws SQLException {
+		return fullRounds("SELECT round FROM matches_team WHERE league_id = ? AND season = ? AND is_finished = 1 GROUP BY round HAVING count(*) = ? ORDER BY round", league, matchesPerRound);
+	}
+
+	private List<Integer> fullRounds(String sql, League league, int matchesPerRound) throws SQLException {
+		List<Integer> rounds = new ArrayList<Integer>();
+		PreparedStatement ps = connection.prepareStatement(sql);
+		ps.setInt(1, league.getLeagueId());
+		ps.setInt(2, league.getSeason());
+		ps.setInt(3, matchesPerRound);
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
-			completedRounds.add(rs.getInt("round")); 
+			rounds.add(Integer.valueOf(rs.getInt("round")));
 		}
 		rs.close();
 		ps.close();
-		return completedRounds;
+		return rounds;
 	}
 
 //	public ArrayList<League> getLeagues(Map<Integer, Club> clubMap) throws SQLException {
@@ -268,21 +279,6 @@ public class LeagueDao {
 		return matches;
 	}
 
-	public int getNumberOfRounds(League league) throws SQLException {
-		int numberOfRounds = 0;
-		PreparedStatement ps = connection
-				.prepareStatement("SELECT count(round) as number_of_rounds FROM leagues as l left join matches_team as mt on (l.league_id = mt.league_id) where l.league_id = ? group by round having count(round) = 4"); 
-		ps.setInt(1, league.getLeagueId());
-
-		ResultSet rs = ps.executeQuery();
-		while (rs.next()) {
-			numberOfRounds = rs.getInt("number_of_rounds"); 
-		}
-		rs.close();
-		ps.close();
-		return numberOfRounds;
-	}
-
 	public List<PlayerStats> getPlayersStats(Match match, int teamId) throws SQLException {
 		List<PlayerStats> playersStats = new ArrayList<PlayerStats>();
 		PreparedStatement ps = connection.prepareStatement("SELECT * FROM players_stats as ps LEFT JOIN player_archive as p ON ps.player_id=p.player_id WHERE match_id = ? AND ps.team_id = ? order by number, time_in"); 
@@ -379,7 +375,7 @@ public class LeagueDao {
 		// ps = connection.prepareStatement("SELECT DISTINCT
 		// season,league_id FROM matches_team WHERE league_id = ? order by
 		// season");
-		PreparedStatement ps = connection.prepareStatement("SELECT DISTINCT m.season,m.league_id, week/16 as raw_season FROM matches_team as m join leagues as l on(m.league_id = l.league_id) WHERE l.is_official = 1 and l.is_cup = 0 and l.type = 0 and m.week = (select min(week) from matches_team where league_id = m.league_id and season = m.season) order by raw_season desc");
+		PreparedStatement ps = connection.prepareStatement("SELECT DISTINCT m.season,m.league_id, m.week FROM matches_team as m join leagues as l on(m.league_id = l.league_id) WHERE l.is_official = 1 and l.is_cup = 0 and l.type = 0 and m.week = (select min(week) from matches_team where league_id = m.league_id and season = m.season) order by m.week desc");
 //				.prepareStatement("SELECT DISTINCT season,league_id, week/16 as raw_season FROM matches_team as m WHERE league_id = ? and week = (select min(week) from matches_team where league_id = m.league_id and season = m.season) order by season desc"); 
 
 		ResultSet rs = ps.executeQuery();
@@ -442,22 +438,44 @@ public class LeagueDao {
 //
 //	}
 
-	public List<LeagueSeason> getUncompletedRounds() throws SQLException {
-		List<LeagueSeason> leagues = new ArrayList<LeagueSeason>();
-		PreparedStatement ps = connection
-				.prepareStatement("select l.league_id, season, round from leagues as l left join matches_team as m on (l.league_id = m.league_id ) where type = 0 and is_official = 1 and is_cup = 0 and m.is_finished = 1 group by l.league_id, season, round having count(round) = 4 except select ll.league_id, season, round from leagues as ll left join league_team as lt on (ll.league_id = lt.league_id ) where type = 0 and is_official = 1 and is_cup = 0 group by ll.league_id, season, round having count(round) = 8 except select lll.league_id, season, round from leagues as lll left join matches_team as lm on (lll.league_id = lm.league_id) where type = 0 and is_official = 1 and is_cup = 0 and round <> 0 and lll.league_id in (select l1.league_id from leagues as l1 left join matches_team as mt1 on (l1.league_id = mt1.league_id) where l1.league_id = lll.league_id and mt1.season = lm.season and type = 0 and is_official = 1 and is_cup = 0 and round <> 0 group by l1.league_id, season having count(*) < 56) ");  // and mt1.is_finished = 1 and lll.league_id not in (select distinct league_id from matches_team where week = (select max(week) from matches_team))
+	/**
+	 * one row per (league, season, round) of the official, non cup leagues, in playing order,
+	 * with what the standings need: the season's size (teams seen in its fixtures, matches
+	 * known), the round's matches and how many are played, and the standings rows already there
+	 */
+	public List<RoundState> getRoundStates() throws SQLException {
+		Map<String, int[]> seasons = new HashMap<String, int[]>();
+		PreparedStatement ps = connection.prepareStatement("SELECT m.league_id, m.season, count(DISTINCT m.home_team_id) AS teams, count(*) AS matches FROM matches_team AS m JOIN leagues AS l ON (l.league_id = m.league_id) WHERE l.type = 0 AND l.is_official = 1 AND l.is_cup = 0 AND m.round > 0 GROUP BY m.league_id, m.season");
 		ResultSet rs = ps.executeQuery();
-
 		while (rs.next()) {
-			LeagueSeason league = new LeagueSeason();
-			league.setLeagueId(rs.getInt("league_id")); 
-			league.setSeason(rs.getInt("season")); 
-			league.setRound(rs.getInt("round")); 
-			leagues.add(league);
+			seasons.put(rs.getInt("league_id") + "," + rs.getInt("season"), new int[] { rs.getInt("teams"), rs.getInt("matches") });
 		}
 		rs.close();
 		ps.close();
-		return leagues;
+
+		Map<String, Integer> standings = new HashMap<String, Integer>();
+		ps = connection.prepareStatement("SELECT league_id, season, round, count(*) AS standings FROM league_team GROUP BY league_id, season, round");
+		rs = ps.executeQuery();
+		while (rs.next()) {
+			standings.put(rs.getInt("league_id") + "," + rs.getInt("season") + "," + rs.getInt("round"), Integer.valueOf(rs.getInt("standings")));
+		}
+		rs.close();
+		ps.close();
+
+		List<RoundState> states = new ArrayList<RoundState>();
+		ps = connection.prepareStatement("SELECT m.league_id, m.season, m.round, count(*) AS matches, sum(m.is_finished) AS finished FROM matches_team AS m JOIN leagues AS l ON (l.league_id = m.league_id) WHERE l.type = 0 AND l.is_official = 1 AND l.is_cup = 0 AND m.round > 0 GROUP BY m.league_id, m.season, m.round ORDER BY m.league_id, m.season, m.round");
+		rs = ps.executeQuery();
+		while (rs.next()) {
+			int leagueId = rs.getInt("league_id");
+			int season = rs.getInt("season");
+			int round = rs.getInt("round");
+			int[] size = seasons.get(leagueId + "," + season);
+			Integer rows = standings.get(leagueId + "," + season + "," + round);
+			states.add(new RoundState(leagueId, season, round, size[0], size[1], rs.getInt("matches"), rs.getInt("finished"), rows == null ? 0 : rows.intValue()));
+		}
+		rs.close();
+		ps.close();
+		return states;
 	}
 
 	// public ArrayList<League> getCompletedRounds() {
@@ -591,6 +609,19 @@ public class LeagueDao {
 		}
 
 		return false;
+	}
+
+	public boolean existsLeagueTeam(LeagueTeam team) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("SELECT count(league_id) FROM league_team WHERE league_id = ? AND team_id = ? AND season = ? AND round = ?");
+		ps.setInt(1, team.getLeagueId());
+		ps.setInt(2, team.getTeamId());
+		ps.setInt(3, team.getSeason());
+		ps.setInt(4, team.getRound());
+		ResultSet rs = ps.executeQuery();
+		boolean exists = rs.next() && rs.getInt(1) > 0;
+		rs.close();
+		ps.close();
+		return exists;
 	}
 
 	public boolean existsMatch(int matchID) throws SQLException {

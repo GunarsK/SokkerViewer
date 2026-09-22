@@ -101,7 +101,7 @@ public final class JuniorsManager {
 
 	private int getJuniorAge(Date currentDay, Date oldDate, int age) {
 		int previousSeason = oldDate.getSokkerDate().getSeason();
-		if (oldDate.getSokkerDate().getSeasonWeek() == 15 && oldDate.getSokkerDate().getDay() == SokkerDate.FRIDAY) {
+		if (oldDate.getSokkerDate().isLastSeasonWeek() && oldDate.getSokkerDate().getDay() == SokkerDate.FRIDAY) {
 			previousSeason += 1;
 		}
 		int currentSeason = currentDay.getSokkerDate().getSeason();

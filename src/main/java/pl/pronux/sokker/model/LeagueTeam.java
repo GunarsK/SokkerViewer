@@ -219,9 +219,14 @@ public class LeagueTeam {
 		this.wins = wins;
 	}
 
+	/**
+	 * the place the team started the season in: the last three digits of a rank this program
+	 * computed (it writes the place with %03d), or the whole of the bare place sokker's league
+	 * xml sends for round 0
+	 */
 	public int getBeginPlace() {
-		if (beginPlace == 0) {
-			setBeginPlace(Integer.valueOf(rankTotal.substring(rankTotal.length() - 1)));
+		if (beginPlace == 0 && rankTotal != null && rankTotal.length() > 0) {
+			setBeginPlace(Integer.parseInt(rankTotal.length() > 3 ? rankTotal.substring(rankTotal.length() - 3) : rankTotal));
 		}
 		return beginPlace;
 	}

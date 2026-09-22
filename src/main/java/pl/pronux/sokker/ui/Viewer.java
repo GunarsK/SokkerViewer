@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -27,14 +26,12 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 import org.eclipse.swt.widgets.TreeItem;
 
 import pl.pronux.sokker.actions.SettingsManager;
 import pl.pronux.sokker.data.properties.SVProperties;
-import pl.pronux.sokker.downloader.VersionDownloader;
 import pl.pronux.sokker.enums.Language;
 import pl.pronux.sokker.exceptions.SVException;
 import pl.pronux.sokker.handlers.SettingsHandler;
@@ -62,8 +59,6 @@ import pl.pronux.sokker.ui.widgets.shells.LoginShell;
 import pl.pronux.sokker.ui.widgets.shells.Splash;
 import pl.pronux.sokker.ui.widgets.tray.SVTrayItem;
 import pl.pronux.sokker.ui.widgets.tree.SVTree;
-import pl.pronux.sokker.ui.widgets.wizards.updater.UpdaterWizard;
-import pl.pronux.sokker.utils.Log;
 
 public class Viewer extends Shell {
 
@@ -188,7 +183,7 @@ public class Viewer extends Shell {
 		// adding tree
 		addTree(this);
 
-		getVersionInfo();
+		// no update check: www.sokkerviewer.net, where updates were announced, no longer exists
 
 		/*
 		 * SETTINGS FOR VIEW
@@ -430,52 +425,6 @@ public class Viewer extends Shell {
 
 	public Composite getCurrentView() {
 		return currentView;
-	}
-
-	private void getVersionInfo() {
-
-		if (settings != null && !settings.isInfoUpdate()) {
-			return;
-		}
-
-		new Thread() {
-
-			public void run() {
-				try {
-					final String version = new VersionDownloader(settings).getVersion();
-					if (version != null && !version.equals(VersionDownloader.NO_UPDATES)) {
-						display.asyncExec(new Runnable() {
-
-							public void run() {
-								statusBar.setVersion(Messages.getString("statusBar.versionLabel.text") + version); 
-								statusBar.getVersionLabel().addListener(SWT.MouseDoubleClick, new Listener() {
-
-									public void handleEvent(Event event) {
-										new UpdaterWizard(Viewer.this).open();
-										statusBar.getVersionLabel().setData("listener", this);
-									}
-								});
-
-								if (trayItem != null) {
-									final ToolTip trayToolTip = new ToolTip(Viewer.this, SWT.BALLOON | SWT.ICON_INFORMATION);
-									trayItem.setToolTip(trayToolTip);
-									trayToolTip.setMessage(String.format(Messages.getString("message.update.info"), new Object[] { version }));
-									trayToolTip.setAutoHide(true);
-									trayToolTip.setVisible(true);
-								}
-							}
-						});
-					}
-				} catch (UnknownHostException e) {
-					// the update site is not always reachable, and no longer exists at all,
-					// so this is not worth a stack trace on every start
-					Log.info("Version Info: " + e.getMessage() + " is not reachable");
-				} catch (Exception e) {
-					Log.warning("Version Info", e);
-				}
-			}
-		}.start();
-
 	}
 
 	public void setConfigurator(Configurator configurator) {

@@ -67,10 +67,13 @@ public class SokkerAuthentication extends AbstractDownloader {
 				buffer.append(line);
 				buffer.append('\n');
 			}
-		} finally {
+		} catch (IOException e) {
+			// the stream never opened, so nothing will hand the connection back to the keep-alive cache
 			if (connection != null) {
 				connection.disconnect();
 			}
+			throw e;
+		} finally {
 			if (in != null) {
 				in.close();
 			}

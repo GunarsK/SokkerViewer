@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.xml.sax.SAXException;
 
@@ -72,13 +74,25 @@ public final class MatchesManager {
 		}
 	}
 
-	public List<Match> getNotFinishedMatches(List<Match> matches) throws SQLException {
+	/**
+	 * matches worth a match-{id}.xml download: ones the database does not know yet (the file
+	 * is the only way a fixture row gets in) and ones the lists say have finished since the
+	 * last sync. An unplayed fixture already in the database is not fetched again - its file
+	 * carries nothing the lists do not. A match listed twice (own team list and round list) is
+	 * downloaded once.
+	 */
+	public List<Match> getMatchesToDownload(List<Match> matches) throws SQLException {
 
 		LeagueDao leagueDao = new LeagueDao(SQLSession.getConnection());
 
 		List<Match> filteredMatches = new ArrayList<Match>();
+		Set<Integer> seen = new HashSet<Integer>();
 		for (Match match : matches) {
-			if (!leagueDao.existsFinishedMatch(match.getMatchId())) {
+			if (!seen.add(Integer.valueOf(match.getMatchId()))) {
+				continue;
+			}
+			if (!leagueDao.existsMatch(match.getMatchId())
+				|| (match.getIsFinished() == Match.FINISHED && !leagueDao.existsFinishedMatch(match.getMatchId()))) {
 				filteredMatches.add(match);
 			}
 		}

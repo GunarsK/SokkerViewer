@@ -199,10 +199,10 @@ public class Synchronizer implements RunnableWithProgress {
 					List<Match> leagueMatches = leagueMatchesXmlManager.parseXML();
 					teamMatches.addAll(leagueMatches);
 
-					List<Match> alNotFinishedMatches = matchesManager.getNotFinishedMatches(teamMatches);
+					List<Match> matchesToDownload = matchesManager.getMatchesToDownload(teamMatches);
 					monitor.worked(1);
 					monitor.subTask(Messages.getString("synchronizer.download.matches")); 
-					matchXmlManager.download(alNotFinishedMatches);
+					matchXmlManager.download(matchesToDownload);
 					matchXmlManager.parseXML();
 
 					monitor.worked(1);

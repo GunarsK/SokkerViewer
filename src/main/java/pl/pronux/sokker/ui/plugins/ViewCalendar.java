@@ -271,7 +271,7 @@ public class ViewCalendar implements IPlugin {
 		case Calendar.SUNDAY:
 			if (season.getSeasonWeek() == 0) {
 				events.add(Messages.getString("calendar.day.event.20"));
-			} else if (season.getSeasonWeek() == 15) {
+			} else if (season.isLastWeek()) {
 				events.add(Messages.getString("calendar.day.event.21"));
 			} else {
 				events.add(Messages.getString("calendar.day.event.23"));
@@ -290,7 +290,7 @@ public class ViewCalendar implements IPlugin {
 			break;
 		case Calendar.TUESDAY:
 			events.add(Messages.getString("calendar.day.event.26"));
-			if (season.getSeasonWeek() > 0 && season.getSeasonWeek() < 15) {
+			if (season.getSeasonWeek() > 0 && !season.isLastWeek()) {
 				events.add(Messages.getString("calendar.day.event.30"));
 			}
 			break;
@@ -308,7 +308,7 @@ public class ViewCalendar implements IPlugin {
 			events.add(Messages.getString("calendar.day.event.32"));
 			break;
 		case Calendar.FRIDAY:
-			if (season.getSeasonWeek() == 15) {
+			if (season.isLastWeek()) {
 				events.add(Messages.getString("calendar.day.event.19"));
 			}
 			events.add(Messages.getString("calendar.day.event.33"));

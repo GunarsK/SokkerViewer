@@ -14,7 +14,8 @@ public class Date implements Serializable, DateConst, Comparable<Date> {
 	private SokkerDate sokkerDate;
 
 	public Season getSeason() {
-		return new Season(this.getMillis());
+		// the stored week when the date has one; deriving one here would also change toDateString
+		return sokkerDate != null ? new Season(sokkerDate.getWeek()) : new Season(getMillis());
 	}
 
 	private static NumberFormat monthFormat;
@@ -231,7 +232,7 @@ public class Date implements Serializable, DateConst, Comparable<Date> {
 			ca2.setTimeInMillis(begin + Date.WEEK * week + firstDay * Date.DAY);
 
 			// Add a week if the date is after 2025-07-30 - fix for a week long pause in sokker
-			if (ca2.getTimeInMillis() > 1753833600000l) {
+			if (ca2.getTimeInMillis() > SokkerDate.PAUSE) {
 				ca2.setTimeInMillis(ca2.getTimeInMillis() + Date.WEEK);
 			}
 
