@@ -85,14 +85,17 @@ public final class MatchesManager {
 
 		LeagueDao leagueDao = new LeagueDao(SQLSession.getConnection());
 
+		// one query for the whole table instead of two primary key lookups per match
+		Map<Integer, Boolean> stored = leagueDao.getMatchStates();
 		List<Match> filteredMatches = new ArrayList<Match>();
 		Set<Integer> seen = new HashSet<Integer>();
 		for (Match match : matches) {
-			if (!seen.add(Integer.valueOf(match.getMatchId()))) {
+			Integer id = Integer.valueOf(match.getMatchId());
+			if (!seen.add(id)) {
 				continue;
 			}
-			if (!leagueDao.existsMatch(match.getMatchId())
-				|| (match.getIsFinished() == Match.FINISHED && !leagueDao.existsFinishedMatch(match.getMatchId()))) {
+			Boolean finished = stored.get(id);
+			if (finished == null || (match.getIsFinished() == Match.FINISHED && !finished.booleanValue())) {
 				filteredMatches.add(match);
 			}
 		}

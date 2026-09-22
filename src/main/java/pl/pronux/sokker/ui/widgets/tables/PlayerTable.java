@@ -146,13 +146,14 @@ public class PlayerTable extends SVTable<Player> {
 				item.setText(c++, Messages.getString("formation." + position));
 				item.setText(c++, Messages.getString("training.type." + positionType + ".short"));
 			} else if (training != null) {
-				// week recorded before sokker sent a training type per position
-				if (training.getType() == Training.TYPE_PACE || training.getType() == Training.TYPE_STAMINA) {
+				// no type for this player's position: fall back to the week's single type
+				int weekType = training.getEffectiveType();
+				if (weekType == Training.TYPE_PACE || weekType == Training.TYPE_STAMINA) {
 					item.setText(c++, Messages.getString("formation." + Training.FORMATION_ALL));
 				} else {
 					item.setText(c++, Messages.getString("formation." + training.getFormation()));
 				}
-				item.setText(c++, Messages.getString("training.type." + training.getType() + ".short"));
+				item.setText(c++, Messages.getString("training.type." + weekType + ".short"));
 			} else {
 				item.setText(c++, "");
 				item.setText(c++, "");

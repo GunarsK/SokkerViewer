@@ -127,8 +127,21 @@ public class SokkerDate {
 		return Long.valueOf(((ca2.getTimeInMillis() - begin + offset  ) / DateConst.DAY % 7)).intValue();
 	}
 
-	public static int convertMillisToWeek(long millis) {
-		return convertUpdateMillisToWeek(millis);
+	/**
+	 * the millisecond the given day of the given sokker week starts at: the inverse of
+	 * convertUpdateMillisToWeek, and the only other place the pause is applied
+	 */
+	public static long weekToMillis(int week, int day) {
+		Calendar begin = Calendar.getInstance();
+		Calendar target = Calendar.getInstance();
+		begin.setTimeInMillis(BEGIN_DATE);
+		target.setTimeInMillis(BEGIN_DATE + DateConst.WEEK * week + day * DateConst.DAY);
+		// a week long pause sokker did not count: weeks from it on fall a calendar week later
+		if (target.getTimeInMillis() > PAUSE) {
+			target.setTimeInMillis(target.getTimeInMillis() + DateConst.WEEK);
+		}
+		int offset = target.get(Calendar.DST_OFFSET) - begin.get(Calendar.DST_OFFSET);
+		return target.getTimeInMillis() - offset;
 	}
 
 	public static int convertUpdateMillisToWeek(long millis) {

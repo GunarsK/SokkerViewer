@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import pl.pronux.sokker.data.sql.dto.PlayerDto;
 import pl.pronux.sokker.data.sql.dto.PlayerNtSkillsDto;
@@ -28,6 +30,19 @@ public class PlayersDao {
 
 	public PlayersDao(Connection connection) {
 		this.connection = connection;
+	}
+
+	/** every player id the database knows, for callers checking many at once */
+	public Set<Integer> getPlayerIds() throws SQLException {
+		Set<Integer> ids = new HashSet<Integer>();
+		PreparedStatement ps = connection.prepareStatement("SELECT id_player FROM player");
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			ids.add(Integer.valueOf(rs.getInt(1)));
+		}
+		rs.close();
+		ps.close();
+		return ids;
 	}
 
 	public boolean existsPlayer(int playerId) throws SQLException {

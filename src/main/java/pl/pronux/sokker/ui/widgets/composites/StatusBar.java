@@ -38,15 +38,7 @@ public class StatusBar extends Composite {
 		versionLabel.setFont(ConfigBean.getFontMain());
 	}
 
-	public void setVersion(String version) {
-		this.versionLabel.setText(version);
-	}
-	
 	public void setLastDate(String date) {
 		this.lastUpdateLabel.setText(date);
-	}
-	
-	public CLabel getVersionLabel() {
-		return versionLabel;
 	}
 }

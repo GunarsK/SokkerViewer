@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Test;
 
 import pl.pronux.sokker.bean.RoundState;
-import pl.pronux.sokker.model.LeagueSeason;
 
 public class LeaguesManagerTest {
 
@@ -22,8 +21,8 @@ public class LeaguesManagerTest {
 			list.add(s);
 		}
 		List<Integer> numbers = new ArrayList<Integer>();
-		for (LeagueSeason season : LeaguesManager.roundsNeedingStandings(list)) {
-			numbers.add(Integer.valueOf(season.getRound()));
+		for (RoundState selected : LeaguesManager.roundsNeedingStandings(list)) {
+			numbers.add(Integer.valueOf(selected.getRound()));
 		}
 		return numbers;
 	}

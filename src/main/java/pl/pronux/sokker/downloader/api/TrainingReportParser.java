@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.Training;
 
 /** turns an /api/training document into a TrainingWeek */
@@ -56,21 +57,22 @@ public class TrainingReportParser {
 		r.setKind(intOr(report, "kind.code", 0));
 		r.setFormation(intOr(report, "formation.code", Training.POSITION_NOT_SET));
 		r.setIntensity(intOr(report, "intensity", 0));
-		r.setAge(intOr(report, "age", 0));
 		r.setValue(intOr(report, "playerValue.value", 0));
-		r.setInjuryDays(intOr(report, "injury.daysRemaining", 0));
-		r.setForm(intOr(report, "skills.form", 0));
-		r.setDiscipline(intOr(report, "skills.tacticalDiscipline", 0));
-		r.setTeamwork(intOr(report, "skills.teamwork", 0));
-		r.setExperience(intOr(report, "skills.experience", 0));
-		r.setStamina(intOr(report, "skills.stamina", 0));
-		r.setKeeper(intOr(report, "skills.keeper", 0));
-		r.setPlaymaking(intOr(report, "skills.playmaking", 0));
-		r.setPassing(intOr(report, "skills.passing", 0));
-		r.setTechnique(intOr(report, "skills.technique", 0));
-		r.setDefending(intOr(report, "skills.defending", 0));
-		r.setStriker(intOr(report, "skills.striker", 0));
-		r.setPace(intOr(report, "skills.pace", 0));
+		PlayerSkills skills = r.getSkills();
+		skills.setAge((byte) intOr(report, "age", 0));
+		skills.setInjurydays(intOr(report, "injury.daysRemaining", 0));
+		skills.setForm((byte) intOr(report, "skills.form", 0));
+		skills.setDiscipline(intOr(report, "skills.tacticalDiscipline", 0));
+		skills.setTeamwork(intOr(report, "skills.teamwork", 0));
+		skills.setExperience(intOr(report, "skills.experience", 0));
+		skills.setStamina((byte) intOr(report, "skills.stamina", 0));
+		skills.setKeeper((byte) intOr(report, "skills.keeper", 0));
+		skills.setPlaymaker((byte) intOr(report, "skills.playmaking", 0));
+		skills.setPassing((byte) intOr(report, "skills.passing", 0));
+		skills.setTechnique((byte) intOr(report, "skills.technique", 0));
+		skills.setDefender((byte) intOr(report, "skills.defending", 0));
+		skills.setScorer((byte) intOr(report, "skills.striker", 0));
+		skills.setPace((byte) intOr(report, "skills.pace", 0));
 		return r;
 	}
 

@@ -444,34 +444,12 @@ public class LeagueDao {
 	 * known), the round's matches and how many are played, and the standings rows already there
 	 */
 	public List<RoundState> getRoundStates() throws SQLException {
-		Map<String, int[]> seasons = new HashMap<String, int[]>();
-		PreparedStatement ps = connection.prepareStatement("SELECT m.league_id, m.season, count(DISTINCT m.home_team_id) AS teams, count(*) AS matches FROM matches_team AS m JOIN leagues AS l ON (l.league_id = m.league_id) WHERE l.type = 0 AND l.is_official = 1 AND l.is_cup = 0 AND m.round > 0 GROUP BY m.league_id, m.season");
+		List<RoundState> states = new ArrayList<RoundState>();
+		PreparedStatement ps = connection.prepareStatement("SELECT m.league_id, m.season, m.round, count(*) AS matches, sum(m.is_finished) AS finished, (SELECT count(DISTINCT s.home_team_id) FROM matches_team AS s WHERE s.league_id = m.league_id AND s.season = m.season AND s.round > 0) AS teams, (SELECT count(*) FROM matches_team AS s WHERE s.league_id = m.league_id AND s.season = m.season AND s.round > 0) AS season_matches, (SELECT count(*) FROM league_team AS t WHERE t.league_id = m.league_id AND t.season = m.season AND t.round = m.round) AS standings FROM matches_team AS m JOIN leagues AS l ON (l.league_id = m.league_id) WHERE l.type = 0 AND l.is_official = 1 AND l.is_cup = 0 AND m.round > 0 GROUP BY m.league_id, m.season, m.round ORDER BY m.league_id, m.season, m.round");
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
-			seasons.put(rs.getInt("league_id") + "," + rs.getInt("season"), new int[] { rs.getInt("teams"), rs.getInt("matches") });
-		}
-		rs.close();
-		ps.close();
-
-		Map<String, Integer> standings = new HashMap<String, Integer>();
-		ps = connection.prepareStatement("SELECT league_id, season, round, count(*) AS standings FROM league_team GROUP BY league_id, season, round");
-		rs = ps.executeQuery();
-		while (rs.next()) {
-			standings.put(rs.getInt("league_id") + "," + rs.getInt("season") + "," + rs.getInt("round"), Integer.valueOf(rs.getInt("standings")));
-		}
-		rs.close();
-		ps.close();
-
-		List<RoundState> states = new ArrayList<RoundState>();
-		ps = connection.prepareStatement("SELECT m.league_id, m.season, m.round, count(*) AS matches, sum(m.is_finished) AS finished FROM matches_team AS m JOIN leagues AS l ON (l.league_id = m.league_id) WHERE l.type = 0 AND l.is_official = 1 AND l.is_cup = 0 AND m.round > 0 GROUP BY m.league_id, m.season, m.round ORDER BY m.league_id, m.season, m.round");
-		rs = ps.executeQuery();
-		while (rs.next()) {
-			int leagueId = rs.getInt("league_id");
-			int season = rs.getInt("season");
-			int round = rs.getInt("round");
-			int[] size = seasons.get(leagueId + "," + season);
-			Integer rows = standings.get(leagueId + "," + season + "," + round);
-			states.add(new RoundState(leagueId, season, round, size[0], size[1], rs.getInt("matches"), rs.getInt("finished"), rows == null ? 0 : rows.intValue()));
+			states.add(new RoundState(rs.getInt("league_id"), rs.getInt("season"), rs.getInt("round"), rs.getInt("teams"),
+					rs.getInt("season_matches"), rs.getInt("matches"), rs.getInt("finished"), rs.getInt("standings")));
 		}
 		rs.close();
 		ps.close();
@@ -551,6 +529,19 @@ public class LeagueDao {
 		return teamStats;
 	}
 
+	/** every stored match and whether it has been played, for callers weighing up many at once */
+	public Map<Integer, Boolean> getMatchStates() throws SQLException {
+		Map<Integer, Boolean> states = new HashMap<Integer, Boolean>();
+		PreparedStatement ps = connection.prepareStatement("SELECT match_id, is_finished FROM matches_team");
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			states.put(Integer.valueOf(rs.getInt(1)), Boolean.valueOf(rs.getInt(2) == Match.FINISHED));
+		}
+		rs.close();
+		ps.close();
+		return states;
+	}
+
 	public boolean existsFinishedMatch(int matchID) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement("SELECT count(match_id) FROM matches_team WHERE match_id = ? AND is_finished = 1"); 
 		ps.setInt(1, matchID);
@@ -611,17 +602,13 @@ public class LeagueDao {
 		return false;
 	}
 
-	public boolean existsLeagueTeam(LeagueTeam team) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("SELECT count(league_id) FROM league_team WHERE league_id = ? AND team_id = ? AND season = ? AND round = ?");
-		ps.setInt(1, team.getLeagueId());
-		ps.setInt(2, team.getTeamId());
-		ps.setInt(3, team.getSeason());
-		ps.setInt(4, team.getRound());
-		ResultSet rs = ps.executeQuery();
-		boolean exists = rs.next() && rs.getInt(1) > 0;
-		rs.close();
+	public void deleteLeagueTeams(int leagueId, int season, int round) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("DELETE FROM league_team WHERE league_id = ? AND season = ? AND round = ?");
+		ps.setInt(1, leagueId);
+		ps.setInt(2, season);
+		ps.setInt(3, round);
+		ps.executeUpdate();
 		ps.close();
-		return exists;
 	}
 
 	public boolean existsMatch(int matchID) throws SQLException {

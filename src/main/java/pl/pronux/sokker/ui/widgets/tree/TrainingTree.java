@@ -93,7 +93,7 @@ public class TrainingTree extends Tree {
 			}
 			item.setText(c++, String.valueOf(training.getAssistants().size()));
 			if (training.isApiConfirmed()) {
-				item.setText(COLUMN_API, Messages.getString("training.source.api"));
+				item.setText(c, Messages.getString("training.source.api"));
 			}
 
 			fillTrainingNode(item, training);
@@ -191,7 +191,7 @@ public class TrainingTree extends Tree {
 		if (job != Coach.JOB_HEAD) {
 			item.setFont(3, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
 		} else {
-			switch (training.getType()) {
+			switch (training.getEffectiveType()) {
 			case Training.TYPE_STAMINA:
 				item.setFont(4, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
 				break;

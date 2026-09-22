@@ -16,12 +16,14 @@ import pl.pronux.sokker.downloader.api.ApiException;
 import pl.pronux.sokker.downloader.api.PlayerTrainingReport;
 import pl.pronux.sokker.downloader.api.TrainingReportParser;
 import pl.pronux.sokker.downloader.api.TrainingWeek;
+import pl.pronux.sokker.interfaces.DateConst;
 import pl.pronux.sokker.interfaces.ProgressMonitor;
 import pl.pronux.sokker.model.Club;
 import pl.pronux.sokker.model.Country;
 import pl.pronux.sokker.model.Date;
 import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.PlayerSkills;
+import pl.pronux.sokker.model.SokkerDate;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.utils.Log;
@@ -38,6 +40,12 @@ public final class TrainingApiManager {
 
 	/** a player sold and bought back is absent for a few weeks; three empty weeks in a row end the history */
 	private static final int EMPTY_WEEKS_TO_STOP = 3;
+
+	/**
+	 * SokkerDate's calendar is anchored on CET (zone offset minus an hour), so a machine west
+	 * of it reads the week change that much later - up to 13 hours at the -12 zone
+	 */
+	private static final long MAX_ZONE_LAG = 13 * DateConst.HOUR;
 
 	private static TrainingApiManager instance = new TrainingApiManager();
 
@@ -77,22 +85,46 @@ public final class TrainingApiManager {
 
 	/** after a sync: the last RECENT_WEEKS completed weeks */
 	public Result synchronizeRecent(SokkerViewerSettings settings) throws IOException, SQLException {
+		return synchronize(settings, RECENT_WEEKS, null);
+	}
+
+	/** the menu action: every week sokker still answers for, newest first */
+	public Result importHistory(SokkerViewerSettings settings, ProgressMonitor monitor) throws IOException, SQLException {
+		return synchronize(settings, Integer.MAX_VALUE, monitor);
+	}
+
+	private Result synchronize(SokkerViewerSettings settings, int maxWeeksBack, ProgressMonitor monitor) throws IOException, SQLException {
 		boolean newConnection = SQLQuery.connect();
 		try {
-			return walk(openSession(settings), RECENT_WEEKS, null);
+			Set<Integer> confirmed = new TeamsDao(SQLSession.getConnection()).getApiConfirmedWeeks();
+			if (allConfirmed(confirmed, maxWeeksBack)) {
+				return new Result();
+			}
+			return walk(openSession(settings), confirmed, maxWeeksBack, monitor);
 		} finally {
 			SQLQuery.close(newConnection);
 		}
 	}
 
-	/** the menu action: every week sokker still answers for, newest first */
-	public Result importHistory(SokkerViewerSettings settings, ProgressMonitor monitor) throws IOException, SQLException {
-		boolean newConnection = SQLQuery.connect();
-		try {
-			return walk(openSession(settings), Integer.MAX_VALUE, monitor);
-		} finally {
-			SQLQuery.close(newConnection);
+	/**
+	 * true when every week the walk could ask about is already confirmed, so there is nothing
+	 * to log in for. Worth checking before opening a session: the login is a credential post,
+	 * and a re-sync inside the same week is the common case. The window is measured a zone's
+	 * lag into the future on purpose - an estimate that lands one week short of sokker's would
+	 * confirm a window that does not contain the new week and skip importing it, while one
+	 * that lands a week long only costs the login this was meant to save.
+	 */
+	private static boolean allConfirmed(Set<Integer> confirmed, int maxWeeksBack) {
+		if (maxWeeksBack == Integer.MAX_VALUE) {
+			return false;
 		}
+		int latest = new SokkerDate(System.currentTimeMillis() + MAX_ZONE_LAG).getTrainingWeek();
+		for (int week = latest; week > 0 && week > latest - maxWeeksBack; week--) {
+			if (!confirmed.contains(Integer.valueOf(week))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** the one place SokkerViewer hands the user's credentials to the json api */
@@ -109,9 +141,9 @@ public final class TrainingApiManager {
 	 * not playing in, when cancelled, or after maxWeeksBack weeks. Weeks whose row is already
 	 * confirmed are not requested again: sokker's record of a week never changes.
 	 */
-	Result walk(ApiDownloader api, int maxWeeksBack, ProgressMonitor monitor) throws IOException, SQLException {
+	Result walk(ApiDownloader api, Set<Integer> confirmed, int maxWeeksBack, ProgressMonitor monitor) throws IOException, SQLException {
 		Result result = new Result();
-		Set<Integer> confirmed = new TeamsDao(SQLSession.getConnection()).getApiConfirmedWeeks();
+		Set<Integer> squad = new PlayersDao(SQLSession.getConnection()).getPlayerIds();
 		double currencyRate = currencyRate();
 		TrainingWeek latest = TrainingReportParser.parseWeek(api.getTraining(null));
 		int emptyWeeks = 0;
@@ -139,7 +171,7 @@ public final class TrainingApiManager {
 			}
 			if (trainingWeek.isReal()) {
 				emptyWeeks = 0;
-				if (applyWeek(trainingWeek, currencyRate)) {
+				if (applyWeek(trainingWeek, squad, currencyRate)) {
 					result.created++;
 				} else {
 					result.updated++;
@@ -155,10 +187,10 @@ public final class TrainingApiManager {
 	}
 
 	/** apply one week's reports in its own transaction; idempotent. True when the row was created */
-	boolean applyWeek(TrainingWeek week, double currencyRate) throws SQLException {
+	boolean applyWeek(TrainingWeek week, Set<Integer> squad, double currencyRate) throws SQLException {
 		SQLSession.beginTransaction();
 		try {
-			boolean result = apply(week, currencyRate);
+			boolean result = apply(week, squad, currencyRate);
 			SQLSession.commit();
 			return result;
 		} catch (SQLException e) {
@@ -169,13 +201,13 @@ public final class TrainingApiManager {
 		}
 	}
 
-	private boolean apply(TrainingWeek week, double currencyRate) throws SQLException {
+	private boolean apply(TrainingWeek week, Set<Integer> squad, double currencyRate) throws SQLException {
 		TeamsDao teamsDao = new TeamsDao(SQLSession.getConnection());
 		PlayersDao playersDao = new PlayersDao(SQLSession.getConnection());
 		Date date = week.getDate();
 		List<PlayerTrainingReport> known = new ArrayList<PlayerTrainingReport>();
 		for (PlayerTrainingReport report : week.getPresentPlayers()) {
-			if (playersDao.existsPlayer(report.getPlayerId())) {
+			if (squad.contains(Integer.valueOf(report.getPlayerId()))) {
 				known.add(report);
 			}
 		}
@@ -223,32 +255,19 @@ public final class TrainingApiManager {
 		Training training = new Training();
 		training.setDate(week.getDate());
 		setPositionTypes(training, week);
-		training.setType(commonType(training));
+		training.setType(training.getEffectiveType());
 		training.setFormation(Training.FORMATION_ALL);
 		return training;
 	}
 
 	/**
-	 * a snapshot row for a week the xml sync missed: everything the report carries comes from
-	 * it, the rest (wage, season stats, body) is copied from the player's nearest real snapshot
+	 * a snapshot row for a week the xml sync missed: the report's own skills, its value once
+	 * converted, and the rest (wage, season stats, body) copied from the player's nearest
+	 * real snapshot
 	 */
 	static PlayerSkills buildPlayerSkills(PlayerTrainingReport report, PlayerSkills nearest, double currencyRate) {
-		PlayerSkills skills = new PlayerSkills();
-		skills.setAge((byte) report.getAge());
+		PlayerSkills skills = report.getSkills();
 		skills.setValue(new Money((int) Money.convertPricesToBase(report.getValue(), currencyRate)));
-		skills.setInjurydays(report.getInjuryDays());
-		skills.setForm((byte) report.getForm());
-		skills.setDiscipline(report.getDiscipline());
-		skills.setTeamwork(report.getTeamwork());
-		skills.setExperience(report.getExperience());
-		skills.setStamina((byte) report.getStamina());
-		skills.setKeeper((byte) report.getKeeper());
-		skills.setPlaymaker((byte) report.getPlaymaking());
-		skills.setPassing((byte) report.getPassing());
-		skills.setTechnique((byte) report.getTechnique());
-		skills.setDefender((byte) report.getDefending());
-		skills.setScorer((byte) report.getStriker());
-		skills.setPace((byte) report.getPace());
 		skills.setTrainingPosition(report.getFormation());
 		skills.setTrainingSlot(slotOf(report));
 		skills.setPassTraining(report.getIntensity() > 0);
@@ -271,23 +290,6 @@ public final class TrainingApiManager {
 		training.setTypeDef(week.typeForFormation(Training.FORMATION_DEF));
 		training.setTypeMid(week.typeForFormation(Training.FORMATION_MID));
 		training.setTypeAtt(week.typeForFormation(Training.FORMATION_ATT));
-	}
-
-	/** the single type when every trained position had the same one, else TYPE_UNKNOWN */
-	static int commonType(Training training) {
-		int common = Training.TYPE_UNKNOWN;
-		for (int position = Training.FORMATION_GK; position <= Training.FORMATION_ATT; position++) {
-			int type = training.getTypeForPosition(position);
-			if (type == Training.TYPE_NOT_SET) {
-				continue;
-			}
-			if (common == Training.TYPE_UNKNOWN) {
-				common = type;
-			} else if (common != type) {
-				return Training.TYPE_UNKNOWN;
-			}
-		}
-		return common;
 	}
 
 	static int slotOf(PlayerTrainingReport report) {

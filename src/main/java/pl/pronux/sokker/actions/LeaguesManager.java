@@ -96,21 +96,18 @@ public final class LeaguesManager {
 	 * the rounds whose standings can and must be computed, in playing order: every match of
 	 * the round is in and played, the season is complete in the database (a double round
 	 * robin has teams * (teams - 1) matches - a season known only from our own matches gives
-	 * no table), and the round has fewer standings rows than teams. A season with more matches
-	 * than the round robin (none exist today) would get no table rather than a wrong one.
+	 * no table), and the round's standings row count is not exactly teams - too few or, from
+	 * the fixed eight team assumption, too many. A season with more matches than the round
+	 * robin (none exist today) would get no table rather than a wrong one.
 	 */
-	static List<LeagueSeason> roundsNeedingStandings(List<RoundState> states) {
-		List<LeagueSeason> rounds = new ArrayList<LeagueSeason>();
+	static List<RoundState> roundsNeedingStandings(List<RoundState> states) {
+		List<RoundState> rounds = new ArrayList<RoundState>();
 		for (RoundState state : states) {
 			int teams = state.getTeams();
 			boolean wholeSeason = teams > 1 && state.getSeasonMatches() == teams * (teams - 1);
 			boolean roundPlayed = state.getMatches() == teams / 2 && state.getFinished() == state.getMatches();
-			if (wholeSeason && roundPlayed && state.getStandings() < teams) {
-				LeagueSeason round = new LeagueSeason();
-				round.setLeagueId(state.getLeagueId());
-				round.setSeason(state.getSeason());
-				round.setRound(state.getRound());
-				rounds.add(round);
+			if (wholeSeason && roundPlayed && state.getStandings() != teams) {
+				rounds.add(state);
 			}
 		}
 		return rounds;
@@ -126,25 +123,28 @@ public final class LeaguesManager {
 	}
 
 	public void completeLeagueRounds() throws SQLException {
-		List<LeagueSeason> leagues = new ArrayList<LeagueSeason>();
 		LeagueDao leagueDao = new LeagueDao(SQLSession.getConnection());
-		leagues = roundsNeedingStandings(leagueDao.getRoundStates());
+		List<RoundState> leagues = roundsNeedingStandings(leagueDao.getRoundStates());
 		List<LeagueTeam> leagueTeamToComplete = new ArrayList<LeagueTeam>();
+		List<RoundState> recomputed = new ArrayList<RoundState>();
 		int currentSeason = -1;
 		int currentLeagueId = -1;
 		List<LeagueRound> rounds = new ArrayList<LeagueRound>();
-		for (LeagueSeason leagueSeason : leagues) {
-			if (currentSeason != leagueSeason.getSeason() || currentLeagueId != leagueSeason.getLeagueId()) {
-				currentSeason = leagueSeason.getSeason();
-				currentLeagueId = leagueSeason.getLeagueId();
+		for (RoundState state : leagues) {
+			if (currentSeason != state.getSeason() || currentLeagueId != state.getLeagueId()) {
+				currentSeason = state.getSeason();
+				currentLeagueId = state.getLeagueId();
+				LeagueSeason leagueSeason = new LeagueSeason();
+				leagueSeason.setLeagueId(state.getLeagueId());
+				leagueSeason.setSeason(state.getSeason());
 				rounds = leagueDao.getRounds(leagueSeason, new HashMap<Integer, Club>());
 			}
 
-			LeagueRound round = findRound(rounds, leagueSeason.getRound());
+			LeagueRound round = findRound(rounds, state.getRound());
 			if (round == null) {
 				continue;
 			}
-			int teams = round.getMatches().size() * 2;
+			int teams = state.getTeams();
 			if (round.getRoundNumber() == 1) {
 				List<Match> matches = round.getMatches();
 				round.setLeagueTeams(new ArrayList<LeagueTeam>());
@@ -211,22 +211,16 @@ public final class LeaguesManager {
 					place -= 2;
 				}
 				leagueTeamToComplete.addAll(round.getLeagueTeams());
+				recomputed.add(state);
 			} else {
 
 				boolean completed = true;
-				LeagueRound previousRound = findRound(rounds, leagueSeason.getRound() - 1);
+				LeagueRound previousRound = findRound(rounds, state.getRound() - 1);
 				if (previousRound == null) {
 					continue;
 				}
 				List<Match> matches = round.getMatches();
-				for (Match match : matches) {
-					if (match.getIsFinished() == Match.NOT_FINISHED) {
-						completed = false;
-						break;
-					}
-				}
-
-				if (completed && previousRound.getLeagueTeams().size() == teams) {
+				if (previousRound.getLeagueTeams().size() == teams) {
 					round.setLeagueTeams(new ArrayList<LeagueTeam>());
 					Map<Integer, LeagueTeam> previousRoundMap = new HashMap<Integer, LeagueTeam>();
 					for (LeagueTeam leagueTeam : previousRound.getLeagueTeams()) {
@@ -309,16 +303,19 @@ public final class LeaguesManager {
 					}
 					if (completed) {
 						leagueTeamToComplete.addAll(round.getLeagueTeams());
+						recomputed.add(state);
 					}
 				}
 			}
 		}
 
+		// a recomputed round replaces its stored rows: topping them up would leave a table
+		// mixing the old, wrong standings with the new ones, at a row count that looks complete
+		for (RoundState state : recomputed) {
+			leagueDao.deleteLeagueTeams(state.getLeagueId(), state.getSeason(), state.getRound());
+		}
 		for (LeagueTeam leagueTeam : leagueTeamToComplete) {
-			// a round with some rows already stored is recomputed; the stored rows stay
-			if (!leagueDao.existsLeagueTeam(leagueTeam)) {
-				leagueDao.addLeagueTeam(leagueTeam);
-			}
+			leagueDao.addLeagueTeam(leagueTeam);
 		}
 
 	}

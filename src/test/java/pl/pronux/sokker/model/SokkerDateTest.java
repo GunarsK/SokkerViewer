@@ -52,13 +52,6 @@ public class SokkerDateTest {
 		assertEquals(1209, thursday.getWeek());
 		assertEquals(5, thursday.getDay());
 	}
-
-	@Test
-	public void bothWeekFormulasAgree() {
-		assertEquals(SokkerDate.convertUpdateMillisToWeek(AFTER_PAUSE), SokkerDate.convertMillisToWeek(AFTER_PAUSE));
-		assertEquals(SokkerDate.convertUpdateMillisToWeek(BEFORE_PAUSE), SokkerDate.convertMillisToWeek(BEFORE_PAUSE));
-	}
-
 	@Test
 	public void trainingDateRoundTripsThroughTheWeekFormula() {
 		for (int week : new int[] { 437, 975, 976, 1209, 1210 }) {
