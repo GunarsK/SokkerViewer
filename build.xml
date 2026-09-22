@@ -18,6 +18,7 @@
 	<property name="jfreechart" value="jfreechart-1.0.1.jar" />
 	<property name="jcommon" value="jcommon-1.0.0.jar" />
 	<property name="hsqldb" value="hsqldb-1.8.1.1.jar" />
+	<property name="gson" value="gson-2.10.1.jar" />
 
 	<property name="core" value="core-${version}.jar" />
 	<property name="ui" value="ui-${version}.jar" />
@@ -84,6 +85,7 @@
 		<copy todir="${lib.dst.dir}" file="${lib.src.dir}${itext}" />
 		<copy todir="${lib.dst.dir}" file="${lib.src.dir}${htmlentities}" />
 		<copy todir="${lib.dst.dir}" file="${lib.src.dir}${hsqldb}" />
+		<copy todir="${lib.dst.dir}" file="${lib.src.dir}${gson}" />
 		<copy todir="${lib.dst.dir}" file="${lib.src.dir}${jcommon}" />
 		<copy todir="${lib.dst.dir}" file="${lib.src.dir}${jfreechart}" />
 		<copy tofile="${lib.dst.dir}/swt.jar" file="${lib.src.dir}${swt}" />
@@ -145,6 +147,7 @@
 				<pathelement location="${lib.src.dir}/${jcommon}" />
 				<pathelement location="${lib.src.dir}/${hsqldb}" />
 				<pathelement location="${lib.src.dir}/${htmlentities}" />
+				<pathelement location="${lib.src.dir}/${gson}" />
 				<pathelement location="${lib.dst.dir}/${headers}" />
 			</classpath>
 			<exclude name="launcher/**" />
@@ -164,6 +167,7 @@
 				<pathelement location="${lib.src.dir}/${hsqldb}" />
 				<pathelement location="${lib.src.dir}/${swt}" />
 				<pathelement location="${lib.src.dir}/${htmlentities}" />
+				<pathelement location="${lib.src.dir}/${gson}" />
 				<pathelement location="${lib.dst.dir}/${core}" />
 				<pathelement location="${lib.dst.dir}/${headers}" />
 			</classpath>
@@ -190,7 +194,7 @@
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Main-Class" value="pl.pronux.sokker.launcher.Launcher" />
-				<attribute name="Class-Path" value="lib/${pgsql} lib/${headers} lib/${core} lib/${ui} lib/${itext} lib/${htmlentities} lib/${jfreechart} lib/${jcommon} lib/${hsqldb} lib/swt.jar resources/${flags} resources/${images} resources/${lang} resources/${properties}" />
+				<attribute name="Class-Path" value="lib/${pgsql} lib/${headers} lib/${core} lib/${ui} lib/${itext} lib/${htmlentities} lib/${jfreechart} lib/${jcommon} lib/${hsqldb} lib/${gson} lib/swt.jar resources/${flags} resources/${images} resources/${lang} resources/${properties}" />
 			</manifest>
 		</jar>
 	</target>
@@ -252,7 +256,7 @@
 		<echo file="${release.dir}/${software.type}/${os.name.value}/sokker-${version}.zip.MD5" append="true">  sokker-${version}.zip</echo>
 	</target>
 
-	<target name="post_clean" depends="checksum">
+	<target name="post_clean" depends="packages">
 		<delete dir="${build.classes.dir}" />
 		<delete dir="${temp.dir}" />
 	</target>

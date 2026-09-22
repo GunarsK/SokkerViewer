@@ -20,6 +20,9 @@ import pl.pronux.sokker.ui.resources.Fonts;
 
 public class TrainingTree extends Tree {
 
+	/** the spacer column the sokker.org marker is written into; wider than the others to fit it */
+	private static final int COLUMN_API = 8;
+
 	@Override
 	protected void checkSubclass() {
 		// super.checkSubclass();
@@ -52,7 +55,7 @@ public class TrainingTree extends Tree {
 						column.pack();
 					}
 				} else {
-					column.setWidth(40);
+					column.setWidth(j == COLUMN_API ? 80 : 40);
 				}
 			} else {
 				column.setWidth(120);
@@ -89,6 +92,9 @@ public class TrainingTree extends Tree {
 				item.setText(c++, "0");
 			}
 			item.setText(c++, String.valueOf(training.getAssistants().size()));
+			if (training.isApiConfirmed()) {
+				item.setText(c, Messages.getString("training.source.api"));
+			}
 
 			fillTrainingNode(item, training);
 		}
@@ -185,7 +191,7 @@ public class TrainingTree extends Tree {
 		if (job != Coach.JOB_HEAD) {
 			item.setFont(3, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
 		} else {
-			switch (training.getType()) {
+			switch (training.getEffectiveType()) {
 			case Training.TYPE_STAMINA:
 				item.setFont(4, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
 				break;

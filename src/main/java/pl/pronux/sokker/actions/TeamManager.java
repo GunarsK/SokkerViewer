@@ -107,7 +107,7 @@ public final class TeamManager {
 			training.setStatus(Training.NEW_TRAINING);
 		} else {
 			training.setId(lastTraining.getId());
-			if (lastTraining.getType() == Training.TYPE_UNKNOWN) {
+			if (!lastTraining.isTypeKnown()) {
 				updateTraining(training);
 				training.setStatus(Training.UPDATE_TRAINING);
 			} else {
@@ -132,7 +132,7 @@ public final class TeamManager {
 			training.setStatus(Training.NEW_TRAINING);
 		} else {
 			training.setId(trainingDB.getId());
-			if (trainingDB.getType() == Training.TYPE_UNKNOWN) {
+			if (!trainingDB.isTypeKnown()) {
 				updateTraining(training);
 				training.setStatus(Training.UPDATE_TRAINING);
 			} else {

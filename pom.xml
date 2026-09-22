@@ -4,7 +4,7 @@
 	<groupId>SokkerViewer</groupId>
 	<artifactId>SokkerViewer</artifactId>
 	<name>SokkerViewer</name>
-	<version>0.14.2</version>
+	<version>0.15.0</version>
 	<properties>
 		<swt.version>3.130.0</swt.version>
 		<swt.os-specific-dep>org.eclipse.swt.win32.win32.x86_64</swt.os-specific-dep>
@@ -54,6 +54,17 @@
 			<groupId>com.tecnick.htmlutils</groupId>
 			<artifactId>htmlentities</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.10.1</version>
 		</dependency>
 	</dependencies>
 	<profiles>

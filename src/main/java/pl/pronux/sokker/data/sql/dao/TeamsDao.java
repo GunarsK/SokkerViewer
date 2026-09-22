@@ -726,7 +726,7 @@ public class TeamsDao {
 	}
 
 	public void addTraining(Training training) throws SQLException {
-		PreparedStatement pstm = connection.prepareStatement("INSERT INTO training(millis, type, formation, note, day, week, type_gk, type_def, type_mid, type_att) VALUES (?,?,?,?,?,?,?,?,?,?)");
+		PreparedStatement pstm = connection.prepareStatement("INSERT INTO training(millis, type, formation, note, day, week, type_gk, type_def, type_mid, type_att, api_confirmed) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
 		pstm.setLong(1, training.getDate().getMillis());
 		pstm.setInt(2, training.getType());
 		pstm.setInt(3, training.getFormation());
@@ -737,6 +737,7 @@ public class TeamsDao {
 		pstm.setInt(8, training.getTypeDef());
 		pstm.setInt(9, training.getTypeMid());
 		pstm.setInt(10, training.getTypeAtt());
+		pstm.setBoolean(11, training.isApiConfirmed());
 		pstm.executeUpdate();
 		pstm.close();
 
@@ -744,7 +745,7 @@ public class TeamsDao {
 
 	public List<Training> getTrainings() throws SQLException {
 		List<Training> alTraining = new ArrayList<Training>();
-		PreparedStatement pstm = connection.prepareStatement("SELECT id_training, millis, type, formation, note, day, week, reported, type_gk, type_def, type_mid, type_att FROM training ORDER BY week DESC,day DESC");
+		PreparedStatement pstm = connection.prepareStatement("SELECT id_training, millis, type, formation, note, day, week, reported, type_gk, type_def, type_mid, type_att, api_confirmed FROM training ORDER BY week DESC,day DESC");
 		ResultSet rs = pstm.executeQuery();
 
 		while (rs.next()) {
@@ -832,6 +833,37 @@ public class TeamsDao {
 		ps.setInt(6, training.getTypeAtt());
 		ps.setInt(7, training.getId());
 
+		ps.executeUpdate();
+		ps.close();
+	}
+
+	/**
+	 * the weeks (numbered by their thursday) whose row carries sokker.org's types together
+	 * with the player snapshots that came with them. A row confirmed while its players were
+	 * not in the database yet has no snapshots and is left out, so the next walk redoes it
+	 */
+	public Set<Integer> getApiConfirmedWeeks() throws SQLException {
+		Set<Integer> weeks = new HashSet<Integer>();
+		PreparedStatement ps = connection
+			.prepareStatement("SELECT day, week FROM training t WHERE t.api_confirmed = true AND EXISTS (SELECT 1 FROM player_skills ps WHERE ps.id_training_fk = t.id_training)");
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			weeks.add(Integer.valueOf(new SokkerDate(rs.getInt("day"), rs.getInt("week")).getTrainingWeek()));
+		}
+		rs.close();
+		ps.close();
+		return weeks;
+	}
+
+	/** the position types as sokker.org reported them; leaves the legacy type, note and coaches alone */
+	public void updateTrainingTypes(Training training) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("UPDATE training SET type_gk = ?, type_def = ?, type_mid = ?, type_att = ?, api_confirmed = ? WHERE id_training = ?");
+		ps.setInt(1, training.getTypeGk());
+		ps.setInt(2, training.getTypeDef());
+		ps.setInt(3, training.getTypeMid());
+		ps.setInt(4, training.getTypeAtt());
+		ps.setBoolean(5, training.isApiConfirmed());
+		ps.setInt(6, training.getId());
 		ps.executeUpdate();
 		ps.close();
 	}

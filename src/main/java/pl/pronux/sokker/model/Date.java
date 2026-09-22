@@ -14,7 +14,8 @@ public class Date implements Serializable, DateConst, Comparable<Date> {
 	private SokkerDate sokkerDate;
 
 	public Season getSeason() {
-		return new Season(this.getMillis());
+		// the stored week when the date has one; deriving one here would also change toDateString
+		return sokkerDate != null ? new Season(sokkerDate.getWeek()) : new Season(getMillis());
 	}
 
 	private static NumberFormat monthFormat;
@@ -214,33 +215,12 @@ public class Date implements Serializable, DateConst, Comparable<Date> {
 	}
 
 	public Date getTrainingDate(int firstDay) {
-		Date trainingDate = null;
-		if (sokkerDate != null) {
-			long begin;
-			long offset;
-			int week = 0;
-			if (sokkerDate.getDay() < firstDay) {
-				week = sokkerDate.getWeek() - 1;
-			} else {
-				week = sokkerDate.getWeek();
-			}
-			begin = SokkerDate.BEGIN_DATE;
-			Calendar ca1 = Calendar.getInstance();
-			Calendar ca2 = Calendar.getInstance();
-			ca1.setTimeInMillis(begin);
-			ca2.setTimeInMillis(begin + Date.WEEK * week + firstDay * Date.DAY);
-
-			// Add a week if the date is after 2025-07-30 - fix for a week long pause in sokker
-			if (ca2.getTimeInMillis() > 1753833600000l) {
-				ca2.setTimeInMillis(ca2.getTimeInMillis() + Date.WEEK);
-			}
-
-			offset = ca2.get(Calendar.DST_OFFSET) - ca1.get(Calendar.DST_OFFSET);
-			ca2.setTimeInMillis(ca2.getTimeInMillis() - offset);
-			trainingDate = new Date(ca2);
-			trainingDate.setSokkerDate(new SokkerDate(firstDay, week));
-
+		if (sokkerDate == null) {
+			return null;
 		}
+		int week = sokkerDate.getDay() < firstDay ? sokkerDate.getWeek() - 1 : sokkerDate.getWeek();
+		Date trainingDate = new Date(SokkerDate.weekToMillis(week, firstDay));
+		trainingDate.setSokkerDate(new SokkerDate(firstDay, week));
 		return trainingDate;
 	}
 

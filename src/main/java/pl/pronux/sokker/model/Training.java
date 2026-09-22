@@ -50,6 +50,9 @@ public class Training implements Cloneable {
 
 	private int typeAtt = TYPE_NOT_SET;
 
+	/** the four position types were confirmed by sokker.org's training report */
+	private boolean apiConfirmed;
+
 	private int id;
 
 	private String note;
@@ -166,6 +169,14 @@ public class Training implements Cloneable {
 		this.typeAtt = typeAtt;
 	}
 
+	public boolean isApiConfirmed() {
+		return apiConfirmed;
+	}
+
+	public void setApiConfirmed(boolean apiConfirmed) {
+		this.apiConfirmed = apiConfirmed;
+	}
+
 	/**
 	 * type trained by the given position in this week, or TYPE_NOT_SET when not known
 	 */
@@ -206,6 +217,39 @@ public class Training implements Cloneable {
 	 */
 	public boolean hasPositionTypes() {
 		return typeGk != TYPE_NOT_SET || typeDef != TYPE_NOT_SET || typeMid != TYPE_NOT_SET || typeAtt != TYPE_NOT_SET;
+	}
+
+	/**
+	 * the week's single training type: the common type of the positions that trained when
+	 * sokker's api gave them, TYPE_UNKNOWN when they disagree, and the legacy type recorded
+	 * by the xml sync for weeks that have no per-position types. The legacy field is not
+	 * rewritten by an api import, so readers asking "what did this week train" use this.
+	 */
+	public int getEffectiveType() {
+		if (!hasPositionTypes()) {
+			return type;
+		}
+		int common = TYPE_UNKNOWN;
+		for (int position = FORMATION_GK; position <= FORMATION_ATT; position++) {
+			int positionType = getTypeForPosition(position);
+			if (positionType == TYPE_NOT_SET) {
+				continue;
+			}
+			if (common == TYPE_UNKNOWN) {
+				common = positionType;
+			} else if (common != positionType) {
+				return TYPE_UNKNOWN;
+			}
+		}
+		return common;
+	}
+
+	/**
+	 * true when something is known about what this week trained, either its single type or
+	 * a type per position
+	 */
+	public boolean isTypeKnown() {
+		return type != TYPE_UNKNOWN || hasPositionTypes();
 	}
 
 	public boolean isReported() {
@@ -258,6 +302,7 @@ public class Training implements Cloneable {
 		this.setTypeDef(training.getTypeDef());
 		this.setTypeMid(training.getTypeMid());
 		this.setTypeAtt(training.getTypeAtt());
+		this.setApiConfirmed(training.isApiConfirmed());
 	}
 
 	public Training clone() {
@@ -281,6 +326,7 @@ public class Training implements Cloneable {
 		training.setTypeDef(this.getTypeDef());
 		training.setTypeMid(this.getTypeMid());
 		training.setTypeAtt(this.getTypeAtt());
+		training.setApiConfirmed(this.isApiConfirmed());
 		return training;
 	}
 
@@ -331,91 +377,95 @@ public class Training implements Cloneable {
 				if (max > 1) {
 					for (int i = max - 1; i > 0; i--) {
 						if (this.equals(skills[i].getTraining())) {
+							// a week with a type per position has no single trained type: what counts as
+							// trained is what this player's own position trained. Weeks without them keep
+							// answering with their single type, as they always did.
+							int trainedType = hasPositionTypes() ? getTypeForPosition(skills[i].getTrainingPosition()) : type;
 							if (skills[i].getStamina() - skills[i - 1].getStamina() > 0) {
 								trainingSummary.setStaminaPops(trainingSummary.getStaminaPops() + 1);
-								if (this.getType() == Training.TYPE_STAMINA) {
+								if (trainedType == Training.TYPE_STAMINA) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getStamina() - skills[i - 1].getStamina() < 0) {
 								trainingSummary.setStaminaFalls(trainingSummary.getStaminaFalls() + 1);
-								if (this.getType() == Training.TYPE_STAMINA) {
+								if (trainedType == Training.TYPE_STAMINA) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getPace() - skills[i - 1].getPace() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_PACE) {
+								if (trainedType == Training.TYPE_PACE) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getPace() - skills[i - 1].getPace() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_PACE) {
+								if (trainedType == Training.TYPE_PACE) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getTechnique() - skills[i - 1].getTechnique() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_TECHNIQUE) {
+								if (trainedType == Training.TYPE_TECHNIQUE) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getTechnique() - skills[i - 1].getTechnique() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_TECHNIQUE) {
+								if (trainedType == Training.TYPE_TECHNIQUE) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getPassing() - skills[i - 1].getPassing() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_PASSING) {
+								if (trainedType == Training.TYPE_PASSING) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getPassing() - skills[i - 1].getPassing() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_PASSING) {
+								if (trainedType == Training.TYPE_PASSING) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getKeeper() - skills[i - 1].getKeeper() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_KEEPER) {
+								if (trainedType == Training.TYPE_KEEPER) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getKeeper() - skills[i - 1].getKeeper() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_KEEPER) {
+								if (trainedType == Training.TYPE_KEEPER) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getDefender() - skills[i - 1].getDefender() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_DEFENDING) {
+								if (trainedType == Training.TYPE_DEFENDING) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getDefender() - skills[i - 1].getDefender() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_DEFENDING) {
+								if (trainedType == Training.TYPE_DEFENDING) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getPlaymaker() - skills[i - 1].getPlaymaker() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_PLAYMAKING) {
+								if (trainedType == Training.TYPE_PLAYMAKING) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getPlaymaker() - skills[i - 1].getPlaymaker() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_PLAYMAKING) {
+								if (trainedType == Training.TYPE_PLAYMAKING) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
 							if (skills[i].getScorer() - skills[i - 1].getScorer() > 0) {
 								trainingSummary.setAllSkillsPops(trainingSummary.getAllSkillsPops() + 1);
-								if (this.getType() == Training.TYPE_STRIKER) {
+								if (trainedType == Training.TYPE_STRIKER) {
 									trainingSummary.setTrainedSkillsPops(trainingSummary.getTrainedSkillsPops() + 1);
 								}
 							} else if (skills[i].getScorer() - skills[i - 1].getScorer() < 0) {
 								trainingSummary.setAllSkillsFalls(trainingSummary.getAllSkillsFalls() + 1);
-								if (this.getType() == Training.TYPE_STRIKER) {
+								if (trainedType == Training.TYPE_STRIKER) {
 									trainingSummary.setTrainedSkillsFalls(trainingSummary.getTrainedSkillsFalls() + 1);
 								}
 							}
@@ -430,7 +480,7 @@ public class Training implements Cloneable {
 	
 	public int getHeadCoachTrainedSkill() {
 		if (this.getHeadCoach() != null) {
-			switch (this.getType()) {
+			switch (this.getEffectiveType()) {
 			case Training.TYPE_DEFENDING:
 				return getHeadCoach().getDefenders();
 			case Training.TYPE_KEEPER:

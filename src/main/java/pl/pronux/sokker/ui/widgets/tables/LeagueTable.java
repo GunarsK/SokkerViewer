@@ -63,7 +63,8 @@ public class LeagueTable extends SVTable<LeagueRound> {
 				column.pack();
 			}
 			if (i == 0) {
-				column.setWidth(20);
+				// wide enough for a two digit place - leagues have more than nine teams
+				column.setWidth(30);
 			} else if (i == 1) {
 				column.setWidth(150);
 			} else if (i > 1 && i < titles.length-1) {

@@ -13,6 +13,9 @@ public class LeagueTeamDto extends LeagueTeam {
 	}
 
 	public LeagueTeam getLeagueTeam() throws SQLException {
+		this.setLeagueId(rs.getInt("league_id"));
+		this.setSeason(rs.getInt("season"));
+		this.setRound(rs.getInt("round"));
 		this.setTeamId(rs.getInt("team_id")); 
 		this.setPoints(rs.getInt("points")); 
 		this.setWins(rs.getInt("wins")); 

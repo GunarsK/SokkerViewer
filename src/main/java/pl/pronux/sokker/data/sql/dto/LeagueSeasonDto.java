@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import pl.pronux.sokker.model.LeagueSeason;
+import pl.pronux.sokker.model.SokkerDate;
 
 public class LeagueSeasonDto extends LeagueSeason {
 
@@ -16,7 +17,8 @@ public class LeagueSeasonDto extends LeagueSeason {
 	public LeagueSeason getLeagueSeason() throws SQLException {
 		this.setLeagueId(rs.getInt("league_id")); 
 		this.setSeason(rs.getInt("season")); 
-		this.setRawSeason(rs.getInt("raw_season")); 
+		// the season the site counts, from the season's first week
+		this.setRawSeason(SokkerDate.seasonOf(rs.getInt("week")));
 //		this.setSeasonRoundID(rs.getInt("season_round_id"));
 		return this;
 	}

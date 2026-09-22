@@ -1,6 +1,7 @@
 package pl.pronux.sokker.ui.widgets.menus;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
 
 import org.eclipse.swt.SWT;
@@ -21,10 +22,12 @@ import org.eclipse.swt.widgets.Shell;
 
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.actions.TrainingHistoryImportAction;
 import pl.pronux.sokker.ui.events.UpdateEvent;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.widgets.dialogs.MessageDialog;
+import pl.pronux.sokker.ui.widgets.dialogs.ProgressBarDialog;
 import pl.pronux.sokker.ui.widgets.shells.BugReporter;
 import pl.pronux.sokker.ui.widgets.shells.CurrencyCalculator;
 import pl.pronux.sokker.ui.widgets.shells.LoginShell;
@@ -33,6 +36,7 @@ import pl.pronux.sokker.ui.widgets.shells.RestoreDatabaseShell;
 import pl.pronux.sokker.ui.widgets.shells.TaxCalculator;
 import pl.pronux.sokker.ui.widgets.wizards.updater.UpdaterWizard;
 import pl.pronux.sokker.ui.widgets.wizards.xmlimporter.ImporterWizard;
+import pl.pronux.sokker.utils.Log;
 import pl.pronux.sokker.utils.file.Database;
 
 public class ViewerMenu extends Menu {
@@ -91,6 +95,23 @@ public class ViewerMenu extends Menu {
 			}
 		});
 		mainShellMenuItemImportXML.setEnabled(true);
+
+		MenuItem mainShellMenuItemImportTraining = new MenuItem(mainShellSubmenuFile, SWT.PUSH);
+		mainShellMenuItemImportTraining.setText(Messages.getString("button.import.training.history"));
+		mainShellMenuItemImportTraining.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event) {
+				if (SettingsHandler.isLogged()) {
+					try {
+						new ProgressBarDialog(mainShell, SWT.PRIMARY_MODAL | SWT.CLOSE).run(false, true, true, new TrainingHistoryImportAction(mainShell));
+					} catch (InterruptedException e) {
+						Log.error("training history import", e);
+					} catch (InvocationTargetException e) {
+						Log.error("training history import", e);
+					}
+				}
+			}
+		});
+		mainShellMenuItemImportTraining.setEnabled(true);
 
 		new MenuItem(mainShellSubmenuFile, SWT.SEPARATOR);
 
