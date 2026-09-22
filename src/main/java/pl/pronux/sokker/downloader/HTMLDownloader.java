@@ -23,8 +23,7 @@ public class HTMLDownloader extends AbstractDownloader {
 	private String cookies = ""; 
 
 	public HTMLDownloader(ProxySettings proxySettings) {
-		super.setProxy(proxySettings.getProxy());
-		super.setProxyAuth(proxySettings.getProxyAuthentication());
+		setProxySettings(proxySettings);
 	}
 
 	public void downloadPackage(final String srcFile, String dstDirectory, String dstFile, ProgressMonitor monitor) throws IOException {

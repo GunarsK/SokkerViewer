@@ -154,10 +154,7 @@ v	 */
 	}
 
 	public void login(String login, String password, ProxySettings proxySettings) throws SVException, IOException {
-		if (proxySettings != null) {
-			super.setProxy(proxySettings.getProxy());
-			super.setProxyAuth(proxySettings.getProxyAuthentication());
-		}
+		setProxySettings(proxySettings);
 
 		try {
 			this.message = postDataToPage(
@@ -217,13 +214,11 @@ v	 */
 	 */
 	private static String extractCookies(HttpURLConnection connection) {
 		StringBuilder cookies = new StringBuilder();
-		for (int i = 1; connection.getHeaderFieldKey(i) != null || connection.getHeaderField(i) != null; i++) {
-			if ("Set-Cookie".equalsIgnoreCase(connection.getHeaderFieldKey(i))) {
-				if (cookies.length() > 0) {
-					cookies.append("; ");
-				}
-				cookies.append(connection.getHeaderField(i).split(";", 2)[0]);
+		for (String cookie : readSetCookies(connection)) {
+			if (cookies.length() > 0) {
+				cookies.append("; ");
 			}
+			cookies.append(cookie);
 		}
 		return cookies.toString();
 	}

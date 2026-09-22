@@ -455,6 +455,46 @@ public class PlayersDao {
 		return playerSkills;
 	}
 
+	/** what sokker says the player did in that week's training; 0 when the player has no snapshot of that week */
+	public int updateTrainingAssignment(int playerId, int trainingId, int position, int slot, boolean passTraining) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("UPDATE player_skills SET training_position = ?, training_slot = ?, pass_training = ? WHERE id_player_fk = ? AND id_training_fk = ?");
+		ps.setInt(1, position);
+		ps.setInt(2, slot);
+		ps.setBoolean(3, passTraining);
+		ps.setInt(4, playerId);
+		ps.setInt(5, trainingId);
+		int updated = ps.executeUpdate();
+		ps.close();
+		return updated;
+	}
+
+	/**
+	 * the player's snapshot closest to millis, preferring the later side; null when the player
+	 * has no snapshot at all. Fills the fields a sokker.org report does not carry.
+	 */
+	public PlayerSkills getNearestPlayerSkills(int playerId, long millis) throws SQLException {
+		PlayerSkills skills = firstPlayerSkills("SELECT * FROM player_skills WHERE id_player_fk = ? AND millis >= ? ORDER BY millis ASC", playerId, millis);
+		if (skills == null) {
+			skills = firstPlayerSkills("SELECT * FROM player_skills WHERE id_player_fk = ? AND millis < ? ORDER BY millis DESC", playerId, millis);
+		}
+		return skills;
+	}
+
+	private PlayerSkills firstPlayerSkills(String sql, int playerId, long millis) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement(sql);
+		ps.setMaxRows(1);
+		ps.setInt(1, playerId);
+		ps.setLong(2, millis);
+		ResultSet rs = ps.executeQuery();
+		PlayerSkills skills = null;
+		if (rs.next()) {
+			skills = new PlayerSkillsDto(rs).getPlayerSkills();
+		}
+		rs.close();
+		ps.close();
+		return skills;
+	}
+
 	public String removeSoldPlayer(String sTemp) throws SQLException {
 		String deletedPlayers = ""; 
 		PreparedStatement ps = connection.prepareStatement("SELECT id_player FROM player WHERE status = 0 AND id_player NOT IN " + sTemp);

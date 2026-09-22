@@ -50,6 +50,9 @@ public class Training implements Cloneable {
 
 	private int typeAtt = TYPE_NOT_SET;
 
+	/** the four position types were confirmed by sokker.org's training report */
+	private boolean apiConfirmed;
+
 	private int id;
 
 	private String note;
@@ -166,6 +169,14 @@ public class Training implements Cloneable {
 		this.typeAtt = typeAtt;
 	}
 
+	public boolean isApiConfirmed() {
+		return apiConfirmed;
+	}
+
+	public void setApiConfirmed(boolean apiConfirmed) {
+		this.apiConfirmed = apiConfirmed;
+	}
+
 	/**
 	 * type trained by the given position in this week, or TYPE_NOT_SET when not known
 	 */
@@ -206,6 +217,14 @@ public class Training implements Cloneable {
 	 */
 	public boolean hasPositionTypes() {
 		return typeGk != TYPE_NOT_SET || typeDef != TYPE_NOT_SET || typeMid != TYPE_NOT_SET || typeAtt != TYPE_NOT_SET;
+	}
+
+	/**
+	 * true when something is known about what this week trained, either its single type or
+	 * a type per position
+	 */
+	public boolean isTypeKnown() {
+		return type != TYPE_UNKNOWN || hasPositionTypes();
 	}
 
 	public boolean isReported() {
@@ -258,6 +277,7 @@ public class Training implements Cloneable {
 		this.setTypeDef(training.getTypeDef());
 		this.setTypeMid(training.getTypeMid());
 		this.setTypeAtt(training.getTypeAtt());
+		this.setApiConfirmed(training.isApiConfirmed());
 	}
 
 	public Training clone() {
@@ -281,6 +301,7 @@ public class Training implements Cloneable {
 		training.setTypeDef(this.getTypeDef());
 		training.setTypeMid(this.getTypeMid());
 		training.setTypeAtt(this.getTypeAtt());
+		training.setApiConfirmed(this.isApiConfirmed());
 		return training;
 	}
 

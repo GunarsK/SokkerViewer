@@ -25,6 +25,7 @@ public class TrainingDto extends Training {
 		this.setTypeDef(rs.getInt("type_def"));
 		this.setTypeMid(rs.getInt("type_mid"));
 		this.setTypeAtt(rs.getInt("type_att"));
+		this.setApiConfirmed(rs.getBoolean("api_confirmed"));
 		return this;
 	}
 }

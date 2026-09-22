@@ -14,6 +14,7 @@ import org.xml.sax.SAXException;
 import pl.pronux.sokker.actions.ConfigurationManager;
 import pl.pronux.sokker.actions.JuniorsManager;
 import pl.pronux.sokker.actions.LeaguesManager;
+import pl.pronux.sokker.actions.TrainingApiManager;
 import pl.pronux.sokker.actions.MatchesManager;
 import pl.pronux.sokker.bean.SynchronizerConfiguration;
 import pl.pronux.sokker.data.sql.SQLSession;
@@ -72,7 +73,7 @@ public class Synchronizer implements RunnableWithProgress {
 	public void run(ProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 		if (configuration != null && configuration.isDownloadBase() && monitor != null) {
 
-			monitor.beginTask(Messages.getString("synchronizer.info"), 15); 
+			monitor.beginTask(Messages.getString("synchronizer.info"), 16); 
 			monitor.subTask(Messages.getString("synchronizer.login")); 
 
 			// auth
@@ -307,7 +308,24 @@ public class Synchronizer implements RunnableWithProgress {
 					Log.error("Synchronizer -> SQL Importing EndTransaction", e); 
 				}
 			}
+
+			synchronizeTrainingApi(monitor);
 		}
+	}
+
+	/**
+	 * best effort: the xml sync above must never depend on the json api. Reached only after the
+	 * xml login succeeded, so a wrong password is not counted twice by sokker's blacklist.
+	 */
+	private void synchronizeTrainingApi(ProgressMonitor monitor) {
+		monitor.subTask(Messages.getString("synchronizer.api.training"));
+		try {
+			TrainingApiManager.Result result = TrainingApiManager.getInstance().synchronizeRecent(settings);
+			Log.info("sokker.org api: training weeks created " + result.getCreated() + ", updated " + result.getUpdated());
+		} catch (Exception e) {
+			Log.warning("sokker.org api: training step skipped: " + e.getMessage(), e);
+		}
+		monitor.worked(1);
 	}
 
 	public void onFinish() {

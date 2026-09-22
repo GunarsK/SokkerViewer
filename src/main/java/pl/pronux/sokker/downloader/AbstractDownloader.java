@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import pl.pronux.sokker.model.ProxySettings;
 
 public class AbstractDownloader {
 
@@ -28,6 +32,29 @@ public class AbstractDownloader {
 
 	public void setProxyAuth(String proxyAuth) {
 		this.proxyAuth = proxyAuth;
+	}
+
+	/** the proxy from the user's settings, none when they are null */
+	public void setProxySettings(ProxySettings proxySettings) {
+		if (proxySettings != null) {
+			setProxy(proxySettings.getProxy());
+			setProxyAuth(proxySettings.getProxyAuthentication());
+		}
+	}
+
+	/**
+	 * the name=value part of every Set-Cookie header of the answer, in order. sokker.org sends
+	 * several cookies on log-in and getHeaderField("Set-Cookie") returns only the last one,
+	 * which is not the session.
+	 */
+	protected static List<String> readSetCookies(HttpURLConnection connection) {
+		List<String> cookies = new ArrayList<String>();
+		for (int i = 1; connection.getHeaderFieldKey(i) != null || connection.getHeaderField(i) != null; i++) {
+			if ("Set-Cookie".equalsIgnoreCase(connection.getHeaderFieldKey(i))) {
+				cookies.add(connection.getHeaderField(i).split(";", 2)[0]);
+			}
+		}
+		return cookies;
 	}
 
 	protected HttpURLConnection getDefaultConnection(String urlString, String type) throws IOException {
