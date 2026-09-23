@@ -121,7 +121,7 @@ public class PlayerTable extends SVTable<Player> {
 			item.setText(c++, player.getSkills()[i].getDate().getTrainingDate(SokkerDate.THURSDAY).toDateString());
 			item.setText(c++, player.getSkills()[i].getValue().formatIntegerCurrency());
 			item.setText(c++, player.getSkills()[i].getSalary().formatIntegerCurrency());
-			item.setText(c++, String.valueOf(player.getSkills()[i].getAge()));
+			item.setText(c++, String.valueOf(player.getSkills()[i].getTrainingAge()));
 			//item.setText(c++, String.valueOf(player.getSkills()[i].getWeight()));
 			//item.setText(c++, String.valueOf(player.getSkills()[i].getBmi()));
 			item.setText(c++, String.valueOf(player.getSkills()[i].getForm()));
@@ -217,7 +217,7 @@ public class PlayerTable extends SVTable<Player> {
 				int idx = 1;
 				compare(now.getValue().toInt(), before.getValue().toInt(), item, idx++);
 				compare(now.getSalary().toInt(), before.getSalary().toInt(), item, idx++);
-				compare(now.getAge(), before.getAge(), item, idx++);
+				compare(now.getTrainingAge(), before.getTrainingAge(), item, idx++);
 				//compare(now.getWeight(), before.getWeight(), item, idx++);
 				//compare(now.getBmi(), before.getBmi(), item, idx++);
 				compare(now.getForm(), before.getForm(), item, idx++);

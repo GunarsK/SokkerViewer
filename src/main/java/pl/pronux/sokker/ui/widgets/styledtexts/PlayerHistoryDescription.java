@@ -18,6 +18,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 
 import pl.pronux.sokker.model.Player;
+import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
@@ -90,8 +91,9 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 		this.append(text);
 	}
 
+	/** the player as a whole: the age they have now */
 	public void setStatsPlayerInfo(Player player) {
-		setStatsPlayerInfo(player, 0);
+		fill(player, 0, false);
 	}
 
 	private String getNumberSkill(int before, int now) {
@@ -142,24 +144,33 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 		this.setStyleRange(range);
 	}
 
+	/** one training row of the player: the age they had at that training */
 	public void setStatsPlayerInfo(Player player, int index) {
+		fill(player, index, true);
+	}
+
+	private static int age(PlayerSkills skills, boolean atTraining) {
+		return atTraining ? skills.getTrainingAge() : skills.getAge();
+	}
+
+	private void fill(Player player, int index, boolean atTraining) {
 		this.setRedraw(false);
 		// Send all output to the Appendable object sb
 		int max = player.getSkills().length - 1 - index;
 		String text;
 		String imageText = "\uFFFC"; 
 		this.setText(imageText);
-		this.addText(String.format(" %s %s, %s: %d", player.getName(), player.getSurname(), Messages.getString("player.age"), player.getSkills()[max].getAge())); 
+		this.addText(String.format(" %s %s, %s: %d", player.getName(), player.getSurname(), Messages.getString("player.age"), age(player.getSkills()[max], atTraining))); 
 
 		int start = 2;
 		int length = player.getName().length() + player.getSurname().length() + 1;
 		addStyle(start, length, ColorResources.getBlack(), SWT.BOLD);
 		start += length + Messages.getString("player.age").length() + 4; 
-		length = String.valueOf(player.getSkills()[max].getAge()).length();
+		length = String.valueOf(age(player.getSkills()[max], atTraining)).length();
 		addStyle(start, length, ColorResources.getBlack(), SWT.BOLD);
 
 		if (max > 0) {
-			int ageDifference = player.getSkills()[max].getAge() - player.getSkills()[0].getAge();
+			int ageDifference = age(player.getSkills()[max], atTraining) - age(player.getSkills()[0], atTraining);
 			if (ageDifference > 0) {
 				text = String.format("[%s]", SVNumberFormat.formatIntegerWithSignZero(ageDifference)); 
 				this.addText(text);

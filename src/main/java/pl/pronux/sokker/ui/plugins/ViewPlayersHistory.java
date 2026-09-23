@@ -226,7 +226,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 											item.setText(column, Money.convertMoneyFormatDoubleToInteger(Money.convertPricesToBase(value)));
 											Player player = (Player) item.getData(Player.class.getName());
 											player.setSoldPrice(Money.convertPricesToBase(value));
-											descMap.get(player.getId()).setStatsPlayerInfo(player, 0);
+											descMap.get(player.getId()).setStatsPlayerInfo(player);
 											try {
 												playersManager.updatePlayersSoldPrice(player);
 											} catch (SQLException e) {
@@ -251,7 +251,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 												item.setText(column, Money.convertMoneyFormatDoubleToInteger(Money.convertPricesToBase(value)));
 												Player player = (Player) item.getData(Player.class.getName());
 												player.setSoldPrice(Money.convertPricesToBase(value));
-												descMap.get(player.getId()).setStatsPlayerInfo(player, 0);
+												descMap.get(player.getId()).setStatsPlayerInfo(player);
 												try {
 													playersManager.updatePlayersSoldPrice(player);
 												} catch (SQLException e) {
@@ -358,7 +358,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 	private void addPlayerDescription(Player player) {
 		playerDesc = new PlayerHistoryDescriptionComposite(vComposite, SWT.BORDER);
 		playerDesc.setLayoutData(descriptionFormData);
-		playerDesc.setStatsPlayerInfo(player, 0);
+		playerDesc.setStatsPlayerInfo(player);
 		descMap.put(player.getId(), playerDesc);
 	}
 
