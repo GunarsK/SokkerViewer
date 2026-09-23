@@ -67,6 +67,7 @@ public class TrainingHistoryImportAction implements RunnableWithProgress {
 			return Messages.getString("message.training.history.failed") + ": " + error;
 		}
 		String text = String.format(Messages.getString("message.training.history.done"), Integer.valueOf(result.getCreated()), Integer.valueOf(result.getUpdated()));
+		text += "\n" + String.format(Messages.getString("message.training.history.juniors"), Integer.valueOf(result.getJuniorWeeks()));
 		if (result.isForbidden()) {
 			text += "\n" + Messages.getString("message.training.history.plus");
 		}

@@ -2,10 +2,15 @@ package pl.pronux.sokker.actions;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 import pl.pronux.sokker.data.sql.SQLSession;
 import pl.pronux.sokker.data.sql.dao.JuniorsDao;
+import pl.pronux.sokker.data.sql.dao.TeamsDao;
 import pl.pronux.sokker.model.Date;
 import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.model.JuniorSkills;
@@ -80,6 +85,55 @@ public final class JuniorsManager {
 				}
 			}
 		}
+	}
+
+	/**
+	 * rows for the training weeks in levels older than the junior's newest row that have no row
+	 * yet; existing rows are never touched. Returns the number of rows added. Rows are matched by
+	 * training week: the xml sync files the latest training under the day it ran, often early
+	 * the next week.
+	 */
+	public int addJuniorHistory(Junior junior, SortedMap<Integer, Integer> levels) throws SQLException {
+		JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
+		TeamsDao teamsDao = new TeamsDao(SQLSession.getConnection());
+		JuniorSkills[] rows = juniorsDao.getJuniorsSkills(junior, new HashMap<Integer, Training>());
+		if (rows.length == 0) {
+			return 0;
+		}
+		Set<Integer> known = new HashSet<Integer>();
+		for (JuniorSkills row : rows) {
+			known.add(Integer.valueOf(row.getDate().getSokkerDate().getTrainingWeek()));
+		}
+		JuniorSkills newest = rows[rows.length - 1];
+		int newestWeek = newest.getDate().getSokkerDate().getTrainingWeek();
+		int added = 0;
+		for (Map.Entry<Integer, Integer> level : levels.entrySet()) {
+			int week = level.getKey().intValue();
+			if (week >= newestWeek || known.contains(Integer.valueOf(week))) {
+				continue;
+			}
+			Date date = new Date(SokkerDate.weekToMillis(week, SokkerDate.THURSDAY));
+			date.setSokkerDate(new SokkerDate(SokkerDate.THURSDAY, week));
+			JuniorSkills skills = new JuniorSkills();
+			skills.setSkill(level.getValue().intValue());
+			skills.setWeeks(newest.getWeeks() + newestWeek - week);
+			// the newest row's age is the one sokker showed on the day that row was synced
+			skills.setAge(newest.getAge() == 0 ? 0 : getJuniorAge(newest.getDate(), date, newest.getAge()));
+			Training training = teamsDao.getTrainingForDay(date);
+			if (training == null) {
+				// a row always has its training, the way repairDatabase keeps it: the xml import
+				// and the training reports find a week's junior rows through it
+				training = new Training();
+				training.setDate(date);
+				training.setType(Training.TYPE_UNKNOWN);
+				training.setFormation(Training.FORMATION_ALL);
+				teamsDao.addTraining(training);
+				training.setId(teamsDao.getTrainingId(training));
+			}
+			juniorsDao.addJuniorSkills(junior.getId(), skills, training);
+			added++;
+		}
+		return added;
 	}
 
 	public void completeJuniorsAge(Date currentDay) throws SQLException {

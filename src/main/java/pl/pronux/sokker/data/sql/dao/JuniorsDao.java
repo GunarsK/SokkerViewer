@@ -158,6 +158,27 @@ public class JuniorsDao {
 		return juniorsSkills.toArray(new JuniorSkills[juniorsSkills.size()]);
 	}
 
+	/** juniors in the academy whose history has not been read from sokker.org's api yet */
+	public List<Junior> getJuniorsWithoutApiHistory() throws SQLException {
+		List<Junior> juniors = new ArrayList<Junior>();
+		PreparedStatement ps = connection.prepareStatement("SELECT * FROM junior WHERE status = ? AND api_history = false");
+		ps.setInt(1, Junior.STATUS_IN_SCHOOL);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			juniors.add(new JuniorDto(rs).getJunior());
+		}
+		rs.close();
+		ps.close();
+		return juniors;
+	}
+
+	public void setApiHistory(int juniorId) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("UPDATE junior SET api_history = true WHERE id_junior = ?");
+		ps.setInt(1, juniorId);
+		ps.executeUpdate();
+		ps.close();
+	}
+
 	public boolean existsJunior(int id) throws SQLException {
 
 		PreparedStatement ps = connection.prepareStatement("SELECT count(id_junior) FROM junior WHERE id_junior = ?");

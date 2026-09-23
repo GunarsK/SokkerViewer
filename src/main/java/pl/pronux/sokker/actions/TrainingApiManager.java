@@ -5,14 +5,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 
 import pl.pronux.sokker.data.sql.SQLQuery;
 import pl.pronux.sokker.data.sql.SQLSession;
 import pl.pronux.sokker.data.sql.dao.CountriesDao;
+import pl.pronux.sokker.data.sql.dao.JuniorsDao;
 import pl.pronux.sokker.data.sql.dao.PlayersDao;
 import pl.pronux.sokker.data.sql.dao.TeamsDao;
 import pl.pronux.sokker.downloader.api.ApiDownloader;
 import pl.pronux.sokker.downloader.api.ApiException;
+import pl.pronux.sokker.downloader.api.JuniorGraphParser;
 import pl.pronux.sokker.downloader.api.PlayerTrainingReport;
 import pl.pronux.sokker.downloader.api.TrainingReportParser;
 import pl.pronux.sokker.downloader.api.TrainingWeek;
@@ -21,6 +24,7 @@ import pl.pronux.sokker.interfaces.ProgressMonitor;
 import pl.pronux.sokker.model.Club;
 import pl.pronux.sokker.model.Country;
 import pl.pronux.sokker.model.Date;
+import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.SokkerDate;
@@ -65,6 +69,8 @@ public final class TrainingApiManager {
 
 		private boolean forbidden;
 
+		private int juniorWeeks;
+
 		public int getCreated() {
 			return created;
 		}
@@ -78,8 +84,13 @@ public final class TrainingApiManager {
 			return forbidden;
 		}
 
+		/** junior rows added from their graphs */
+		public int getJuniorWeeks() {
+			return juniorWeeks;
+		}
+
 		public boolean hasChanges() {
-			return created + updated > 0;
+			return created + updated + juniorWeeks > 0;
 		}
 	}
 
@@ -93,14 +104,73 @@ public final class TrainingApiManager {
 		return synchronize(settings, Integer.MAX_VALUE, monitor);
 	}
 
+	/**
+	 * the weeks of each junior's graph the database has no row for. A junior is marked done once
+	 * his graph is read or sokker refuses it, so a sync asks each junior once; a timeout or a
+	 * server error leaves him for the next sync
+	 */
+	private int importJuniorHistory(ApiDownloader api, List<Junior> juniors, ProgressMonitor monitor) throws IOException, SQLException {
+		JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
+		int added = 0;
+		for (Junior junior : juniors) {
+			if (monitor != null && monitor.isCanceled()) {
+				break;
+			}
+			if (monitor != null) {
+				monitor.subTask(junior.getName() + " " + junior.getSurname());
+			}
+			SortedMap<Integer, Integer> levels = null;
+			try {
+				levels = JuniorGraphParser.parse(api.getJuniorGraph(junior.getId()));
+			} catch (ApiException e) {
+				if (e.isNotLoggedIn()) {
+					throw e;
+				}
+				Log.info("sokker.org api: no graph for junior " + junior.getId() + ": " + e.getMessage());
+				if (!e.isForbidden()) {
+					continue;
+				}
+			} catch (IOException e) {
+				Log.info("sokker.org api: no graph for junior " + junior.getId() + ": " + e.getMessage());
+				continue;
+			}
+			SQLSession.beginTransaction();
+			try {
+				if (levels != null) {
+					added += JuniorsManager.getInstance().addJuniorHistory(junior, levels);
+				}
+				juniorsDao.setApiHistory(junior.getId());
+				SQLSession.commit();
+			} catch (SQLException e) {
+				SQLSession.rollback();
+				throw e;
+			} finally {
+				SQLSession.endTransaction();
+			}
+		}
+		Log.info("sokker.org api: junior history, " + added + " weeks added");
+		return added;
+	}
+
 	private Result synchronize(SokkerViewerSettings settings, int maxWeeksBack, ProgressMonitor monitor) throws IOException, SQLException {
 		boolean newConnection = SQLQuery.connect();
 		try {
 			Set<Integer> confirmed = new TeamsDao(SQLSession.getConnection()).getApiConfirmedWeeks();
-			if (allConfirmed(confirmed, maxWeeksBack)) {
+			// the menu import asks every junior again, a sync only the ones not asked yet
+			JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
+			List<Junior> juniors = maxWeeksBack == Integer.MAX_VALUE ? juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL) : juniorsDao.getJuniorsWithoutApiHistory();
+			boolean weeksConfirmed = allConfirmed(confirmed, maxWeeksBack);
+			if (weeksConfirmed && juniors.isEmpty()) {
 				return new Result();
 			}
-			return walk(openSession(settings), confirmed, maxWeeksBack, monitor);
+			ApiDownloader api = openSession(settings);
+			Result result = weeksConfirmed ? new Result() : walk(api, confirmed, maxWeeksBack, monitor);
+			if (result.created > 0) {
+				// a week the xml sync missed has no junior rows either
+				juniors = juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL);
+			}
+			result.juniorWeeks = importJuniorHistory(api, juniors, monitor);
+			return result;
 		} finally {
 			SQLQuery.close(newConnection);
 		}

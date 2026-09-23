@@ -42,6 +42,11 @@ public class ApiDownloader extends AbstractDownloader {
 		return request(week == null ? "/training" : "/training?filter%5Bweek%5D=" + week, null);
 	}
 
+	/** one junior's level week by week, since he joined the academy */
+	public String getJuniorGraph(int juniorId) throws IOException {
+		return request("/junior/" + juniorId + "/graph", null);
+	}
+
 	private String request(String path, String jsonBody) throws IOException {
 		HttpURLConnection connection = getDefaultConnection(BASE_URL + path);
 		connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
