@@ -12,6 +12,7 @@ public class PlayerTrainingReport {
 
 	/** kind 0: not run yet, 1: advanced (individual) slot, 2: formation slot, 3: no slot */
 	public static final int KIND_INDIVIDUAL = 1;
+	public static final int KIND_FORMATION = 2;
 
 	private int type = Training.TYPE_UNKNOWN;
 	private int kind;

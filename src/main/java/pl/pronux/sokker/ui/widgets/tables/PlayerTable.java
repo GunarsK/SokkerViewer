@@ -165,6 +165,8 @@ public class PlayerTable extends SVTable<Player> {
 				item.setText(c++, Messages.getString("training.slot.advanced"));
 			} else if (skills.getTrainingSlot() == Training.SLOT_FORMATION) {
 				item.setText(c++, Messages.getString("training.slot.formation"));
+			} else if (skills.getTrainingSlot() == Training.SLOT_MISSING) {
+				item.setText(c++, Messages.getString("training.slot.missing"));
 			} else {
 				item.setText(c++, "");
 			}

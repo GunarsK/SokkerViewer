@@ -32,6 +32,8 @@ public class Training implements Cloneable {
 	public static final int SLOT_NOT_SET = -1;
 	public static final int SLOT_FORMATION = 0;
 	public static final int SLOT_ADVANCED = 1;
+	/** sokker gave the player no training that week, e.g. he played outside his formation */
+	public static final int SLOT_MISSING = 2;
 
 	public static final int NO_TRAINING = 1 << 1;
 	public static final int NEW_TRAINING = 1 << 2;

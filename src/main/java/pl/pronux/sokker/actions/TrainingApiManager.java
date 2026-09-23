@@ -296,6 +296,13 @@ public final class TrainingApiManager {
 	}
 
 	static int slotOf(PlayerTrainingReport report) {
-		return report.getKind() == PlayerTrainingReport.KIND_INDIVIDUAL ? Training.SLOT_ADVANCED : Training.SLOT_FORMATION;
+		switch (report.getKind()) {
+		case PlayerTrainingReport.KIND_INDIVIDUAL:
+			return Training.SLOT_ADVANCED;
+		case PlayerTrainingReport.KIND_FORMATION:
+			return Training.SLOT_FORMATION;
+		default:
+			return Training.SLOT_MISSING;
+		}
 	}
 }
