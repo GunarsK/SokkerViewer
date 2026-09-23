@@ -80,7 +80,13 @@ public class PlayerSkills implements Serializable {
 	private int minutesFriendly = -1;
 
 	private int minutesNational = -1;
-	
+
+	/**
+	 * injury days left on the day of that week's training, from sokker.org's report; -1 when not
+	 * known. injurydays is the injury on the day the row was synced, the one the players list shows
+	 */
+	private int trainingInjuryDays = -1;
+
 	public int[] getStatsTable() {
 		int[] intTable = {
 				value.toInt(),
@@ -399,6 +405,14 @@ public class PlayerSkills implements Serializable {
 
 	public void setMinutesNational(int minutesNational) {
 		this.minutesNational = minutesNational;
+	}
+
+	public int getTrainingInjuryDays() {
+		return trainingInjuryDays;
+	}
+
+	public void setTrainingInjuryDays(int trainingInjuryDays) {
+		this.trainingInjuryDays = trainingInjuryDays;
 	}
 
 	public boolean isInTrainingSlot() {

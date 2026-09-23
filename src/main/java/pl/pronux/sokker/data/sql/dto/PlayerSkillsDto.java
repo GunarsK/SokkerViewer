@@ -54,6 +54,7 @@ public PlayerSkills getPlayerSkills() throws SQLException {
 	this.setMinutesOfficial(rs.getInt("minutes_official"));
 	this.setMinutesFriendly(rs.getInt("minutes_friendly"));
 	this.setMinutesNational(rs.getInt("minutes_national"));
+	this.setTrainingInjuryDays(rs.getInt("training_injury_days"));
 	this.setSummarySkill();
 	return this;
 }

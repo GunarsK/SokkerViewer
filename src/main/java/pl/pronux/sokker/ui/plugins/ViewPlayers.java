@@ -459,7 +459,7 @@ public class ViewPlayers implements IPlugin, Sort {
 		});
 		playerView.fill(player);
 		viewMap.put(player.getId(), playerView);
-		for (int j = 1; j < playerView.getColumnCount() - 5; j++) {
+		for (int j = PlayerTable.VALUE; j <= PlayerTable.TEAMWORK; j++) {
 			playerView.getColumn(j).addListener(SWT.Selection, graphList);
 		}
 	}

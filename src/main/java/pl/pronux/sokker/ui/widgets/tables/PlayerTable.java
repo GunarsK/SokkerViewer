@@ -19,6 +19,7 @@ import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
+import pl.pronux.sokker.ui.resources.ImageResources;
 
 public class PlayerTable extends SVTable<Player> {
 
@@ -27,30 +28,33 @@ public class PlayerTable extends SVTable<Player> {
 	public static final int SALARY = 2;
 	
 	public static final int AGE = 3;
-	
-	public static final int WEIGHT = 4;
-	
-	public static final int BMI = 5;
 
-	public static final int FORM = 6;
-	
-	public static final int STAMINA = 7;
-	
-	public static final int PACE = 8;
-	
-	public static final int TECHNIQUE = 9;
-	
-	public static final int PASSING = 10;
-	
-	public static final int KEEPER = 11;
-	
-	public static final int DEFENDER = 12;
-	
-	public static final int PLAYMAKER = 13;
-	
-	public static final int SCORER = 14;
-	
-	public static final int MATCH_INDEX_1ST = 21;
+	public static final int FORM = 4;
+
+	public static final int STAMINA = 5;
+
+	public static final int PACE = 6;
+
+	public static final int TECHNIQUE = 7;
+
+	public static final int PASSING = 8;
+
+	public static final int KEEPER = 9;
+
+	public static final int DEFENDER = 10;
+
+	public static final int PLAYMAKER = 11;
+
+	public static final int SCORER = 12;
+
+	public static final int DISCIPLINE = 13;
+
+	public static final int EXPERIENCE = 14;
+
+	/** the last column with a number in every row, the last one a click can draw a graph of */
+	public static final int TEAMWORK = 15;
+
+	public static final int MATCH_INDEX_1ST = 22;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
 	
@@ -84,6 +88,7 @@ public class PlayerTable extends SVTable<Player> {
 				Messages.getString("table.formation"), 
 				Messages.getString("table.training.type"),
 				Messages.getString("table.training.slot"),
+				Messages.getString("table.injury"),
 				Messages.getString("table.training.intensity"),
 				Messages.getString("table.minutes"),
 				Messages.getString("table.1st"), 
@@ -170,6 +175,12 @@ public class PlayerTable extends SVTable<Player> {
 			} else {
 				item.setText(c++, "");
 			}
+			// injured on the day of the training; a week sokker.org did not report shows the injury the row was synced with
+			double injury = skills.getTrainingInjuryDays() >= 0 ? skills.getTrainingInjuryDays() : skills.getInjurydays();
+			if (injury > 0) {
+				item.setImage(c, ImageResources.getImageResources("injury.png"));
+			}
+			item.setText(c++, injury > 0 ? String.valueOf((int) Math.ceil(injury)) : "");
 			item.setText(c++, skills.getTrainingIntensity() < 0 ? "" : skills.getTrainingIntensity() + "%");
 			item.setText(c++, skills.getMinutesOfficial() < 0 ? ""
 					: String.format("%d'/%d'/%d'", skills.getMinutesOfficial(), skills.getMinutesFriendly(), skills.getMinutesNational()));
@@ -247,10 +258,10 @@ public class PlayerTable extends SVTable<Player> {
 //			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 5);
 		}
 
-		if (this.getColumn(20).getWidth() < this.getColumn(21).getWidth()) {
-			this.getColumn(20).setWidth(this.getColumn(21).getWidth());
+		if (this.getColumn(MATCH_INDEX_1ST).getWidth() < this.getColumn(MATCH_INDEX_2ND).getWidth()) {
+			this.getColumn(MATCH_INDEX_1ST).setWidth(this.getColumn(MATCH_INDEX_2ND).getWidth());
 		} else {
-			this.getColumn(21).setWidth(this.getColumn(20).getWidth());
+			this.getColumn(MATCH_INDEX_2ND).setWidth(this.getColumn(MATCH_INDEX_1ST).getWidth());
 		}
 	}
 

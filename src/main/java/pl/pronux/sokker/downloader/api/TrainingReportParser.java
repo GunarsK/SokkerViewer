@@ -76,6 +76,7 @@ public class TrainingReportParser {
 		skills.setMinutesOfficial(intOr(report, "games.minutesOfficial", -1));
 		skills.setMinutesFriendly(intOr(report, "games.minutesFriendly", -1));
 		skills.setMinutesNational(intOr(report, "games.minutesNational", -1));
+		skills.setTrainingInjuryDays(intOr(report, "injury.daysRemaining", -1));
 		return r;
 	}
 
