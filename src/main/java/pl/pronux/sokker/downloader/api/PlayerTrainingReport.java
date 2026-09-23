@@ -16,7 +16,6 @@ public class PlayerTrainingReport {
 	private int type = Training.TYPE_UNKNOWN;
 	private int kind;
 	private int formation = Training.POSITION_NOT_SET;
-	private int intensity;
 
 	/** what the player was that week; its value is set once the club's currency rate is known */
 	private final PlayerSkills skills = new PlayerSkills();
@@ -66,14 +65,6 @@ public class PlayerTrainingReport {
 
 	public void setFormation(int formation) {
 		this.formation = formation;
-	}
-
-	public int getIntensity() {
-		return intensity;
-	}
-
-	public void setIntensity(int intensity) {
-		this.intensity = intensity;
 	}
 
 	public int getValue() {

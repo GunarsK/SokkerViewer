@@ -50,7 +50,7 @@ public class PlayerTable extends SVTable<Player> {
 	
 	public static final int SCORER = 14;
 	
-	public static final int MATCH_INDEX_1ST = 19;
+	public static final int MATCH_INDEX_1ST = 21;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
 	
@@ -84,6 +84,8 @@ public class PlayerTable extends SVTable<Player> {
 				Messages.getString("table.formation"), 
 				Messages.getString("table.training.type"),
 				Messages.getString("table.training.slot"),
+				Messages.getString("table.training.intensity"),
+				Messages.getString("table.minutes"),
 				Messages.getString("table.1st"), 
 				Messages.getString("table.2nd"), 
 				Messages.getString("table.3rd"), 
@@ -166,6 +168,9 @@ public class PlayerTable extends SVTable<Player> {
 			} else {
 				item.setText(c++, "");
 			}
+			item.setText(c++, skills.getTrainingIntensity() < 0 ? "" : skills.getTrainingIntensity() + "%");
+			item.setText(c++, skills.getMinutesOfficial() < 0 ? ""
+					: String.format("%d'/%d'/%d'", skills.getMinutesOfficial(), skills.getMinutesFriendly(), skills.getMinutesNational()));
 
 			if (player.getPlayerMatchStatistics() != null) {
 				int week = player.getSkills()[i].getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getWeek();

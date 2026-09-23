@@ -162,7 +162,7 @@ public class PlayersDao {
 
 	public void addPlayerSkills(int id, PlayerSkills skills, Date date, int trainingId) throws SQLException {
 		PreparedStatement ps = connection
-			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays, id_training_fk, day, week, experience, teamwork, discipline, pass_training, weight, bmi, training_position, training_slot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays, id_training_fk, day, week, experience, teamwork, discipline, pass_training, weight, bmi, training_position, training_slot, training_intensity, minutes_official, minutes_friendly, minutes_national) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setInt(1, id);
 		ps.setLong(2, date.getMillis());
 		ps.setInt(3, skills.getAge());
@@ -193,6 +193,10 @@ public class PlayersDao {
 		ps.setDouble(28, skills.getBmi());
 		ps.setInt(29, skills.getTrainingPosition());
 		ps.setInt(30, skills.getTrainingSlot());
+		ps.setInt(31, skills.getTrainingIntensity());
+		ps.setInt(32, skills.getMinutesOfficial());
+		ps.setInt(33, skills.getMinutesFriendly());
+		ps.setInt(34, skills.getMinutesNational());
 		ps.executeUpdate();
 		ps.close();
 
@@ -471,13 +475,18 @@ public class PlayersDao {
 	}
 
 	/** what sokker says the player did in that week's training; 0 when the player has no snapshot of that week */
-	public int updateTrainingAssignment(int playerId, int trainingId, int position, int slot, boolean passTraining) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("UPDATE player_skills SET training_position = ?, training_slot = ?, pass_training = ? WHERE id_player_fk = ? AND id_training_fk = ?");
-		ps.setInt(1, position);
-		ps.setInt(2, slot);
-		ps.setBoolean(3, passTraining);
-		ps.setInt(4, playerId);
-		ps.setInt(5, trainingId);
+	/** what sokker's report says about the week's training, onto the row the xml sync made; 0 when there is none */
+	public int updateTrainingAssignment(PlayerSkills skills, int trainingId) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("UPDATE player_skills SET training_position = ?, training_slot = ?, pass_training = ?, training_intensity = ?, minutes_official = ?, minutes_friendly = ?, minutes_national = ? WHERE id_player_fk = ? AND id_training_fk = ?");
+		ps.setInt(1, skills.getTrainingPosition());
+		ps.setInt(2, skills.getTrainingSlot());
+		ps.setBoolean(3, skills.isPassTraining());
+		ps.setInt(4, skills.getTrainingIntensity());
+		ps.setInt(5, skills.getMinutesOfficial());
+		ps.setInt(6, skills.getMinutesFriendly());
+		ps.setInt(7, skills.getMinutesNational());
+		ps.setInt(8, skills.getPlayerId());
+		ps.setInt(9, trainingId);
 		int updated = ps.executeUpdate();
 		ps.close();
 		return updated;

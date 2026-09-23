@@ -56,7 +56,6 @@ public class TrainingReportParser {
 		r.setType(intOr(report, "type.code", Training.TYPE_UNKNOWN));
 		r.setKind(intOr(report, "kind.code", 0));
 		r.setFormation(intOr(report, "formation.code", Training.POSITION_NOT_SET));
-		r.setIntensity(intOr(report, "intensity", 0));
 		r.setValue(intOr(report, "playerValue.value", 0));
 		PlayerSkills skills = r.getSkills();
 		skills.setAge((byte) intOr(report, "age", 0));
@@ -73,6 +72,10 @@ public class TrainingReportParser {
 		skills.setDefender((byte) intOr(report, "skills.defending", 0));
 		skills.setScorer((byte) intOr(report, "skills.striker", 0));
 		skills.setPace((byte) intOr(report, "skills.pace", 0));
+		skills.setTrainingIntensity(intOr(report, "intensity", -1));
+		skills.setMinutesOfficial(intOr(report, "games.minutesOfficial", -1));
+		skills.setMinutesFriendly(intOr(report, "games.minutesFriendly", -1));
+		skills.setMinutesNational(intOr(report, "games.minutesNational", -1));
 		return r;
 	}
 

@@ -227,10 +227,7 @@ public final class TrainingApiManager {
 			teamsDao.updateTrainingTypes(training);
 		}
 		for (PlayerTrainingReport report : known) {
-			int position = report.getFormation();
-			int slot = slotOf(report);
-			boolean passTraining = report.getIntensity() > 0;
-			if (playersDao.updateTrainingAssignment(report.getPlayerId(), training.getId(), position, slot, passTraining) == 0) {
+			if (playersDao.updateTrainingAssignment(assignTraining(report), training.getId()) == 0) {
 				PlayerSkills nearest = playersDao.getNearestPlayerSkills(report.getPlayerId(), week.getMillis());
 				playersDao.addPlayerSkills(report.getPlayerId(), buildPlayerSkills(report, nearest, currencyRate), date, training.getId());
 			}
@@ -260,6 +257,15 @@ public final class TrainingApiManager {
 		return training;
 	}
 
+	/** the report's training assignment, set on the row it updates or becomes */
+	static PlayerSkills assignTraining(PlayerTrainingReport report) {
+		PlayerSkills skills = report.getSkills();
+		skills.setTrainingPosition(report.getFormation());
+		skills.setTrainingSlot(slotOf(report));
+		skills.setPassTraining(skills.getTrainingIntensity() > 0);
+		return skills;
+	}
+
 	/**
 	 * a snapshot row for a week the xml sync missed: the report's own skills, its value once
 	 * converted, and the rest (wage, season stats, body) copied from the player's nearest
@@ -268,9 +274,6 @@ public final class TrainingApiManager {
 	static PlayerSkills buildPlayerSkills(PlayerTrainingReport report, PlayerSkills nearest, double currencyRate) {
 		PlayerSkills skills = report.getSkills();
 		skills.setValue(new Money((int) Money.convertPricesToBase(report.getValue(), currencyRate)));
-		skills.setTrainingPosition(report.getFormation());
-		skills.setTrainingSlot(slotOf(report));
-		skills.setPassTraining(report.getIntensity() > 0);
 		if (nearest != null) {
 			skills.setSalary(nearest.getSalary());
 			skills.setMatches(nearest.getMatches());

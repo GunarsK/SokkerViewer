@@ -70,6 +70,16 @@ public class PlayerSkills implements Serializable {
 	private int trainingPosition = Training.POSITION_NOT_SET;
 
 	private int trainingSlot = Training.SLOT_NOT_SET;
+
+	/** sokker's training percentage that week, 0 - 100; -1 for weeks only the xml sync saw */
+	private int trainingIntensity = -1;
+
+	/** minutes played that week in official, friendly and national matches; -1 when not known */
+	private int minutesOfficial = -1;
+
+	private int minutesFriendly = -1;
+
+	private int minutesNational = -1;
 	
 	public int[] getStatsTable() {
 		int[] intTable = {
@@ -357,6 +367,38 @@ public class PlayerSkills implements Serializable {
 
 	public void setTrainingSlot(int trainingSlot) {
 		this.trainingSlot = trainingSlot;
+	}
+
+	public int getTrainingIntensity() {
+		return trainingIntensity;
+	}
+
+	public void setTrainingIntensity(int trainingIntensity) {
+		this.trainingIntensity = trainingIntensity;
+	}
+
+	public int getMinutesOfficial() {
+		return minutesOfficial;
+	}
+
+	public void setMinutesOfficial(int minutesOfficial) {
+		this.minutesOfficial = minutesOfficial;
+	}
+
+	public int getMinutesFriendly() {
+		return minutesFriendly;
+	}
+
+	public void setMinutesFriendly(int minutesFriendly) {
+		this.minutesFriendly = minutesFriendly;
+	}
+
+	public int getMinutesNational() {
+		return minutesNational;
+	}
+
+	public void setMinutesNational(int minutesNational) {
+		this.minutesNational = minutesNational;
 	}
 
 	public boolean isInTrainingSlot() {
