@@ -320,7 +320,7 @@ public class Synchronizer implements RunnableWithProgress {
 	private void synchronizeTrainingApi(ProgressMonitor monitor) {
 		monitor.subTask(Messages.getString("synchronizer.api.training"));
 		try {
-			TrainingApiManager.Result result = TrainingApiManager.getInstance().synchronizeRecent(settings);
+			TrainingApiManager.Result result = TrainingApiManager.getInstance().synchronizeWeeks(settings, monitor);
 			Log.info("sokker.org api: training weeks created " + result.getCreated() + ", updated " + result.getUpdated());
 		} catch (Exception e) {
 			Log.warning("sokker.org api: training step skipped: " + e.getMessage(), e);

@@ -126,8 +126,13 @@ public class PlayersDao {
 	}
 
 	public void addPlayerSkills(int id, PlayerSkills skills, Date date) throws SQLException {
+		insertPlayerSkills(id, skills, date, false);
+	}
+
+	/** a row without a training, made up or not */
+	private void insertPlayerSkills(int id, PlayerSkills skills, Date date, boolean madeUp) throws SQLException {
 		PreparedStatement ps = connection
-			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays,day,week,experience, teamwork, discipline, weight, bmi, training_position, training_slot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)");
+			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays,day,week,experience, teamwork, discipline, weight, bmi, training_position, training_slot, pass_training, made_up) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)");
 		ps.setInt(1, id);
 		ps.setLong(2, date.getMillis());
 		ps.setInt(3, skills.getAge());
@@ -156,11 +161,15 @@ public class PlayersDao {
 		ps.setDouble(26, skills.getBmi());
 		ps.setInt(27, skills.getTrainingPosition());
 		ps.setInt(28, skills.getTrainingSlot());
+		ps.setBoolean(29, !madeUp);
+		ps.setBoolean(30, madeUp);
 		ps.executeUpdate();
 		ps.close();
 	}
 
+	/** a row for a training, replacing the player's made-up rows from its week */
 	public void addPlayerSkills(int id, PlayerSkills skills, Date date, int trainingId) throws SQLException {
+		deleteMadeUpPlayerSkills(id, date.getSokkerDate().getTrainingWeek());
 		PreparedStatement ps = connection
 			.prepareStatement("INSERT INTO player_skills (id_player_fk,millis,age,value,salary,form,stamina,pace,technique,passing,keeper,defender,playmaker,scorer,matches,goals,assists,cards,injurydays, id_training_fk, day, week, experience, teamwork, discipline, pass_training, weight, bmi, training_position, training_slot, training_intensity, minutes_official, minutes_friendly, minutes_national, training_injury_days) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setInt(1, id);
@@ -253,7 +262,7 @@ public class PlayersDao {
 
 	public List<PlayerSkills> getPlayerSkillsWithoutTrainingId() throws SQLException {
 		List<PlayerSkills> alPlayerSkills = new ArrayList<PlayerSkills>();
-		PreparedStatement ps = connection.prepareStatement("SELECT * FROM player_skills WHERE id_training_fk is null order by week, day"); 
+		PreparedStatement ps = connection.prepareStatement("SELECT * FROM player_skills WHERE id_training_fk is null and made_up = false order by week, day");
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
 			PlayerSkills playerSkills = new PlayerSkillsDto(rs).getPlayerSkills();
@@ -494,15 +503,43 @@ public class PlayersDao {
 	}
 
 	/**
-	 * the player's snapshot closest to millis, preferring the later side; null when the player
+	 * the player's real snapshot closest to millis, preferring the later side; null when the player
 	 * has no snapshot at all. Fills the fields a sokker.org report does not carry.
 	 */
 	public PlayerSkills getNearestPlayerSkills(int playerId, long millis) throws SQLException {
-		PlayerSkills skills = firstPlayerSkills("SELECT * FROM player_skills WHERE id_player_fk = ? AND millis >= ? ORDER BY millis ASC", playerId, millis);
+		PlayerSkills skills = firstPlayerSkills("SELECT * FROM player_skills WHERE id_player_fk = ? AND millis >= ? AND made_up = false ORDER BY millis ASC", playerId, millis);
 		if (skills == null) {
-			skills = firstPlayerSkills("SELECT * FROM player_skills WHERE id_player_fk = ? AND millis < ? ORDER BY millis DESC", playerId, millis);
+			skills = firstPlayerSkills("SELECT * FROM player_skills WHERE id_player_fk = ? AND millis < ? AND made_up = false ORDER BY millis DESC", playerId, millis);
 		}
 		return skills;
+	}
+
+	/** whether the player has a row for a training before the week */
+	public boolean hasPlayerSkillsBefore(int playerId, int week) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("SELECT count(id_skill) FROM player_skills WHERE id_player_fk = ? AND (week < ? OR (week = ? AND day < ?))");
+		ps.setInt(1, playerId);
+		ps.setInt(2, week);
+		ps.setInt(3, week);
+		ps.setInt(4, SokkerDate.THURSDAY);
+		ResultSet rs = ps.executeQuery();
+		boolean exists = rs.next() && rs.getInt(1) > 0;
+		rs.close();
+		ps.close();
+		return exists;
+	}
+
+	/** a made-up row: no training, greyed like one not passed */
+	public void addMadeUpPlayerSkills(int id, PlayerSkills skills, Date date) throws SQLException {
+		insertPlayerSkills(id, skills, date, true);
+	}
+
+	/** removes the player's made-up rows from the week on */
+	private void deleteMadeUpPlayerSkills(int playerId, int fromWeek) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("DELETE FROM player_skills WHERE id_player_fk = ? AND made_up = true AND week >= ?");
+		ps.setInt(1, playerId);
+		ps.setInt(2, fromWeek);
+		ps.executeUpdate();
+		ps.close();
 	}
 
 	private PlayerSkills firstPlayerSkills(String sql, int playerId, long millis) throws SQLException {

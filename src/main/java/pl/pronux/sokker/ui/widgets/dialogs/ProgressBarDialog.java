@@ -33,10 +33,18 @@ public class ProgressBarDialog extends Shell {
 		super(shell, style);
 
 		init(this);
-		this.setSize(400, 150);
-		org.eclipse.swt.widgets.Monitor monitor = shell.getDisplay().getPrimaryMonitor();
+	}
+
+	/** sizes the shell to its content and centres it on the primary monitor */
+	private void fit() {
+		if (!closeButton.getVisible() && !cancelButton.getVisible()) {
+			// neither button shows: their row takes no height
+			((FormData) closeButton.getLayoutData()).height = 0;
+			((FormData) cancelButton.getLayoutData()).height = 0;
+		}
+		this.setSize(400, this.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		Rectangle splashRect = this.getBounds();
-		Rectangle displayRect = monitor.getBounds();
+		Rectangle displayRect = this.getDisplay().getPrimaryMonitor().getBounds();
 		int x = (displayRect.width - splashRect.width) / 2;
 		int y = (displayRect.height - splashRect.height) / 2;
 		this.setLocation(x, y);
@@ -55,6 +63,7 @@ public class ProgressBarDialog extends Shell {
 		progressBar.setLayoutData(formData);
 
 		formData = new FormData();
+		formData.top = new FormAttachment(progressBar, 5);
 		formData.right = new FormAttachment(100, -5);
 		formData.bottom = new FormAttachment(100, -5);
 
@@ -69,6 +78,7 @@ public class ProgressBarDialog extends Shell {
 		});
 
 		formData = new FormData();
+		formData.top = new FormAttachment(progressBar, 5);
 		formData.right = new FormAttachment(cancelButton, -10);
 		formData.bottom = new FormAttachment(100, -5);
 
@@ -100,12 +110,6 @@ public class ProgressBarDialog extends Shell {
 				ProgressBarDialog.this.runnable.onFinish();
 			}
 		});
-
-		this.setLocation(this.getDisplay().getPrimaryMonitor().getClientArea().width / 2 - this.getBounds().width / 2, this
-			.getDisplay()
-			.getPrimaryMonitor()
-			.getClientArea().height
-																													   / 2 - this.getBounds().height / 2);
 	}
 
 	public Monitor getProgressMonitor() {
@@ -123,6 +127,7 @@ public class ProgressBarDialog extends Shell {
 		if (!cancellable) {
 			cancelButton.setVisible(false);
 		}
+		fit();
 
 		this.progressBar.run(fork, cancellable, runnable);
 		Thread monitorThread = new Thread(new Runnable() {

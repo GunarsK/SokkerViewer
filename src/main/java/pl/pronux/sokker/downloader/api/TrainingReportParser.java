@@ -60,24 +60,39 @@ public class TrainingReportParser {
 		PlayerSkills skills = r.getSkills();
 		skills.setAge((byte) intOr(report, "age", 0));
 		skills.setInjurydays(intOr(report, "injury.daysRemaining", 0));
-		skills.setForm((byte) intOr(report, "skills.form", 0));
-		skills.setDiscipline(intOr(report, "skills.tacticalDiscipline", 0));
-		skills.setTeamwork(intOr(report, "skills.teamwork", 0));
-		skills.setExperience(intOr(report, "skills.experience", 0));
-		skills.setStamina((byte) intOr(report, "skills.stamina", 0));
-		skills.setKeeper((byte) intOr(report, "skills.keeper", 0));
-		skills.setPlaymaker((byte) intOr(report, "skills.playmaking", 0));
-		skills.setPassing((byte) intOr(report, "skills.passing", 0));
-		skills.setTechnique((byte) intOr(report, "skills.technique", 0));
-		skills.setDefender((byte) intOr(report, "skills.defending", 0));
-		skills.setScorer((byte) intOr(report, "skills.striker", 0));
-		skills.setPace((byte) intOr(report, "skills.pace", 0));
+		parseSkills(report, skills, false);
 		skills.setTrainingIntensity(intOr(report, "intensity", -1));
 		skills.setMinutesOfficial(intOr(report, "games.minutesOfficial", -1));
 		skills.setMinutesFriendly(intOr(report, "games.minutesFriendly", -1));
 		skills.setMinutesNational(intOr(report, "games.minutesNational", -1));
 		skills.setTrainingInjuryDays(intOr(report, "injury.daysRemaining", -1));
+		if (Json.getObject(report, "skillsChange") != null) {
+			PlayerSkills before = new PlayerSkills();
+			parseSkills(report, before, true);
+			r.setSkillsBefore(before);
+		}
 		return r;
+	}
+
+	/** the report's skills, minus what that week's training changed when before */
+	private static void parseSkills(JsonObject report, PlayerSkills to, boolean before) {
+		to.setForm((byte) skill(report, "form", before));
+		to.setDiscipline(skill(report, "tacticalDiscipline", before));
+		to.setTeamwork(skill(report, "teamwork", before));
+		to.setExperience(skill(report, "experience", before));
+		to.setStamina((byte) skill(report, "stamina", before));
+		to.setKeeper((byte) skill(report, "keeper", before));
+		to.setPlaymaker((byte) skill(report, "playmaking", before));
+		to.setPassing((byte) skill(report, "passing", before));
+		to.setTechnique((byte) skill(report, "technique", before));
+		to.setDefender((byte) skill(report, "defending", before));
+		to.setScorer((byte) skill(report, "striker", before));
+		to.setPace((byte) skill(report, "pace", before));
+	}
+
+	private static int skill(JsonObject report, String name, boolean before) {
+		int value = intOr(report, "skills." + name, 0);
+		return before ? value - intOr(report, "skillsChange." + name, 0) : value;
 	}
 
 	private static int intOr(JsonObject object, String path, int fallback) {

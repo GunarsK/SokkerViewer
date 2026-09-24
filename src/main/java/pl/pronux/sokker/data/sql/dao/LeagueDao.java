@@ -511,12 +511,16 @@ public class LeagueDao {
 	public TeamStats getTeamStats(Match match, int teamId) throws SQLException {
 		TeamStats teamStats = new TeamStats(true);
 		PreparedStatement ps = connection
-				.prepareStatement("SELECT *, (select count(rating) from players_stats as p where t.match_id = p.match_id and t.team_id = p.team_id and number < 12) as players_count,(select sum(rating) from players_stats as p where t.match_id = p.match_id and t.team_id = p.team_id and number < 12) as rating_sum from team_stats as t where t.match_id = ? and t.team_id = ?"); 
+				.prepareStatement("SELECT *, (select count(rating) from players_stats where match_id = ? and team_id = ? and number < 12) as players_count, (select sum(rating) from players_stats where match_id = ? and team_id = ? and number < 12) as rating_sum from team_stats where match_id = ? and team_id = ?");
 		// ps = SQLSession.getConn().prepareStatement("SELECT * FROM
 		// team_stats
 		// WHERE match_id = ? AND team_id = ? ");
 		ps.setInt(1, match.getMatchId());
 		ps.setInt(2, teamId);
+		ps.setInt(3, match.getMatchId());
+		ps.setInt(4, teamId);
+		ps.setInt(5, match.getMatchId());
+		ps.setInt(6, teamId);
 		ResultSet rs = ps.executeQuery();
 
 		while (rs.next()) {

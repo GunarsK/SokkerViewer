@@ -21,6 +21,9 @@ public class PlayerTrainingReport {
 	/** what the player was that week; its value is set once the club's currency rate is known */
 	private final PlayerSkills skills = new PlayerSkills();
 
+	/** skills before that week's training; null without skillsChange */
+	private PlayerSkills skillsBefore;
+
 	/** player value that week, in the user's currency as the site shows it */
 	private int value;
 
@@ -34,6 +37,14 @@ public class PlayerTrainingReport {
 
 	public PlayerSkills getSkills() {
 		return skills;
+	}
+
+	public PlayerSkills getSkillsBefore() {
+		return skillsBefore;
+	}
+
+	public void setSkillsBefore(PlayerSkills skillsBefore) {
+		this.skillsBefore = skillsBefore;
 	}
 
 	public int getPlayerId() {

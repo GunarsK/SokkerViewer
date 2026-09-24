@@ -39,7 +39,7 @@ import pl.pronux.sokker.utils.Log;
  */
 public final class TrainingApiManager {
 
-	/** weeks looked at after every sync: the latest completed one and the four before it, sokker's non-plus window */
+	/** a sync skips the walk while these latest weeks are confirmed */
 	private static final int RECENT_WEEKS = 5;
 
 	/** a player sold and bought back is absent for a few weeks; three empty weeks in a row end the history */
@@ -94,14 +94,14 @@ public final class TrainingApiManager {
 		}
 	}
 
-	/** after a sync: the last RECENT_WEEKS completed weeks */
-	public Result synchronizeRecent(SokkerViewerSettings settings) throws IOException, SQLException {
-		return synchronize(settings, RECENT_WEEKS, null);
+	/** after a sync: every week sokker still answers for that is not confirmed */
+	public Result synchronizeWeeks(SokkerViewerSettings settings, ProgressMonitor monitor) throws IOException, SQLException {
+		return synchronize(settings, false, monitor);
 	}
 
-	/** the menu action: every week sokker still answers for, newest first */
+	/** the menu action: the same walk, always, and every junior again */
 	public Result importHistory(SokkerViewerSettings settings, ProgressMonitor monitor) throws IOException, SQLException {
-		return synchronize(settings, Integer.MAX_VALUE, monitor);
+		return synchronize(settings, true, monitor);
 	}
 
 	/**
@@ -152,19 +152,19 @@ public final class TrainingApiManager {
 		return added;
 	}
 
-	private Result synchronize(SokkerViewerSettings settings, int maxWeeksBack, ProgressMonitor monitor) throws IOException, SQLException {
+	private Result synchronize(SokkerViewerSettings settings, boolean menuImport, ProgressMonitor monitor) throws IOException, SQLException {
 		boolean newConnection = SQLQuery.connect();
 		try {
 			Set<Integer> confirmed = new TeamsDao(SQLSession.getConnection()).getApiConfirmedWeeks();
 			// the menu import asks every junior again, a sync only the ones not asked yet
 			JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
-			List<Junior> juniors = maxWeeksBack == Integer.MAX_VALUE ? juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL) : juniorsDao.getJuniorsWithoutApiHistory();
-			boolean weeksConfirmed = allConfirmed(confirmed, maxWeeksBack);
+			List<Junior> juniors = menuImport ? juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL) : juniorsDao.getJuniorsWithoutApiHistory();
+			boolean weeksConfirmed = !menuImport && recentConfirmed(confirmed);
 			if (weeksConfirmed && juniors.isEmpty()) {
 				return new Result();
 			}
 			ApiDownloader api = openSession(settings);
-			Result result = weeksConfirmed ? new Result() : walk(api, confirmed, maxWeeksBack, monitor);
+			Result result = weeksConfirmed ? new Result() : walk(api, confirmed, monitor);
 			if (result.created > 0) {
 				// a week the xml sync missed has no junior rows either
 				juniors = juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL);
@@ -177,19 +177,16 @@ public final class TrainingApiManager {
 	}
 
 	/**
-	 * true when every week the walk could ask about is already confirmed, so there is nothing
-	 * to log in for. Worth checking before opening a session: the login is a credential post,
-	 * and a re-sync inside the same week is the common case. The window is measured a zone's
-	 * lag into the future on purpose - an estimate that lands one week short of sokker's would
-	 * confirm a window that does not contain the new week and skip importing it, while one
-	 * that lands a week long only costs the login this was meant to save.
+	 * true when the latest RECENT_WEEKS weeks are confirmed: a walk already ran since the last
+	 * training, so there is nothing to log in for. Worth checking before opening a session: the
+	 * login is a credential post, and a re-sync inside the same week is the common case. The
+	 * window is measured a zone's lag into the future on purpose - an estimate that lands one
+	 * week short of sokker's would confirm a window that does not contain the new week and skip
+	 * importing it, while one that lands a week long only costs the login this was meant to save.
 	 */
-	private static boolean allConfirmed(Set<Integer> confirmed, int maxWeeksBack) {
-		if (maxWeeksBack == Integer.MAX_VALUE) {
-			return false;
-		}
+	private static boolean recentConfirmed(Set<Integer> confirmed) {
 		int latest = new SokkerDate(System.currentTimeMillis() + MAX_ZONE_LAG).getTrainingWeek();
-		for (int week = latest; week > 0 && week > latest - maxWeeksBack; week--) {
+		for (int week = latest; week > 0 && week > latest - RECENT_WEEKS; week--) {
 			if (!confirmed.contains(Integer.valueOf(week))) {
 				return false;
 			}
@@ -208,16 +205,16 @@ public final class TrainingApiManager {
 	/**
 	 * from the latest completed week backwards. Stops at the first 403 (a non-plus account
 	 * asked for a week sokker does not give away), after EMPTY_WEEKS_TO_STOP weeks the team was
-	 * not playing in, when cancelled, or after maxWeeksBack weeks. Weeks whose row is already
-	 * confirmed are not requested again: sokker's record of a week never changes.
+	 * not playing in, or when cancelled. Weeks whose row is already confirmed are not requested
+	 * again: sokker's record of a week never changes.
 	 */
-	Result walk(ApiDownloader api, Set<Integer> confirmed, int maxWeeksBack, ProgressMonitor monitor) throws IOException, SQLException {
+	Result walk(ApiDownloader api, Set<Integer> confirmed, ProgressMonitor monitor) throws IOException, SQLException {
 		Result result = new Result();
 		Set<Integer> squad = new PlayersDao(SQLSession.getConnection()).getPlayerIds();
 		double currencyRate = currencyRate();
 		TrainingWeek latest = TrainingReportParser.parseWeek(api.getTraining(null));
 		int emptyWeeks = 0;
-		for (int week = latest.getWeek(); week > 0 && week > latest.getWeek() - maxWeeksBack; week--) {
+		for (int week = latest.getWeek(); week > 0; week--) {
 			if ((monitor != null && monitor.isCanceled()) || emptyWeeks >= EMPTY_WEEKS_TO_STOP) {
 				break;
 			}
@@ -301,6 +298,7 @@ public final class TrainingApiManager {
 				PlayerSkills nearest = playersDao.getNearestPlayerSkills(report.getPlayerId(), week.getMillis());
 				playersDao.addPlayerSkills(report.getPlayerId(), buildPlayerSkills(report, nearest, currencyRate), date, training.getId());
 			}
+			addStartingRow(playersDao, week, report);
 		}
 		Log.info("sokker.org api: training " + date.toDateString() + (created ? " created, " : " updated, ") + known.size() + " of "
 				+ week.getPresentPlayers().size() + " players");
@@ -345,17 +343,40 @@ public final class TrainingApiManager {
 		PlayerSkills skills = report.getSkills();
 		skills.setValue(new Money((int) Money.convertPricesToBase(report.getValue(), currencyRate)));
 		if (nearest != null) {
-			skills.setSalary(nearest.getSalary());
-			skills.setMatches(nearest.getMatches());
-			skills.setGoals(nearest.getGoals());
-			skills.setAssists(nearest.getAssists());
-			skills.setCards(nearest.getCards());
-			skills.setWeight(nearest.getWeight());
-			skills.setBmi(nearest.getBmi());
+			copyUnreported(nearest, skills);
 		} else {
 			skills.setSalary(new Money(0));
 		}
 		return skills;
+	}
+
+	/** copies what a report lacks: wage, season stats, body */
+	private static void copyUnreported(PlayerSkills from, PlayerSkills to) {
+		to.setSalary(from.getSalary());
+		to.setMatches(from.getMatches());
+		to.setGoals(from.getGoals());
+		to.setAssists(from.getAssists());
+		to.setCards(from.getCards());
+		to.setWeight(from.getWeight());
+		to.setBmi(from.getBmi());
+	}
+
+	/** made-up row for the week before a player's first known training */
+	private static void addStartingRow(PlayersDao playersDao, TrainingWeek week, PlayerTrainingReport report) throws SQLException {
+		int playerId = report.getPlayerId();
+		PlayerSkills before = report.getSkillsBefore();
+		if (before == null || playersDao.hasPlayerSkillsBefore(playerId, week.getWeek())) {
+			return;
+		}
+		int previousWeek = week.getWeek() - 1;
+		Date date = new Date(SokkerDate.weekToMillis(previousWeek, SokkerDate.THURSDAY));
+		date.setSokkerDate(new SokkerDate(SokkerDate.THURSDAY, previousWeek));
+		PlayerSkills after = playersDao.getNearestPlayerSkills(playerId, date.getMillis());
+		int seasons = SokkerDate.seasonOf(week.getWeek()) - SokkerDate.seasonOf(previousWeek);
+		before.setAge((byte) (report.getSkills().getAge() - seasons));
+		before.setValue(after.getValue());
+		copyUnreported(after, before);
+		playersDao.addMadeUpPlayerSkills(playerId, before, date);
 	}
 
 	static void setPositionTypes(Training training, TrainingWeek week) {
