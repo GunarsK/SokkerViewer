@@ -11,7 +11,6 @@ import java.util.Map;
 import com.google.gson.JsonObject;
 
 import pl.pronux.sokker.downloader.AbstractDownloader;
-import pl.pronux.sokker.interfaces.SV;
 
 /**
  * client for sokker.org's json api. Its session is separate from the xml session
@@ -52,7 +51,7 @@ public class ApiDownloader extends AbstractDownloader {
 		connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
 		connection.setReadTimeout(READ_TIMEOUT_MS);
 		connection.setInstanceFollowRedirects(false);
-		connection.setRequestProperty("User-Agent", "SokkerViewer/" + SV.SK_VERSION);
+		connection.setRequestProperty("User-Agent", USER_AGENT);
 		connection.setRequestProperty("Accept", "application/json");
 		if (!cookies.isEmpty()) {
 			connection.setRequestProperty("Cookie", cookieHeader());

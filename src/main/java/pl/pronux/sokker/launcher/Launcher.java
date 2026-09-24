@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 
+import pl.pronux.sokker.actions.ConfigurationManager;
 import pl.pronux.sokker.actions.SettingsManager;
 import pl.pronux.sokker.bean.SynchronizerConfiguration;
 import pl.pronux.sokker.data.properties.PropertiesDatabase;
@@ -16,6 +17,7 @@ import pl.pronux.sokker.data.sql.SQLSession;
 import pl.pronux.sokker.downloader.Synchronizer;
 import pl.pronux.sokker.exceptions.SVException;
 import pl.pronux.sokker.handlers.SettingsHandler;
+import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.ProxySettings;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.ui.Viewer;
@@ -36,6 +38,7 @@ public class Launcher {
 	public static void main(String[] args) {
 
 		try {
+			Log.info("SokkerViewer " + SV.SK_VERSION + ", Java " + System.getProperty("java.version"));
 			SokkerViewerSettings settings = settingsManager.getSettings();
 			if (settings.isCheckProperties()) {
 				new PropertiesChecker().checkAll();
@@ -54,9 +57,15 @@ public class Launcher {
 
 			if (args.length == 1 && args[0].equals("--download-only")) {
 				SQLQuery.setSettings(settings);
-				SynchronizerConfiguration synchronizerConfiguration = new SynchronizerConfiguration();
-				synchronizerConfiguration.checkDownloadAll();
-				new Synchronizer(settings, synchronizerConfiguration).run(new Monitor());
+				if (SQLQuery.dbExist()) {
+					SQLSession.connect();
+					ConfigurationManager.getInstance().updateDbStructure(SV.DB_VERSION);
+					SynchronizerConfiguration synchronizerConfiguration = new SynchronizerConfiguration();
+					synchronizerConfiguration.checkDownloadAll();
+					new Synchronizer(settings, synchronizerConfiguration).run(new Monitor());
+				} else {
+					Log.warning("No database for " + settings.getUsername() + ", start SokkerViewer once");
+				}
 			} else if (args.length == 0) {
 				Display display = new Display();
 				try {
@@ -81,6 +90,10 @@ public class Launcher {
 			Log.error("Error Viewer", e); 
 		} catch (SVException e) {
 			Log.error("Error Viewer", e); 
+		} catch (SQLException e) {
+			Log.error("Error Viewer", e);
+		} catch (ClassNotFoundException e) {
+			Log.error("Error Viewer", e);
 		} finally {
 			Log.close();
 			try {
@@ -91,7 +104,7 @@ public class Launcher {
 	}
 
 	private static String showHelp() {
-		return "--donwload-only\r\n" + 
+		return "--download-only\r\n" + 
 			   "--help"; 
 	}
 

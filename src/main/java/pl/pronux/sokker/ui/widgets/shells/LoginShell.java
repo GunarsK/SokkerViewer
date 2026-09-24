@@ -177,7 +177,7 @@ public class LoginShell extends Shell {
 		Listener confShellOkListner = new Listener() {
 
 			public void handleEvent(Event event) {
-				if (skLoginText.getText().isEmpty() || skPasswordText.getText().isEmpty()) {
+				if (skLoginText.getText().trim().isEmpty() || skPasswordText.getText().isEmpty()) {
 					MessageBox msg = new MessageBox(LoginShell.this, SWT.OK | SWT.ICON_ERROR);
 					msg.setText(Messages.getString("message.confShell.title")); 
 					msg.setMessage(Messages.getString("message.confShell.text.nologin")); 
@@ -185,7 +185,7 @@ public class LoginShell extends Shell {
 					return;
 				}
 
-				settings.setUsername(skLoginText.getText());
+				settings.setUsername(skLoginText.getText().trim());
 				settings.setUpdate(checkDlButton.getSelection());
 
 				settings.setSavePassword(savePasswordButton.getSelection());

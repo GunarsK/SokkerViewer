@@ -222,7 +222,7 @@ public class ViewerMenu extends Menu {
 					String filename = fileDialog.open();
 					if (filename != null) {
 						File file = new File(filename);
-						if (!file.exists() || (file.exists() && MessageDialog.openConfirmationMessage(ViewerHandler.getViewer(), Messages.getString("message.file.exists.warning")) == SWT.YES)) {
+						if (!file.exists() || (file.exists() && MessageDialog.openConfirmationMessage(ViewerHandler.getViewer(), Messages.getString("message.file.exists.warning.text")) == SWT.YES)) {
 							ImageLoader loader = new ImageLoader();
 							loader.data = new ImageData[] { image.getImageData() };
 							loader.backgroundPixel = 0;

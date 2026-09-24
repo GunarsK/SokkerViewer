@@ -7,12 +7,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.ProxySettings;
 
 public class AbstractDownloader {
 
 	public static final String POST = "POST";
 	public static final String GET = "GET";
+
+	/** the user agent sent to sokker.org */
+	protected static final String USER_AGENT = "SokkerViewer/" + SV.SK_VERSION;
 
 	private Proxy proxy = Proxy.NO_PROXY;
 
@@ -64,7 +68,7 @@ public class AbstractDownloader {
 		if (type != null) {
 			connection.setRequestMethod(type); 	
 		}
-		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8) Gecko/20051224 Debian/1.5.dfsg-3 Firefox/1.5");  
+		connection.setRequestProperty("User-Agent", USER_AGENT);  
 		connection.setRequestProperty("Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");  
 		connection.setRequestProperty("Accept-Language", "pl");  
 		connection.setRequestProperty("Accept-Charset", "UTF-8,*");  
