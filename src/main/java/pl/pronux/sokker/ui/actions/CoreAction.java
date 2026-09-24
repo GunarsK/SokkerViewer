@@ -110,6 +110,12 @@ public class CoreAction implements RunnableWithProgress {
 			DbProperties dbProperties = null;
 			monitor.setTaskName(Messages.getString("CoreAction.database.library.loading")); 
 			SynchronizerConfiguration synchronizerConfiguration = new SynchronizerConfiguration();
+			Synchronizer synchronizer = new Synchronizer(settings, synchronizerConfiguration);
+			// a login without a database takes over its team's database
+			if (!SQLQuery.dbExist()) {
+				monitor.setTaskName(Messages.getString("synchronizer.login"));
+				Database.link(settings, synchronizer.login());
+			}
 			if (!SQLQuery.dbExist()) {
 				monitor.setTaskName(Messages.getString("progressBar.info.database.initialization")); 
 				String dbFile = settings.getBaseDirectory() + File.separator + "db" + File.separator + "db_file_" + settings.getUsername() + ".script"; 
@@ -134,7 +140,7 @@ public class CoreAction implements RunnableWithProgress {
 					throw new SVException("DB file error: deleted", e);
 				}
 				synchronizerConfiguration.checkDownloadAll();
-				new Synchronizer(settings, synchronizerConfiguration).run(monitor);
+				synchronizer.run(monitor);
 			} else {
 				SQLSession.connect();
 				monitor.setTaskName(Messages.getString("progressBar.info.database.connection")); 
@@ -153,7 +159,7 @@ public class CoreAction implements RunnableWithProgress {
 					if (this.isUpdate() || configurationManager.getMaxDate() == null || (dbProperties != null && dbProperties.isCheckDbUpdate())) {
 						synchronizerConfiguration.setDownloadBase(true);
 					}
-					new Synchronizer(settings, synchronizerConfiguration).run(monitor);
+					synchronizer.run(monitor);
 
 					if (synchronizerConfiguration.isDownloadBase()) {
 						int counter = dbProperties.getScanCounter();

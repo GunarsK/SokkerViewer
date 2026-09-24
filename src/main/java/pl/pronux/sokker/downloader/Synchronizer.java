@@ -42,7 +42,6 @@ import pl.pronux.sokker.interfaces.RunnableWithProgress;
 import pl.pronux.sokker.model.Date;
 import pl.pronux.sokker.model.League;
 import pl.pronux.sokker.model.Match;
-import pl.pronux.sokker.model.ProxySettings;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
@@ -60,6 +59,8 @@ public class Synchronizer implements RunnableWithProgress {
 
 	private SynchronizerConfiguration configuration;
 
+	private XMLDownloader downloader;
+
 	public static final String ERROR_MESSAGE_NULL = "-4"; 
 	public static final String ERROR_RESPONSE_UNKNOWN = "-1"; 
 	public static final String ERROR_WRITE = "-3";
@@ -70,6 +71,27 @@ public class Synchronizer implements RunnableWithProgress {
 		this.settings = settings;
 	}
 
+	/** the team id of the login; logs in to sokker on the first call */
+	public int login() throws InvocationTargetException {
+		if (downloader == null) {
+			XMLDownloader xmlDownloader = new XMLDownloader();
+			try {
+				xmlDownloader.login(settings.getUsername(), settings.getPassword(), settings.getProxySettings());
+			} catch (SVException e) {
+				throw new InvocationTargetException(
+					new SVSynchronizerCriticalException(Messages.getString("login.error." + Synchronizer.ERROR_MESSAGE_NULL), e));
+			} catch (IOException e) {
+				throw new InvocationTargetException(
+					new SVSynchronizerCriticalException(Messages.getString("login.error." + Synchronizer.ERROR_MESSAGE_NULL), e));
+			}
+			if (!xmlDownloader.getStatus().equals(SokkerAuthentication.OK)) {
+				throw new InvocationTargetException(new SVSynchronizerCriticalException(Messages.getString("login.error." + xmlDownloader.getErrorno())));
+			}
+			downloader = xmlDownloader;
+		}
+		return Integer.valueOf(downloader.getTeamId());
+	}
+
 	public void run(ProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 		if (configuration != null && configuration.isDownloadBase() && monitor != null) {
 
@@ -77,27 +99,13 @@ public class Synchronizer implements RunnableWithProgress {
 			monitor.subTask(Messages.getString("synchronizer.login")); 
 
 			// auth
-			XMLDownloader downloader = new XMLDownloader();
-			ProxySettings proxySettings = settings.getProxySettings();
+			login();
+			String vars;
 			try {
-				downloader.login(settings.getUsername(), settings.getPassword(), proxySettings);
-			} catch (SVException e) {
-				throw new InvocationTargetException(
-					new SVSynchronizerCriticalException(Messages.getString("login.error." + Synchronizer.ERROR_MESSAGE_NULL), e)); 
+				vars = downloader.getVars();
 			} catch (IOException e) {
 				throw new InvocationTargetException(
-					new SVSynchronizerCriticalException(Messages.getString("login.error." + Synchronizer.ERROR_MESSAGE_NULL), e)); 
-			}
-			String vars;
-			if (downloader.getStatus().equals(SokkerAuthentication.OK)) {
-				try {
-					vars = downloader.getVars();
-				} catch (IOException e) {
-					throw new InvocationTargetException(
-						new SVSynchronizerCriticalException(Messages.getString("login.error." + Synchronizer.ERROR_DOWNLOAD), e)); 
-				}
-			} else {
-				throw new InvocationTargetException(new SVSynchronizerCriticalException(Messages.getString("login.error." + downloader.getErrorno()))); 
+					new SVSynchronizerCriticalException(Messages.getString("login.error." + Synchronizer.ERROR_DOWNLOAD), e));
 			}
 
 			VarsXmlParser parser = new VarsXmlParser();

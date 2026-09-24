@@ -29,8 +29,6 @@ import pl.pronux.sokker.ui.events.UpdateEvent;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.listeners.SelectAllListener;
-import pl.pronux.sokker.ui.resources.ColorResources;
-import pl.pronux.sokker.ui.resources.CursorResources;
 import pl.pronux.sokker.ui.widgets.dialogs.MessageDialog;
 
 public class LoginShell extends Shell {
@@ -58,8 +56,6 @@ public class LoginShell extends Shell {
 	private Button okButton;
 
 	private Label skLoginLabel;
-
-	private Label changeLoginLabel;
 
 	private Button proxyButton;
 
@@ -258,43 +254,6 @@ public class LoginShell extends Shell {
 		cancelButton.setFont(ConfigBean.getFontMain());
 		cancelButton.setLayoutData(buttonGridData);
 
-		changeLoginLabel = new Label(this, SWT.CENTER);
-		changeLoginLabel.setLayoutData(defaultGridData);
-		changeLoginLabel.setText(Messages.getString("confShell.login.change")); 
-		changeLoginLabel.setForeground(ColorResources.getBlue());
-		changeLoginLabel.setCursor(CursorResources.getCursor(SWT.CURSOR_HAND));
-
-		changeLoginLabel.addListener(SWT.MouseEnter, new Listener() {
-
-			public void handleEvent(Event arg0) {
-				changeLoginLabel.setForeground(ColorResources.getRed());
-			}
-
-		});
-
-		changeLoginLabel.addListener(SWT.MouseExit, new Listener() {
-
-			public void handleEvent(Event arg0) {
-				changeLoginLabel.setForeground(ColorResources.getBlue());
-			}
-
-		});
-
-		changeLoginLabel.addListener(SWT.MouseDown, new Listener() {
-
-			public void handleEvent(Event arg0) {
-				ChangeLoginShell shellLogin = new ChangeLoginShell(LoginShell.this, SWT.CLOSE | SWT.PRIMARY_MODAL);
-				shellLogin.open();
-				String login = shellLogin.getLogin();
-				if (login != null) {
-					if (!login.isEmpty()) {
-						skLoginText.setText(login);
-						skPasswordText.setFocus();
-					}
-				}
-			}
-		});
-
 		this.setDefaultButton(okButton);
 		this.pack();
 		this.setLocation(display.getPrimaryMonitor().getClientArea().width / 2 - this.getBounds().width / 2, display.getPrimaryMonitor().getClientArea().height
@@ -309,6 +268,5 @@ public class LoginShell extends Shell {
 		checkDlButton.setText(Messages.getString("confShell.dlcheck")); 
 		cancelButton.setText(Messages.getString("button.cancel")); 
 		okButton.setText(Messages.getString("button.ok")); 
-		changeLoginLabel.setText(Messages.getString("confShell.login.change")); 
 	}
 }
