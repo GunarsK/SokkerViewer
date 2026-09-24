@@ -65,7 +65,7 @@ public final class TrainersManager {
 				training.setHeadCoach(coach);
 			} else if (coach.getJob() == ASSISTANT) {
 				training.getAssistants().add(coach);
-			} else if (coach.getJob() == HEAD_COACH) {
+			} else if (coach.getJob() == JUNIOR_COACH) {
 				training.setJuniorCoach(coach);
 			}
 		}

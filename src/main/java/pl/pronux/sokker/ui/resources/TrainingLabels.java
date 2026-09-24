@@ -18,6 +18,15 @@ public final class TrainingLabels {
 	 * name only the positions their single type applied to.
 	 */
 	public static String describe(Training training) {
+		return describe(training, false);
+	}
+
+	/** describe with the head coach's level in each type's skill, for example "GK: Pace [14]" */
+	public static String describeWithHeadCoach(Training training) {
+		return describe(training, true);
+	}
+
+	private static String describe(Training training, boolean headCoach) {
 		if (training == null) {
 			return "";
 		}
@@ -33,6 +42,9 @@ public final class TrainingLabels {
 			text.append(Messages.getString("formation." + position));
 			text.append(": ");
 			text.append(Messages.getString("training.type." + type));
+			if (headCoach) {
+				text.append(" [").append(training.getHeadCoachSkill(type)).append(']');
+			}
 		}
 		return text.toString();
 	}

@@ -42,10 +42,12 @@ public class TrainingSeasonDescriptionComposite extends Composite {
 	public void setInfo(List<Training> trainings) {
 		Map<Integer, Training> trainingsMap = new HashMap<Integer, Training>();
 		int season = 0;
+		int weeks = 0;
 		for (Training training : trainings) {
 			Date date = training.getDate().getTrainingDate(SokkerDate.THURSDAY);
 			if (season == 0) {
 				season = date.getSeason().getSeasonNumber();
+				weeks = SokkerDate.seasonLength(date.getSokkerDate().getWeek());
 			}
 			
 			if (season == date.getSeason().getSeasonNumber()) {
@@ -53,9 +55,18 @@ public class TrainingSeasonDescriptionComposite extends Composite {
 			} 
 		}
 
+		int rows = (weeks + 1) / 2;
 		for (int i = 0; i < 8; i++) {
-			trainingsSeasons.get(i*2).setInfo(trainingsMap.get(i), i);
-			trainingsSeasons.get(i*2+1).setInfo(trainingsMap.get(i+8), i+8);
+			if (i < rows) {
+				trainingsSeasons.get(i*2).setInfo(trainingsMap.get(i), i);
+			} else {
+				trainingsSeasons.get(i*2).setText("");
+			}
+			if (i+rows < weeks) {
+				trainingsSeasons.get(i*2+1).setInfo(trainingsMap.get(i+rows), i+rows);
+			} else {
+				trainingsSeasons.get(i*2+1).setText("");
+			}
 		}
 	}
 

@@ -480,9 +480,10 @@ public class Training implements Cloneable {
 		return trainingSummary;
 	}
 	
-	public int getHeadCoachTrainedSkill() {
+	/** the head coach's level in the skill a training type trains; 0 without one */
+	public int getHeadCoachSkill(int type) {
 		if (this.getHeadCoach() != null) {
-			switch (this.getEffectiveType()) {
+			switch (type) {
 			case Training.TYPE_DEFENDING:
 				return getHeadCoach().getDefenders();
 			case Training.TYPE_KEEPER:
