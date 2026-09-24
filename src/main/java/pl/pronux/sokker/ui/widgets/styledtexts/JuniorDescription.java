@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 
 import pl.pronux.sokker.model.Junior;
+import pl.pronux.sokker.model.JuniorSkills;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
@@ -34,8 +35,9 @@ public class JuniorDescription extends StyledText implements IDescription {
 		this.append(text);
 	}
 
+	/** the junior as a whole: the age they have now */
 	public void setStatsJuniorInfo(Junior junior) {
-		setStatsJuniorInfo(junior, 0);
+		fill(junior, 0, false);
 	}
 
 	private String getNumberSkill(int before, int now) {
@@ -71,7 +73,16 @@ public class JuniorDescription extends StyledText implements IDescription {
 		this.setStyleRange(range);
 	}
 
+	/** one training row of the junior: the age they had at that training */
 	public void setStatsJuniorInfo(Junior junior, int index) {
+		fill(junior, index, true);
+	}
+
+	private static int age(JuniorSkills skills, boolean atTraining) {
+		return atTraining ? skills.getTrainingAge() : skills.getAge();
+	}
+
+	private void fill(Junior junior, int index, boolean atTraining) {
 		this.setRedraw(false);
 		// Send all output to the Appendable object sb
 		int max = junior.getSkills().length - 1 - index;
@@ -88,8 +99,8 @@ public class JuniorDescription extends StyledText implements IDescription {
 		text = String.format("%s: ", Messages.getString("player.age"));
 		this.addText(text);
 
-		if (junior.getSkills()[max].getAge() > 0) {
-			text = String.valueOf(junior.getSkills()[max].getAge());
+		if (age(junior.getSkills()[max], atTraining) > 0) {
+			text = String.valueOf(age(junior.getSkills()[max], atTraining));
 		} else {
 			text = "-";
 		}
@@ -193,8 +204,8 @@ public class JuniorDescription extends StyledText implements IDescription {
 		}
 
 		this.addText(NEW_LINE);
-		if (junior.getSkills()[0].getAge() > 0) {
-			text = String.format(" %-25s %d", Messages.getString("junior.age.estimated"), junior.getEstimatedAge() + junior.getSkills()[0].getAge());
+		if (junior.getExitAge() > 0) {
+			text = String.format(" %-25s %d", Messages.getString("junior.age.estimated"), junior.getExitAge());
 		} else {
 			text = String.format(" %-25s \u2265 %d", Messages.getString("junior.age.estimated"), junior.getEstimatedAge() + Junior.MINIMUM_AGE);
 		}

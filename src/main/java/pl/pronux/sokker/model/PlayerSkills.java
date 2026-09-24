@@ -125,13 +125,9 @@ public class PlayerSkills implements Serializable {
 		this.age = age;
 	}
 
-	/**
-	 * the age the player had when this row's training ran. A row synced after a season rollover
-	 * holds the new season's age but belongs to the old season's last training; players age a
-	 * year at every season start, so take off the seasons between the sync and the training.
-	 */
+	/** the age the player had at this row's training */
 	public int getTrainingAge() {
-		int seasons = date.getSeason().getSeasonNumber() - date.getTrainingDate(SokkerDate.THURSDAY).getSeason().getSeasonNumber();
+		int seasons = date.getSokkerDate().getAgeSeason() - date.getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getAgeSeason();
 		return age - seasons;
 	}
 

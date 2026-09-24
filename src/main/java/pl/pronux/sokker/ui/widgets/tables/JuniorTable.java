@@ -80,7 +80,7 @@ public class JuniorTable extends SVTable<Junior> {
 					thisItem.setText(3, String.valueOf(value));
 				}
 			}
-			thisItem.setText(4, String.valueOf(junior.getSkills()[i].getAge()));
+			thisItem.setText(4, String.valueOf(junior.getSkills()[i].getTrainingAge()));
 		}
 		for (int i = 0; i < this.getColumnCount() - 1; i++) {
 			this.getColumn(i).pack();

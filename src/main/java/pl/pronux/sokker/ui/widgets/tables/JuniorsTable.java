@@ -52,7 +52,7 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 				Messages.getString("junior.table.estimated.level.short"),
 				Messages.getString("junior.table.jumps"),
 				Messages.getString("table.age"),
-				Messages.getString("table.age"),
+				Messages.getString("junior.age.estimated"),
 				Messages.getString("junior.exit.week"),
 				Messages.getString("junior.exit.date"),
 				Messages.getString("junior.table.money.spent"),
@@ -143,7 +143,7 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 			}
 			item.setText(c++, String.valueOf(junior.getPops()));
 			item.setText(c++, String.valueOf(junior.getSkills()[maxSkill].getAge()));
-			item.setText(c++, SVNumberFormat.formatIntegerWithSignZero(junior.getEstimatedAge()));
+			item.setText(c++, String.valueOf(junior.getExitAge()));
 			item.setText(c++, String.valueOf(junior.getEndDate().getSeason().getSeasonWeek()));
 			item.setText(c++, junior.getEndDate().toDateString());
 			item.setText(c++, junior.getMoneySpent().formatIntegerCurrencySymbol());

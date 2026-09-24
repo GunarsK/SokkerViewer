@@ -208,6 +208,11 @@ public class SokkerDate {
 		return isLastWeekOf(week);
 	}
 
+	/** the season whose age players have on this day */
+	public int getAgeSeason() {
+		return isLastSeasonWeek() && day == FRIDAY ? getSeason() + 1 : getSeason();
+	}
+
 	public int getTrainingWeek() {
 		if(this.day >= SokkerDate.THURSDAY) {
 			return this.week;

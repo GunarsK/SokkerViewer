@@ -150,6 +150,15 @@ public class Junior extends Person {
 		return -1;
 	}
 
+	/** the age at the exit week's training; 0 when unknown */
+	public int getExitAge() {
+		JuniorSkills newest = skills[skills.length - 1];
+		if (newest.getAge() == 0) {
+			return 0;
+		}
+		return newest.getAge() + getEndDate().getSeason().getSeasonNumber() - newest.getDate().getSokkerDate().getAgeSeason();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

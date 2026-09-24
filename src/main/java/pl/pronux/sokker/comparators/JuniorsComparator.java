@@ -137,7 +137,7 @@ public class JuniorsComparator implements SVComparator<Junior>, Sort {
 			rc = j1.getNote().compareTo(j2.getNote());
 			break;
 		case ESTIMATED_AGE:
-			rc = Compare.values(j1.getEstimatedAge(), j2.getEstimatedAge());
+			rc = Compare.values(j1.getExitAge(), j2.getExitAge());
 			break;
 		case AGE:
 			rc = Compare.values(j1.getSkills()[j1.getSkills().length - 1].getAge(), j2.getSkills()[j2.getSkills().length - 1].getAge());

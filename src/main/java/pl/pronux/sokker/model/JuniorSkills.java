@@ -79,4 +79,13 @@ public class JuniorSkills {
 		return age;
 	}
 
+	/** the age the junior had at this row's training; 0 when unknown */
+	public int getTrainingAge() {
+		if (age == 0) {
+			return 0;
+		}
+		int seasons = date.getSokkerDate().getAgeSeason() - date.getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getAgeSeason();
+		return age - seasons;
+	}
+
 }

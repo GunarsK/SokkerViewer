@@ -76,7 +76,7 @@ public class JuniorTrainedTable extends SVTable<Junior> {
 					juniorTableItem.setText(3, String.valueOf(value));
 				}
 			}
-			juniorTableItem.setText(4, String.valueOf(junior.getSkills()[i].getAge()));
+			juniorTableItem.setText(4, String.valueOf(junior.getSkills()[i].getTrainingAge()));
 		}
 
 		for (int i = 0; i < this.getColumnCount() - 1; i++) {
