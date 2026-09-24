@@ -192,7 +192,7 @@ public class ViewCalendar implements IPlugin {
 
 		Season season = new Season(calendar.getTimeInMillis());
 		group.setText(Messages.getString("training.season") + " " + season.getSeasonNumber() + " " + Messages.getString("training.week") + " "
-					  + season.getSeasonWeek());
+					  + (season.getSeasonWeek() + 1));
 
 		for (int day : days) {
 			getDayExpandItem(day).setText(getDescription(calendar, day));

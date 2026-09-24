@@ -33,7 +33,7 @@ public class TrainingSeasonField extends StyledText implements IDescription {
 		String description;
 		String trainers;
 		String assistants;
-		String date = String.format("%s %-2d", Messages.getString("training.week"), week);
+		String date = String.format("%s %-2d", Messages.getString("training.week"), week + 1);
 		this.setRedraw(false);
 		this.setText("");
 		if (training == null) {

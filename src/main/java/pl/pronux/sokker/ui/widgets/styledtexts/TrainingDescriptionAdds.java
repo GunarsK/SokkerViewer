@@ -41,7 +41,7 @@ public class TrainingDescriptionAdds extends StyledText implements IDescription 
 		this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
 		this.append(NEW_LINE);
 
-		text = String.format("%-25s%-15d", Messages.getString("training.week"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getSeasonWeek());  
+		text = String.format("%-25s%-15d", Messages.getString("training.week"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getSeasonWeek() + 1);  
 		this.append(text);
 		this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
 		this.append(NEW_LINE);

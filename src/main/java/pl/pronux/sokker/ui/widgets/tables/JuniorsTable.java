@@ -144,7 +144,7 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 			item.setText(c++, String.valueOf(junior.getPops()));
 			item.setText(c++, String.valueOf(junior.getSkills()[maxSkill].getAge()));
 			item.setText(c++, String.valueOf(junior.getExitAge()));
-			item.setText(c++, String.valueOf(junior.getEndDate().getSeason().getSeasonWeek()));
+			item.setText(c++, String.valueOf(junior.getEndDate().getSeason().getSeasonWeek() + 1));
 			item.setText(c++, junior.getEndDate().toDateString());
 			item.setText(c++, junior.getMoneySpent().formatIntegerCurrencySymbol());
 			item.setText(c++, junior.getRestMoneyToSpend().formatIntegerCurrencySymbol());
