@@ -34,10 +34,12 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 	public static final int MATCH_INDEX_1ST = 22;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
+	public static final int MATCH_INDEX_4TH = MATCH_INDEX_3RD + 1;
 
-	public static final int MATCH_INDEX_1ST_NEXT = 26;
+	public static final int MATCH_INDEX_1ST_NEXT = 27;
 	public static final int MATCH_INDEX_2ND_NEXT = MATCH_INDEX_1ST_NEXT + 1;
 	public static final int MATCH_INDEX_3RD_NEXT = MATCH_INDEX_2ND_NEXT + 1;
+	public static final int MATCH_INDEX_4TH_NEXT = MATCH_INDEX_3RD_NEXT + 1;
 
 	private PlayerComparator comparator;
 	
@@ -80,10 +82,12 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				Messages.getString("table.1st"), 
 				Messages.getString("table.2nd"), 
 				Messages.getString("table.3rd"), 
+				Messages.getString("table.4th"), 
 				Messages.getString("table.nextTraining"), 
 				Messages.getString("table.1st"), 
 				Messages.getString("table.2nd"), 
 				Messages.getString("table.3rd"), 
+				Messages.getString("table.4th"), 
 				"" 
 		};
 
@@ -184,7 +188,7 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 			}
 			
 			if (player.getPlayerMatchStatistics() != null) {
-				int week = Cache.getDate().getSokkerDate().getWeek();
+				int week = Cache.getDate().getSokkerDate().getTrainingWeek();
 				for (PlayerStats playerStats : player.getPlayerMatchStatistics()) {
 					if ((playerStats.getMatch().getWeek() == week && playerStats.getMatch().getDay() < 6) ||
 						(playerStats.getMatch().getWeek() == week - 1 && playerStats.getMatch().getDay() == 6)) {
@@ -198,8 +202,10 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 								idx = MATCH_INDEX_1ST;
 							} else if (matchDay == 1) {
 								idx = MATCH_INDEX_2ND;
-							} else if (matchDay == 4) {
+							} else if (matchDay == 2) {
 								idx = MATCH_INDEX_3RD;
+							} else if (matchDay == 4) {
+								idx = MATCH_INDEX_4TH;
 							}
 
 							if (idx > 0) {
@@ -225,10 +231,11 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				item.setText(MATCH_INDEX_1ST, ""); 
 				item.setText(MATCH_INDEX_2ND, ""); 
 				item.setText(MATCH_INDEX_3RD, ""); 
+				item.setText(MATCH_INDEX_4TH, ""); 
 			}
 
 			if (player.getPlayerMatchStatistics() != null) {
-				int week = Cache.getDate().getSokkerDate().getWeek();
+				int week = Cache.getDate().getSokkerDate().getTrainingWeek();
 				for (PlayerStats playerStats : player.getPlayerMatchStatistics()) {
 					if ((playerStats.getMatch().getWeek() == week + 1 && playerStats.getMatch().getDay() < 6) ||
 						(playerStats.getMatch().getWeek() == week && playerStats.getMatch().getDay() == 6)) {
@@ -242,8 +249,10 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 								idx = MATCH_INDEX_1ST_NEXT;
 							} else if (matchDay == 1) {
 								idx = MATCH_INDEX_2ND_NEXT;
-							} else if (matchDay == 4) {
+							} else if (matchDay == 2) {
 								idx = MATCH_INDEX_3RD_NEXT;
+							} else if (matchDay == 4) {
+								idx = MATCH_INDEX_4TH_NEXT;
 							}
 
 							if (idx > 0) {
@@ -269,6 +278,7 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				item.setText(MATCH_INDEX_1ST_NEXT, ""); 
 				item.setText(MATCH_INDEX_2ND_NEXT, ""); 
 				item.setText(MATCH_INDEX_3RD_NEXT, ""); 
+				item.setText(MATCH_INDEX_4TH_NEXT, ""); 
 			}
 			
 			if (max > 0) {

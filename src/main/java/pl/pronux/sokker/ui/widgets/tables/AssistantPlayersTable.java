@@ -31,6 +31,7 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 	public static final int MATCH_INDEX_1ST = 14;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
+	public static final int MATCH_INDEX_4TH = MATCH_INDEX_3RD + 1;
 
 	private PlayerAssistantComparator comparator;
 	
@@ -75,12 +76,13 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 				Messages.getString("table.1st"), //$NON-NLS-1$
 				Messages.getString("table.2nd"), //$NON-NLS-1$
 				Messages.getString("table.3rd"), //$NON-NLS-1$
+				Messages.getString("table.4th"), //$NON-NLS-1$
 				"" 
 		};
 		
 		for (int i = 0; i < title.length; i++) {
 			TableColumn column = new TableColumn(this, SWT.NONE);
-			if (i < 2 || i == title.length - 2) {
+			if (i < 2 || i == PlayerAssistantComparator.POSITION) {
 				column.setAlignment(SWT.LEFT);
 			} else {
 				column.setAlignment(SWT.RIGHT);
@@ -212,8 +214,10 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 								matchIndex = MATCH_INDEX_1ST;
 							} else if (matchDay == 1) {
 								matchIndex = MATCH_INDEX_2ND;
-							} else if (matchDay == 4) {
+							} else if (matchDay == 2) {
 								matchIndex = MATCH_INDEX_3RD;
+							} else if (matchDay == 4) {
+								matchIndex = MATCH_INDEX_4TH;
 							}
 
 							if (matchIndex > 0) {
@@ -239,6 +243,7 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 				item.setText(MATCH_INDEX_1ST, "[1]"); 
 				item.setText(MATCH_INDEX_2ND, "[2]"); 
 				item.setText(MATCH_INDEX_3RD, "[3]"); 
+				item.setText(MATCH_INDEX_4TH, "[4]"); 
 			}
         }
 		// Turn drawing back on

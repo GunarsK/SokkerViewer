@@ -57,6 +57,7 @@ public class PlayerTable extends SVTable<Player> {
 	public static final int MATCH_INDEX_1ST = 22;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
+	public static final int MATCH_INDEX_4TH = MATCH_INDEX_3RD + 1;
 	
 	
 	public PlayerTable(Composite parent, int style) {
@@ -94,6 +95,7 @@ public class PlayerTable extends SVTable<Player> {
 				Messages.getString("table.1st"), 
 				Messages.getString("table.2nd"), 
 				Messages.getString("table.3rd"), 
+				Messages.getString("table.4th"), 
 				"" 
 		};
 		for (int j = 0; j < titles.length; j++) {
@@ -200,8 +202,10 @@ public class PlayerTable extends SVTable<Player> {
 								idx = MATCH_INDEX_1ST;
 							} else if (matchDay == 1) {
 								idx = MATCH_INDEX_2ND;
-							} else if (matchDay == 4) {
+							} else if (matchDay == 2) {
 								idx = MATCH_INDEX_3RD;
+							} else if (matchDay == 4) {
+								idx = MATCH_INDEX_4TH;
 							}
 
 							if (idx > 0) {
@@ -227,6 +231,7 @@ public class PlayerTable extends SVTable<Player> {
 				item.setText(MATCH_INDEX_1ST, ""); 
 				item.setText(MATCH_INDEX_2ND, ""); 
 				item.setText(MATCH_INDEX_3RD, ""); 
+				item.setText(MATCH_INDEX_4TH, ""); 
 			}
 
 			if (i > 0) {
