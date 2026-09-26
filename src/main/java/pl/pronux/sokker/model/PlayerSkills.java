@@ -87,6 +87,9 @@ public class PlayerSkills implements Serializable {
 	 */
 	private int trainingInjuryDays = -1;
 
+	/** the talent known once this row's training is counted; not saved */
+	private transient Talent talent;
+
 	public int[] getStatsTable() {
 		int[] intTable = {
 				value.toInt(),
@@ -409,6 +412,14 @@ public class PlayerSkills implements Serializable {
 
 	public void setTrainingInjuryDays(int trainingInjuryDays) {
 		this.trainingInjuryDays = trainingInjuryDays;
+	}
+
+	public Talent getTalent() {
+		return talent == null ? Talent.UNKNOWN : talent;
+	}
+
+	public void setTalent(Talent talent) {
+		this.talent = talent;
 	}
 
 	public boolean isInTrainingSlot() {

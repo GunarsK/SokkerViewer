@@ -313,6 +313,16 @@ public class PlayerDescription extends StyledText implements IDescription {
 		}
 	
 		this.addText(NEW_LINE);
+		String talent = player.getSkills()[max].getTalent().getText();
+		if (!talent.isEmpty()) {
+			this.addText(String.format(" %s: %s ", Messages.getString("player.talent"), talent));
+			addStyle(getText().length() - talent.length() - 1, talent.length(), ColorResources.getBlack(), SWT.BOLD);
+		}
+		if (player.getJuniorTalent() > 0) {
+			text = String.format("%.2f", player.getJuniorTalent());
+			this.addText(String.format(" %s: %s ", Messages.getString("player.talent.junior"), text));
+			addStyle(getText().length() - text.length() - 1, text.length(), ColorResources.getBlack(), SWT.BOLD);
+		}
 		int cards = player.getSkills()[max].getCards() ;
 		if(cards >0) {
 			this.addText(String.format(" %s:%s ", Messages.getString("player.cards"), imageText));  

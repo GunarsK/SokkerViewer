@@ -50,11 +50,15 @@ public class PlayerComparator implements SVComparator<Player>, Sort {
 
 	public static final int TEAMWORK = 18;
 
-	public static final int CARDS = 19;
+	public static final int TALENT = 19;
 
-	public static final int INJURY = 20;
+	public static final int JUNIOR_TALENT = 20;
+
+	public static final int CARDS = 21;
+
+	public static final int INJURY = 22;
 	
-	public static final int NOTE = 21;
+	public static final int NOTE = 23;
 
 	private int column;
 
@@ -154,6 +158,15 @@ public class PlayerComparator implements SVComparator<Player>, Sort {
 			break;
 		case CARDS:
 			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getCards(), p2.getSkills()[p2.getSkills().length - 1].getCards());
+			break;
+		case TALENT:
+			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getTalent().getMin(), p2.getSkills()[p2.getSkills().length - 1].getTalent().getMin());
+			if (rc == 0) {
+				rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getTalent().getMax(), p2.getSkills()[p2.getSkills().length - 1].getTalent().getMax());
+			}
+			break;
+		case JUNIOR_TALENT:
+			rc = Compare.values(p1.getJuniorTalent(), p2.getJuniorTalent());
 			break;
 		case INJURY:
 			rc = Compare.values(p1.getSkills()[p1.getSkills().length - 1].getInjurydays(), p2.getSkills()[p2.getSkills().length - 1].getInjurydays());

@@ -21,6 +21,7 @@ import pl.pronux.sokker.model.PlayerArchive;
 import pl.pronux.sokker.model.PlayerInterface;
 import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.PlayerStats;
+import pl.pronux.sokker.model.TalentEstimator;
 import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.model.Transfer;
 
@@ -252,6 +253,7 @@ public final class PlayersManager {
 
 			player.setSkills(skills);
 		}
+		TalentEstimator.estimate(players, trainingMap.values());
 
 		SQLSession.close(newConnection);
 		return players;

@@ -31,12 +31,12 @@ import pl.pronux.sokker.ui.widgets.interfaces.IViewSort;
 
 public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 	
-	public static final int MATCH_INDEX_1ST = 22;
+	public static final int MATCH_INDEX_1ST = 24;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
 	public static final int MATCH_INDEX_4TH = MATCH_INDEX_3RD + 1;
 
-	public static final int MATCH_INDEX_1ST_NEXT = 27;
+	public static final int MATCH_INDEX_1ST_NEXT = 29;
 	public static final int MATCH_INDEX_2ND_NEXT = MATCH_INDEX_1ST_NEXT + 1;
 	public static final int MATCH_INDEX_3RD_NEXT = MATCH_INDEX_2ND_NEXT + 1;
 	public static final int MATCH_INDEX_4TH_NEXT = MATCH_INDEX_3RD_NEXT + 1;
@@ -76,6 +76,8 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				Messages.getString("table.discipline"), 
 				Messages.getString("table.experience"), 
 				Messages.getString("table.teamwork"), 
+				Messages.getString("table.talent"), 
+				Messages.getString("table.talent.junior"), 
 				Messages.getString("table.cards"), 
 				Messages.getString("table.injury"), 
 				Messages.getString("table.note.short"), 
@@ -162,6 +164,8 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 			item.setText(c++, String.valueOf(player.getSkills()[max].getDiscipline()));
 			item.setText(c++, String.valueOf(player.getSkills()[max].getExperience()));
 			item.setText(c++, String.valueOf(player.getSkills()[max].getTeamwork()));
+			item.setText(c++, player.getSkills()[max].getTalent().getText());
+			item.setText(c++, player.getJuniorTalent() > 0 ? String.format("%.2f", player.getJuniorTalent()) : "");
 			if (player.getSkills()[max].getCards() == 1) {
 				item.setImage(c++, ImageResources.getImageResources("yellow_card.png")); 
 			} else if (player.getSkills()[max].getCards() == 2) {

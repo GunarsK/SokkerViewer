@@ -11,6 +11,9 @@ public class Junior extends Person {
 
 	private static double minimumPop = 3.0;
 
+	/** junior weeks needed before the talent shows on the player */
+	private static final int TALENT_WEEKS = 5;
+
 	private static final long serialVersionUID = 1279340105076757174L;
 
 	public static final int STATUS_IN_SCHOOL = 0;
@@ -30,6 +33,9 @@ public class Junior extends Person {
 	private Money allMoneyToSpend;
 
 	private Double averagePops;
+
+	/** true when the regression of the levels rises over the weeks */
+	private boolean progress;
 
 	private Date endDate;
 
@@ -107,6 +113,8 @@ public class Junior extends Person {
 				averagePops = (n * xySum - xSum * ySum)
 						/ (n * x2Sum - xSum * xSum);
 				averagePops = -1.0 / averagePops;
+				progress = averagePops > 0;
+				// TODO: a junior without progress gets 3.0, the best talent
 				if (averagePops < 3.0) {
 					averagePops = 3.0;
 				}
@@ -157,6 +165,20 @@ public class Junior extends Person {
 			return 0;
 		}
 		return newest.getAge() + getEndDate().getSeason().getSeasonNumber() - newest.getDate().getSokkerDate().getAgeSeason();
+	}
+
+	/** weeks per level once 5 weeks in the school show progress, else 0 */
+	public double getKnownAveragePops() {
+		if (skills.length == 0 || skills[0].getWeeks() - skills[skills.length - 1].getWeeks() + 1 < TALENT_WEEKS) {
+			return 0;
+		}
+		return hasProgress() ? getAveragePops() : 0;
+	}
+
+	/** true when the regression of the levels rises over the weeks */
+	private boolean hasProgress() {
+		getAveragePops();
+		return progress;
 	}
 
 	/*

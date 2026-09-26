@@ -54,7 +54,7 @@ public class PlayerTable extends SVTable<Player> {
 	/** the last column with a number in every row, the last one a click can draw a graph of */
 	public static final int TEAMWORK = 15;
 
-	public static final int MATCH_INDEX_1ST = 22;
+	public static final int MATCH_INDEX_1ST = 23;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
 	public static final int MATCH_INDEX_4TH = MATCH_INDEX_3RD + 1;
@@ -92,6 +92,7 @@ public class PlayerTable extends SVTable<Player> {
 				Messages.getString("table.injury"),
 				Messages.getString("table.training.intensity"),
 				Messages.getString("table.minutes"),
+				Messages.getString("table.talent"),
 				Messages.getString("table.1st"), 
 				Messages.getString("table.2nd"), 
 				Messages.getString("table.3rd"), 
@@ -186,6 +187,7 @@ public class PlayerTable extends SVTable<Player> {
 			item.setText(c++, skills.getTrainingIntensity() < 0 ? "" : skills.getTrainingIntensity() + "%");
 			item.setText(c++, skills.getMinutesOfficial() < 0 ? ""
 					: String.format("%d'/%d'/%d'", skills.getMinutesOfficial(), skills.getMinutesFriendly(), skills.getMinutesNational()));
+			item.setText(c++, skills.getTalent().getText());
 
 			if (player.getPlayerMatchStatistics() != null) {
 				int week = player.getSkills()[i].getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getWeek();

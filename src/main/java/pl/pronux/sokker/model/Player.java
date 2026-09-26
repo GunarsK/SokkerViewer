@@ -307,6 +307,11 @@ public class Player extends Person implements Serializable, PlayerInterface {
 		return junior;
 	}
 
+	/** the talent shown in the junior school, 0 when not known */
+	public double getJuniorTalent() {
+		return junior == null ? 0 : junior.getKnownAveragePops();
+	}
+
 	public void setJunior(Junior junior) {
 		this.junior = junior;
 	}
