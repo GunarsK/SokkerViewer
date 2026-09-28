@@ -74,6 +74,18 @@ public final class MatchesManager {
 		}
 	}
 
+	/** finished matches the database lacks or has unfinished; matches without their league are left out */
+	public void importerMatches(List<Match> matches) throws SQLException {
+		LeagueDao leagueDao = new LeagueDao(SQLSession.getConnection());
+		List<Match> missing = new ArrayList<Match>();
+		for (Match match : matches) {
+			if (match.getIsFinished() == Match.FINISHED && leagueDao.existsLeague(match.getLeagueId()) && !leagueDao.existsFinishedMatch(match.getMatchId())) {
+				missing.add(match);
+			}
+		}
+		importMatches(missing);
+	}
+
 	/**
 	 * matches worth a match-{id}.xml download: ones the database does not know yet (the file
 	 * is the only way a fixture row gets in) and ones the lists say have finished since the

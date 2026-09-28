@@ -45,6 +45,19 @@ public class PlayersDao {
 		return ids;
 	}
 
+	/** training weeks with a real player row */
+	public Set<Integer> getTrainingWeeks() throws SQLException {
+		Set<Integer> weeks = new HashSet<Integer>();
+		PreparedStatement ps = connection.prepareStatement("SELECT DISTINCT day, week FROM player_skills WHERE made_up = false");
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			weeks.add(Integer.valueOf(new SokkerDate(rs.getInt("day"), rs.getInt("week")).getTrainingWeek()));
+		}
+		rs.close();
+		ps.close();
+		return weeks;
+	}
+
 	public boolean existsPlayer(int playerId) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement("SELECT count(id_player) FROM player WHERE id_player = ?");
 		ps.setInt(1, playerId);
@@ -167,7 +180,7 @@ public class PlayersDao {
 		ps.close();
 	}
 
-	/** a row for a training, replacing the player's made-up rows from its week */
+	/** a row for a training, replacing the player's made-up row of its week */
 	public void addPlayerSkills(int id, PlayerSkills skills, Date date, int trainingId) throws SQLException {
 		deleteMadeUpPlayerSkills(id, date.getSokkerDate().getTrainingWeek());
 		PreparedStatement ps = connection
@@ -298,7 +311,8 @@ public class PlayersDao {
 		ps.close();
 	}
 
-	public void updatePlayerSkills(int id, PlayerSkills skills, Training training) throws SQLException {
+	/** the player's row of the training; returns the rows updated */
+	public int updatePlayerSkills(int id, PlayerSkills skills, Training training) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement("UPDATE player_skills SET millis = ?, age = ?, value = ?, salary = ?, form = ?, " +
 				"stamina = ?, pace = ?, technique = ?, passing = ?, keeper = ?, defender = ? ,playmaker = ?, scorer = ?, matches = ?, goals = ?, " + "assists = ?, " + "cards = ?, "
 										 + "injurydays = ?, day = ?, week = ?, experience = ?, teamwork = ?, discipline = ?, weight = ?, bmi = ? " 
@@ -332,8 +346,9 @@ public class PlayersDao {
 		ps.setInt(26, id);
 		ps.setInt(27, training.getId());
 
-		ps.executeUpdate();
+		int updated = ps.executeUpdate();
 		ps.close();
+		return updated;
 	}
 
 	public void updatePlayerSkills(int id, PlayerSkills skills, Date date) throws SQLException {
@@ -533,11 +548,11 @@ public class PlayersDao {
 		insertPlayerSkills(id, skills, date, true);
 	}
 
-	/** removes the player's made-up rows from the week on */
-	private void deleteMadeUpPlayerSkills(int playerId, int fromWeek) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("DELETE FROM player_skills WHERE id_player_fk = ? AND made_up = true AND week >= ?");
+	/** removes the player's made-up row of the week */
+	private void deleteMadeUpPlayerSkills(int playerId, int week) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("DELETE FROM player_skills WHERE id_player_fk = ? AND made_up = true AND week = ?");
 		ps.setInt(1, playerId);
-		ps.setInt(2, fromWeek);
+		ps.setInt(2, week);
 		ps.executeUpdate();
 		ps.close();
 	}

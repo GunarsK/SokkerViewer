@@ -46,8 +46,17 @@ public final class JuniorsManager {
 				juniorsDao.updateJunior(junior);
 			}
 		}
+		removeJuniorsNotIn(juniors, clubId);
+	}
 
-		String sTemp = "("; 
+	public List<Junior> getJuniors(int status) throws SQLException {
+		return new JuniorsDao(SQLSession.getConnection()).getJuniors(status);
+	}
+
+	/** juniors in school but not listed become trained or sacked */
+	public void removeJuniorsNotIn(List<Junior> juniors, int clubId) throws SQLException {
+		JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
+		String sTemp = "(";
 
 		for (int i = 0; i < juniors.size(); i++) {
 			// warunek dla ostatniego stringa zeby nie dodawac na koncu ','
@@ -68,21 +77,20 @@ public final class JuniorsManager {
 		}
 	}
 
-	public void importJuniors(List<Junior> juniors, Training training, int clubId) throws SQLException {
+	/** adds the week's missing junior rows; replaces the rows in added */
+	public void importJuniors(List<Junior> juniors, Training training, Set<String> added) throws SQLException {
 		JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
 
 		for (Junior junior : juniors) {
 
 			if (!juniorsDao.existsJunior(junior.getId())) {
 				juniorsDao.addJunior(junior);
+			}
+			String row = junior.getId() + "_" + training.getId();
+			boolean replaced = added.contains(row) && juniorsDao.updateJuniorSkills(junior.getId(), junior.getSkills()[0], training) > 0;
+			if (!replaced && juniorsDao.getJuniorSkills(junior, training) == null) {
 				juniorsDao.addJuniorSkills(junior.getId(), junior.getSkills()[0], training);
-			} else {
-				if (juniorsDao.existsJuniorHistory(junior.getId())) {
-					juniorsDao.moveJunior(junior.getId(), Junior.STATUS_IN_SCHOOL, clubId);
-				}
-				if ((training.getStatus() & Training.NEW_TRAINING) != 0 || juniorsDao.getJuniorSkills(junior, training) == null) {
-					juniorsDao.addJuniorSkills(junior.getId(), junior.getSkills()[0], training);
-				}
+				added.add(row);
 			}
 		}
 	}

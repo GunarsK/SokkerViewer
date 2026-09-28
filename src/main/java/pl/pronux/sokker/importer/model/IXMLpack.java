@@ -16,4 +16,9 @@ public interface IXMLpack {
 	
 	void setImported(boolean imported);
 
+	/** true when the database already had the pack's training week */
+	boolean isSkipped();
+
+	void setSkipped(boolean skipped);
+
 }

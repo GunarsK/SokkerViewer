@@ -91,6 +91,23 @@ public class JuniorsDao {
 
 	}
 
+	/** the junior's row of the training; returns the rows updated */
+	public int updateJuniorSkills(int id, JuniorSkills juniorSkills, Training training) throws SQLException {
+		PreparedStatement ps = connection
+			.prepareStatement("UPDATE junior_skills SET weeks = ?, skill = ?, age = ?, millis = ?, day = ?, week = ? WHERE id_junior_fk = ? AND id_training_fk = ?");
+		ps.setInt(1, juniorSkills.getWeeks());
+		ps.setInt(2, juniorSkills.getSkill());
+		ps.setInt(3, juniorSkills.getAge());
+		ps.setLong(4, training.getDate().getMillis());
+		ps.setInt(5, training.getDate().getSokkerDate().getDay());
+		ps.setInt(6, training.getDate().getSokkerDate().getWeek());
+		ps.setInt(7, id);
+		ps.setInt(8, training.getId());
+		int updated = ps.executeUpdate();
+		ps.close();
+		return updated;
+	}
+
 	public int getJuniorId(String name) throws SQLException {
 		int id = 0;
 		PreparedStatement ps = connection.prepareStatement("SELECT id_junior FROM junior WHERE name = ? AND status = 0"); 

@@ -144,9 +144,6 @@ public final class TeamManager {
 				training.setTypeMid(trainingDB.getTypeMid());
 				training.setTypeAtt(trainingDB.getTypeAtt());
 			}
-			if (checkIsTraining(trainingDB.getDate().getSokkerDate(), training.getDate().getSokkerDate())) {
-				training.setStatus(training.getStatus() | Training.UPDATE_PLAYERS);
-			}
 		}
 	}
 

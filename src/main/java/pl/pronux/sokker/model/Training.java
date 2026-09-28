@@ -38,7 +38,6 @@ public class Training implements Cloneable {
 	public static final int NO_TRAINING = 1 << 1;
 	public static final int NEW_TRAINING = 1 << 2;
 	public static final int UPDATE_TRAINING = 1 << 3;
-	public static final int UPDATE_PLAYERS = 1 << 4;
 
 	private Date date;
 

@@ -142,15 +142,18 @@ public class ImportPage extends Page {
 							List<IXMLpack> packages = ((ChooseFilePage) getWizard().getPage(ChooseFilePage.PAGE_NAME)).getPackages();
 							fillTable(packages);
 							int imported = 0;
+							int skipped = 0;
 							int failed = 0;
 							for(IXMLpack pack : packages) {
 								if(pack.isImported()) {
 									imported++;
+								} else if (pack.isSkipped()) {
+									skipped++;
 								} else {
 									failed++;
 								}
 							}
-							informationLabel.setText(String.format("%s %d %s %d %s %d", Messages.getString("importer.page.import.all"), packages.size(), Messages.getString("importer.page.import.correct"), imported, Messages.getString("importer.page.import.failed"), failed));      
+							informationLabel.setText(String.format("%s %d %s %d %s %d %s %d", Messages.getString("importer.page.import.all"), packages.size(), Messages.getString("importer.page.import.correct"), imported, Messages.getString("importer.page.import.skipped"), skipped, Messages.getString("importer.page.import.failed"), failed));      
 						}
 					});
 				}
@@ -176,6 +179,9 @@ public class ImportPage extends Page {
 			if(pack.isImported()) {
 				item.setText(1, Messages.getString("importer.page.import.ok")); 
 				item.setForeground(1, ColorResources.getDarkGreen());	
+			} else if (pack.isSkipped()) {
+				item.setText(1, Messages.getString("importer.page.import.skipped"));
+				item.setForeground(1, ColorResources.getDarkGray());
 			} else {
 				item.setText(1, Messages.getString("importer.page.import.failed")); 
 				item.setForeground(1, ColorResources.getRed());

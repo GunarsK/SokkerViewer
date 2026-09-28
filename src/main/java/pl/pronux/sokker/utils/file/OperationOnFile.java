@@ -205,6 +205,10 @@ public class OperationOnFile {
 	public static List<File> visitAllDirs(File dir, FileFilter filter, List<File> listFiles) {
 		if (dir.isDirectory()) {
 			File[] children = dir.listFiles(filter);
+			// an unreadable folder has no children
+			if (children == null) {
+				return listFiles;
+			}
 			for (int i = 0; i < children.length; i++) {
 				visitAllDirs(children[i], filter, listFiles);
 			}

@@ -1,6 +1,8 @@
 package pl.pronux.sokker.importer.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import pl.pronux.sokker.model.Date;
 
@@ -14,12 +16,15 @@ public class XMLpack implements IXMLpack {
 	private File region;
 	private File matchesTeam;
 	private File transfers;
+	private List<File> matches = new ArrayList<File>();
+	private List<File> leagues = new ArrayList<File>();
 	private boolean complete;
 
 	private int teamId;
 
 	private Date date;
 	private boolean imported;
+	private boolean skipped;
 
 	public File getTrainers() {
 		return trainers;
@@ -101,6 +106,14 @@ public class XMLpack implements IXMLpack {
 		this.transfers = transfers;
 	}
 
+	public List<File> getMatches() {
+		return matches;
+	}
+
+	public List<File> getLeagues() {
+		return leagues;
+	}
+
 	public int getTeamId() {
 		return teamId;
 	}
@@ -129,6 +142,14 @@ public class XMLpack implements IXMLpack {
 
 	public void setImported(boolean imported) {
 		this.imported = imported;
+	}
+
+	public boolean isSkipped() {
+		return skipped;
+	}
+
+	public void setSkipped(boolean skipped) {
+		this.skipped = skipped;
 	}
 
 }

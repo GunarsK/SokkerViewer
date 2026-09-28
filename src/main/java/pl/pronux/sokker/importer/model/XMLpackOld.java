@@ -10,6 +10,7 @@ public class XMLpackOld implements IXMLpack {
 	private boolean complete;
 	private File file;
 	private boolean imported;
+	private boolean skipped;
 
 	public Date getDate() {
 		return date;
@@ -42,6 +43,14 @@ public class XMLpackOld implements IXMLpack {
 
 	public void setImported(boolean imported) {
 		this.imported = imported;
+	}
+
+	public boolean isSkipped() {
+		return skipped;
+	}
+
+	public void setSkipped(boolean skipped) {
+		this.skipped = skipped;
 	}
 
 }

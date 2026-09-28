@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import pl.pronux.sokker.data.sql.SQLQuery;
 import pl.pronux.sokker.data.sql.SQLSession;
@@ -55,6 +56,12 @@ public final class PlayersManager {
 		}
 	}
 
+	/** training weeks with a real player row */
+	public Set<Integer> getTrainingWeeks() throws SQLException {
+		return new PlayersDao(SQLSession.getConnection()).getTrainingWeeks();
+	}
+
+	/** adds or replaces the week's rows; unknown players join the history */
 	public void importPlayers(List<Player> players, Training training) throws SQLException {
 		PlayersDao playersDao = new PlayersDao(SQLSession.getConnection());
 		AssistantDao assistantDao = new AssistantDao(SQLSession.getConnection());
@@ -62,28 +69,17 @@ public final class PlayersManager {
 
 			if (!playersDao.existsPlayer(player.getId())) {
 				playersDao.addPlayer(player);
-				player.getSkills()[0].setPassTraining(true);
-				playersDao.addPlayerSkills(player.getId(), player.getSkills()[0], training.getDate(), training.getId());
+				playersDao.movePlayer(player.getId(), Player.STATUS_HISTORY);
 				if (player.getNtSkills() != null && player.getNtSkills().length > 0) {
 					playersDao.addNtPlayerSkills(player.getId(), player.getNtSkills()[0], training.getDate());
 				}
 				player.setPositionTable(this.calculatePosition(player, assistantDao.getAssistantData()));
 				player.setPosition(player.getBestPosition());
 				this.updatePlayersPositions(player);
+			}
 
-			} else {
-
-				if (playersDao.existsPlayerHistory(player.getId())) {
-					playersDao.movePlayer(player.getId(), Player.STATUS_INCLUB);
-				}
-
-				if ((training.getStatus() & Training.NEW_TRAINING) != 0) {
-					playersDao.addPlayerSkills(player.getId(), player.getSkills()[0], training.getDate(), training.getId());
-				} else if ((training.getStatus() & Training.UPDATE_PLAYERS) != 0) {
-					playersDao.updatePlayerSkills(player.getId(), player.getSkills()[0], training);
-					playersDao.updatePlayer(player);
-				}
-
+			if (playersDao.updatePlayerSkills(player.getId(), player.getSkills()[0], training) == 0) {
+				playersDao.addPlayerSkills(player.getId(), player.getSkills()[0], training.getDate(), training.getId());
 			}
 		}
 		// FIXME instead of creating list of player in club get clubs and remove
