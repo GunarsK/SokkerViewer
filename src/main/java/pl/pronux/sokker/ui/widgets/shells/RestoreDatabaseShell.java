@@ -1,12 +1,9 @@
 package pl.pronux.sokker.ui.widgets.shells;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -22,9 +19,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import pl.pronux.sokker.comparators.BackupDBComparator;
 import pl.pronux.sokker.handlers.SettingsHandler;
-import pl.pronux.sokker.interfaces.Sort;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.events.UpdateEvent;
@@ -32,7 +27,6 @@ import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.widgets.dialogs.MessageDialog;
 import pl.pronux.sokker.utils.file.Database;
-import pl.pronux.sokker.utils.file.OperationOnFile;
 
 public class RestoreDatabaseShell extends Shell {
 	private Shell shell;
@@ -124,20 +118,9 @@ public class RestoreDatabaseShell extends Shell {
 	public void addItems(List<File> files) {
 
 		this.files = files;
-
-		BackupDBComparator comparator = new BackupDBComparator();
-		comparator.setDirection(Sort.DESCENDING);
-		comparator.setColumn(BackupDBComparator.LONG);
-
-		Collections.sort(files, comparator);
-		combo.setData("files", files); 
+		// one row per file, so the selection index picks the file
 		for (File file : files) {
-			String[] filename = file.getName().split("\\."); 
-			if (filename[0].matches("[0-9]+")) { 
-				combo.add(String.format("%s (%s %s [%.2f kb] )", file.getName(), new Date(Long.valueOf(filename[0]).longValue()).toString(), new Time(Long.valueOf(filename[0]).longValue()).toString(),Double.valueOf(file.length() / 1000))); 
-			} else if (filename[0].matches("autobackup-[0-9]+")) {  
-				combo.add(String.format("%s (%s %s [%.2f kb] )", file.getName(), new Date(Long.valueOf(file.lastModified()).longValue()).toString(), new Time(Long.valueOf(file.lastModified())).toString(),Double.valueOf(file.length() / 1000))); 				
-			}
+			combo.add(String.format("%s (%s %s [%.2f kb] )", file.getName(), new Date(file.lastModified()).toString(), new Time(file.lastModified()).toString(), Double.valueOf(file.length() / 1000)));
 		}
 		if (combo.getItemCount() == 0) {
 			button.setEnabled(false);
@@ -148,21 +131,11 @@ public class RestoreDatabaseShell extends Shell {
 	
 	@Override
 	public void open() {
-
-		File bakDir = new File(SettingsHandler.getSokkerViewerSettings().getBackupDirectory() + File.separator + SettingsHandler.getSokkerViewerSettings().getUsername());
-		if (bakDir.exists() || SettingsHandler.getSokkerViewerSettings().getBackupDirectory() == null) {
-			FileFilter fileFilter = new FileFilter() {
-				public boolean accept(File file) {
-					return file.isDirectory() || file.getName().endsWith(".bak");
-				}
-			};
-			List<File> files = OperationOnFile.visitAllDirs(bakDir, fileFilter, new ArrayList<File>());
-			if (!files.isEmpty()) {
-				this.addItems(files);
-			} else {
-				MessageDialog.openErrorMessage(this, Messages.getString("message.viewer.db.restore.error.text")); 
-			}
+		List<File> files = Database.backups(SettingsHandler.getSokkerViewerSettings());
+		if (files.isEmpty()) {
+			MessageDialog.openErrorMessage(this, Messages.getString("message.viewer.db.restore.error.text"));
 		}
+		this.addItems(files);
 		super.open();
 	}
 }

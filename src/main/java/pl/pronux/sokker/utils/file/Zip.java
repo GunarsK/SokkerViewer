@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -48,24 +48,37 @@ public class Zip {
 		Log.info("Adding completed OK"); 
 	}
 
-	public static void unzip(String filename) throws IOException {
-		InputStream in = new BufferedInputStream(new FileInputStream(filename));
-		ZipInputStream zin = new ZipInputStream(in);
-		ZipEntry e;
-
-		while ((e = zin.getNextEntry()) != null) {
-			unzip(zin, e.getName());
+	/** unpacks archive into target; no entry may point outside it */
+	public static void unzip(File archive, File target) throws IOException {
+		String root = target.getCanonicalPath() + File.separator;
+		ZipInputStream zin = new ZipInputStream(new BufferedInputStream(new FileInputStream(archive)));
+		try {
+			byte[] buffer = new byte[BUFFER_SIZE];
+			ZipEntry entry;
+			while ((entry = zin.getNextEntry()) != null) {
+				File file = new File(target, entry.getName());
+				if (!file.getCanonicalPath().startsWith(root)) {
+					throw new IOException("zip entry outside the target folder: " + entry.getName());
+				}
+				File dir = entry.isDirectory() ? file : file.getParentFile();
+				if (!dir.isDirectory() && !dir.mkdirs()) {
+					throw new IOException("cannot create " + dir);
+				}
+				if (entry.isDirectory()) {
+					continue;
+				}
+				OutputStream out = new FileOutputStream(file);
+				try {
+					int read;
+					while ((read = zin.read(buffer)) != -1) {
+						out.write(buffer, 0, read);
+					}
+				} finally {
+					out.close();
+				}
+			}
+		} finally {
 			zin.close();
 		}
-	}
-
-	private static void unzip(ZipInputStream zin, String s) throws IOException {
-		FileOutputStream out = new FileOutputStream(s);
-		byte[] b = new byte[512];
-		int len = 0;
-		while ((len = zin.read(b)) != -1) {
-			out.write(b, 0, len);
-		}
-		out.close();
 	}
 }

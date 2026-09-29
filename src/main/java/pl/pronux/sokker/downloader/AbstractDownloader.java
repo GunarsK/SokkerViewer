@@ -1,6 +1,8 @@
 package pl.pronux.sokker.downloader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
@@ -15,7 +17,7 @@ public class AbstractDownloader {
 	public static final String POST = "POST";
 	public static final String GET = "GET";
 
-	/** the user agent sent to sokker.org */
+	/** the user agent sent to sokker.org and github */
 	protected static final String USER_AGENT = "SokkerViewer/" + SV.SK_VERSION;
 
 	private Proxy proxy = Proxy.NO_PROXY;
@@ -75,6 +77,24 @@ public class AbstractDownloader {
 		connection.setRequestProperty("Keep-Alive", "300");  
 		connection.setRequestProperty("Content-type", "application/x-www-form-urlencoded");  
 		return connection;
+	}
+
+	/** the whole stream as utf-8, closed afterwards; "" for a null stream */
+	protected static String read(InputStream in) throws IOException {
+		if (in == null) {
+			return "";
+		}
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			byte[] buffer = new byte[4096];
+			int read;
+			while ((read = in.read(buffer)) != -1) {
+				out.write(buffer, 0, read);
+			}
+			return new String(out.toByteArray(), "UTF-8");
+		} finally {
+			in.close();
+		}
 	}
 
 	protected HttpURLConnection getDefaultConnection(String urlString) throws IOException {
