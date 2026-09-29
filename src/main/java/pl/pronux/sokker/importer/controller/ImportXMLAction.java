@@ -76,7 +76,7 @@ public class ImportXMLAction implements RunnableWithProgress {
 		monitor.beginTask(Messages.getString("ImportXMLAction.start"), packages.size()); 
 		try {
 			// a copy File > Restore database lists, taken before anything changes
-			Database.backup(SQLQuery.getSettings());
+			Database.backup(SQLQuery.getSettings(), Database.IMPORT);
 			SQLSession.connect();
 			int teamID = configurationManager.getTeamId();
 			Set<Integer> knownWeeks = playersManager.getTrainingWeeks();

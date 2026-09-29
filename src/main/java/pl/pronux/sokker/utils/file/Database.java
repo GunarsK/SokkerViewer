@@ -2,11 +2,19 @@ package pl.pronux.sokker.utils.file;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import pl.pronux.sokker.model.SokkerViewerSettings;
@@ -14,47 +22,141 @@ import pl.pronux.sokker.utils.Log;
 
 public class Database {
 
+	/** why a backup was made, the end of its file name */
+	public static final String MANUAL = "manual";
+
+	public static final String UPDATE = "update";
+
+	public static final String IMPORT = "import";
+
+	public static final String AUTO = "auto";
+
+	/** backups kept per reason */
+	static final int BACKUPS_KEPT = 10;
+
+	private static final String BACKUP_DAY = "yyyy-MM-dd";
+
+	private static final String BACKUP_TIME = BACKUP_DAY + "_HH-mm-ss";
+
+	private static final String BAK = ".bak";
+
 	private static final String PREFIX = "db_file_";
 
 	private static final String SCRIPT = ".script";
 
+	private static final String LOG = ".log";
+
 	/** the files of an hsqldb database */
-	private static final String[] FILES = {".properties", SCRIPT, ".log", ".data", ".backup", ".lck"};
+	private static final String[] FILES = {".properties", SCRIPT, LOG, ".data", ".backup", ".lck"};
 
 	private static final String CREATE_SYSTEM = "CREATE MEMORY TABLE SYSTEM(";
 
 	private static final String INSERT_SYSTEM = "INSERT INTO SYSTEM VALUES(";
 
-	public static boolean backup(SokkerViewerSettings settings, String filename) throws IOException {
-		File dbDir = new File(settings.getBackupDirectory());
-
-		if (!dbDir.exists() && !OperationOnFile.createDirectory(dbDir)) {
-			throw new IOException("Missing backup directory"); 
+	/** copies the database to [time]_[login]_[reason].bak; never overwrites, keeps the newest per reason, auto once a day */
+	public static boolean backup(SokkerViewerSettings settings, String reason) throws IOException {
+		File dbDir = backupDirectory(settings);
+		if (!dbDir.isDirectory() && !dbDir.mkdirs()) {
+			throw new IOException("Missing backup directory");
 		}
-		if (new File(dbDir, settings.getUsername()).exists()) {
-			dbDir = new File(dbDir, settings.getUsername());
-		} else {
-			dbDir = new File(dbDir, settings.getUsername());
-			dbDir.mkdir();
+		if (AUTO.equals(reason) && madeToday(dbDir, reason)) {
+			return true;
 		}
-
-		File dbFile = new File(settings.getBaseDirectory() + File.separator + "db" + File.separator + "db_file_" + settings.getUsername() + ".script");   
+		// without a .log the .script already holds everything
+		if (new File(databasePath(settings) + LOG).exists()) {
+			execute(settings, "CHECKPOINT");
+		}
+		File dbFile = new File(databasePath(settings) + SCRIPT);
 		if (dbFile.exists()) {
-			File dbBakFile = new File(dbDir, filename);
-			OperationOnFile.copyFile(dbFile, dbBakFile);
+			OperationOnFile.copyFile(dbFile, newBackupFile(dbDir, settings.getUsername(), reason, new Date()));
+			prune(dbDir, reason);
 		}
 		return true;
 	}
 
-	public static boolean backup(SokkerViewerSettings settings) throws IOException {
-		return backup(settings, new GregorianCalendar().getTimeInMillis() + ".bak"); 
+	/** replaces the database with a backup, shutting the open database down first */
+	public static void restore(SokkerViewerSettings settings, String filename) throws IOException {
+		File dbFile = new File(databasePath(settings) + SCRIPT);
+		File dbBakFile = new File(backupDirectory(settings), filename);
+		execute(settings, "SHUTDOWN");
+		OperationOnFile.copyFile(dbBakFile, dbFile);
 	}
 
-	public static void restore(SokkerViewerSettings settings, String filename) throws IOException {
-		File dbDir = new File(settings.getBackupDirectory() + File.separator + settings.getUsername() + File.separator);
-		File dbFile = new File(settings.getBaseDirectory() + File.separator + "db" + File.separator + "db_file_" + settings.getUsername() + ".script");   
-		File dbBakFile = new File(dbDir, filename);
-		OperationOnFile.copyFile(dbBakFile, dbFile);
+	/** a file no backup has yet; a second one in the same second gets a counter */
+	static File newBackupFile(File dir, String login, String reason, Date date) {
+		String time = new SimpleDateFormat(BACKUP_TIME).format(date);
+		File file = new File(dir, time + "_" + login + "_" + reason + BAK);
+		for (int n = 2; file.exists(); n++) {
+			file = new File(dir, time + "-" + n + "_" + login + "_" + reason + BAK);
+		}
+		return file;
+	}
+
+	/** the login's backups, newest first */
+	public static List<File> backups(SokkerViewerSettings settings) {
+		return backups(backupDirectory(settings), BAK);
+	}
+
+	/** deletes all but the newest BACKUPS_KEPT backups made for the reason */
+	static void prune(File dir, String reason) {
+		List<File> files = backups(dir, "_" + reason + BAK);
+		for (File file : files.subList(Math.min(BACKUPS_KEPT, files.size()), files.size())) {
+			if (!file.delete()) {
+				Log.warning("Cannot delete old backup " + file);
+			}
+		}
+	}
+
+	/** true when the reason's newest backup is named with today's date */
+	private static boolean madeToday(File dir, String reason) {
+		List<File> files = backups(dir, "_" + reason + BAK);
+		return !files.isEmpty() && files.get(0).getName().startsWith(new SimpleDateFormat(BACKUP_DAY).format(new Date()));
+	}
+
+	/** the folder's files ending in suffix, newest first */
+	private static List<File> backups(File dir, final String suffix) {
+		File[] files = dir.listFiles(new FileFilter() {
+			public boolean accept(File file) {
+				return file.isFile() && file.getName().endsWith(suffix);
+			}
+		});
+		List<File> list = files == null ? new ArrayList<File>() : new ArrayList<File>(Arrays.asList(files));
+		Collections.sort(list, new Comparator<File>() {
+			public int compare(File first, File second) {
+				int byTime = Long.valueOf(second.lastModified()).compareTo(Long.valueOf(first.lastModified()));
+				return byTime != 0 ? byTime : second.getName().compareTo(first.getName());
+			}
+		});
+		return list;
+	}
+
+	private static File backupDirectory(SokkerViewerSettings settings) {
+		return new File(settings.getBackupDirectory(), settings.getUsername());
+	}
+
+	/** runs one statement on the login's database; nothing when it has none yet */
+	private static void execute(SokkerViewerSettings settings, String sql) throws IOException {
+		String path = databasePath(settings);
+		if (!new File(path + SCRIPT).exists() && !new File(path + LOG).exists()) {
+			return;
+		}
+		try {
+			Class.forName("org.hsqldb.jdbcDriver");
+			Connection connection = DriverManager.getConnection("jdbc:hsqldb:" + path + ";shutdown=true", "sa", "");
+			try {
+				connection.createStatement().execute(sql);
+			} finally {
+				connection.close();
+			}
+		} catch (ClassNotFoundException e) {
+			throw new IOException(e);
+		} catch (SQLException e) {
+			throw new IOException(sql + " failed on " + path, e);
+		}
+	}
+
+	private static String databasePath(SokkerViewerSettings settings) {
+		return settings.getBaseDirectory() + File.separator + "db" + File.separator + PREFIX + settings.getUsername();
 	}
 
 	/** renames the team's most recently synced database, with its xml and backup folders, to the login */

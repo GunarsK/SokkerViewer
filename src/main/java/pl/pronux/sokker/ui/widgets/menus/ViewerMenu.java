@@ -121,7 +121,7 @@ public class ViewerMenu extends Menu {
 			public void handleEvent(Event event) {
 				if(SettingsHandler.isLogged()) {
 					try {
-						boolean operation = Database.backup(SettingsHandler.getSokkerViewerSettings());
+						boolean operation = Database.backup(SettingsHandler.getSokkerViewerSettings(), Database.MANUAL);
 						if (operation) {
 							MessageBox msg = new MessageBox(mainShell, SWT.OK | SWT.ICON_INFORMATION);
 							msg.setText(Messages.getString("message.db.backup.title")); 

@@ -7,6 +7,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import pl.pronux.sokker.actions.UpdateManager;
 import pl.pronux.sokker.downloader.ReleaseDownloader;
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.interfaces.SV;
@@ -14,7 +15,7 @@ import pl.pronux.sokker.model.Release;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.utils.Log;
 
-/** offers the github download page when a newer release exists */
+/** offers a newer github release: installs it, or opens its page */
 public class CheckUpdateAction implements Runnable {
 
 	private final Shell shell;
@@ -63,7 +64,11 @@ public class CheckUpdateAction implements Runnable {
 			return;
 		}
 		if (release != null && release.isNewerThan(SV.SK_VERSION)) {
-			if (open(SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.info"), release.getVersion())) == SWT.YES) {
+			if (UpdateManager.canUpdate(release)) {
+				if (open(SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.install"), release.getVersion())) == SWT.YES) {
+					UpdateAction.start(shell, release);
+				}
+			} else if (open(SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.info"), release.getVersion())) == SWT.YES) {
 				Program.launch(release.getUrl());
 			}
 		} else if (!quiet) {

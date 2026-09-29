@@ -55,7 +55,7 @@ public class CoreAction implements RunnableWithProgress {
 
 	public static final boolean LOCK = false;
 	public static final boolean UNLOCK = true;
-	private static boolean lock = UNLOCK;
+	private static volatile boolean lock = UNLOCK;
 
 	private MatchesManager matchesManager = MatchesManager.getInstance();
 	private AssistantManager assistantManager = AssistantManager.getInstance();
@@ -66,6 +66,11 @@ public class CoreAction implements RunnableWithProgress {
 	private TeamManager teamManager = TeamManager.getInstance();
 	private LeaguesManager leaguesManager = LeaguesManager.getInstance();
 	private PlayersManager playersManager = PlayersManager.getInstance();
+
+	/** true while a sync runs */
+	public static boolean isRunning() {
+		return lock == LOCK;
+	}
 
 	public boolean isUpdate() {
 		return update;
@@ -183,7 +188,7 @@ public class CoreAction implements RunnableWithProgress {
 			}
 
 			try {
-				Database.backup(settings, "autobackup-" + Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + ".bak"); 
+				Database.backup(settings, Database.AUTO);
 			} catch (IOException ioe) {
 				throw new SVException("Synchronizer -> post-autobackup failed", ioe);
 			}
