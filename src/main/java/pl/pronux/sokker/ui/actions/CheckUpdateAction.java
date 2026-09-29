@@ -1,0 +1,84 @@
+package pl.pronux.sokker.ui.actions;
+
+import java.io.IOException;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+
+import pl.pronux.sokker.downloader.ReleaseDownloader;
+import pl.pronux.sokker.handlers.SettingsHandler;
+import pl.pronux.sokker.interfaces.SV;
+import pl.pronux.sokker.model.Release;
+import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.utils.Log;
+
+/** offers the github download page when a newer release exists */
+public class CheckUpdateAction implements Runnable {
+
+	private final Shell shell;
+
+	/** startup check: silent unless a newer release exists */
+	private final boolean quiet;
+
+	private CheckUpdateAction(Shell shell, boolean quiet) {
+		this.shell = shell;
+		this.quiet = quiet;
+	}
+
+	/** runs the check off the ui thread */
+	public static void start(Shell shell, boolean quiet) {
+		Thread thread = new Thread(new CheckUpdateAction(shell, quiet), "update check");
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	public void run() {
+		final Release release = latestRelease();
+		if (shell.isDisposed()) {
+			return;
+		}
+		shell.getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				show(release);
+			}
+		});
+	}
+
+	/** null when github could not be read */
+	private static Release latestRelease() {
+		try {
+			ReleaseDownloader downloader = new ReleaseDownloader();
+			downloader.setProxySettings(SettingsHandler.getSokkerViewerSettings().getProxySettings());
+			return downloader.getLatestRelease();
+		} catch (IOException e) {
+			Log.warning("github update check: " + e);
+			return null;
+		}
+	}
+
+	private void show(Release release) {
+		if (shell.isDisposed()) {
+			return;
+		}
+		if (release != null && release.isNewerThan(SV.SK_VERSION)) {
+			if (open(SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.info"), release.getVersion())) == SWT.YES) {
+				Program.launch(release.getUrl());
+			}
+		} else if (!quiet) {
+			if (release == null) {
+				open(SWT.OK | SWT.ICON_ERROR, Messages.getString("message.error.connection"));
+			} else {
+				open(SWT.OK | SWT.ICON_INFORMATION, Messages.getString("updater.label.info.empty"));
+			}
+		}
+	}
+
+	private int open(int style, String message) {
+		MessageBox msg = new MessageBox(shell, style);
+		msg.setText(Messages.getString("viewer.menu.help.update"));
+		msg.setMessage(message);
+		return msg.open();
+	}
+}

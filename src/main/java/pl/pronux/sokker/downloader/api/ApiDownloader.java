@@ -1,8 +1,6 @@
 package pl.pronux.sokker.downloader.api;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.LinkedHashMap;
@@ -94,23 +92,5 @@ public class ApiDownloader extends AbstractDownloader {
 			header.append(cookie.getKey()).append('=').append(cookie.getValue());
 		}
 		return header.toString();
-	}
-
-	/** the whole stream as utf-8, closed afterwards; "" for a null stream */
-	private static String read(InputStream in) throws IOException {
-		if (in == null) {
-			return "";
-		}
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			byte[] buffer = new byte[4096];
-			int read;
-			while ((read = in.read(buffer)) != -1) {
-				out.write(buffer, 0, read);
-			}
-			return new String(out.toByteArray(), "UTF-8");
-		} finally {
-			in.close();
-		}
 	}
 }

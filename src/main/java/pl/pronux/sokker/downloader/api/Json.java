@@ -36,6 +36,11 @@ public final class Json {
 		return element != null && element.isJsonPrimitive() ? Integer.valueOf(element.getAsInt()) : null;
 	}
 
+	public static String getString(JsonObject object, String path) {
+		JsonElement element = get(object, path);
+		return element != null && element.isJsonPrimitive() ? element.getAsString() : null;
+	}
+
 	public static Long getLong(JsonObject object, String path) {
 		JsonElement element = get(object, path);
 		return element != null && element.isJsonPrimitive() ? Long.valueOf(element.getAsLong()) : null;

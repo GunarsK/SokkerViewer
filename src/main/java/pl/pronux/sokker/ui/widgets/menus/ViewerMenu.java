@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.actions.CheckUpdateAction;
 import pl.pronux.sokker.ui.actions.TrainingHistoryImportAction;
 import pl.pronux.sokker.ui.events.UpdateEvent;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
@@ -34,7 +35,6 @@ import pl.pronux.sokker.ui.widgets.shells.LoginShell;
 import pl.pronux.sokker.ui.widgets.shells.PluginsView;
 import pl.pronux.sokker.ui.widgets.shells.RestoreDatabaseShell;
 import pl.pronux.sokker.ui.widgets.shells.TaxCalculator;
-import pl.pronux.sokker.ui.widgets.wizards.updater.UpdaterWizard;
 import pl.pronux.sokker.ui.widgets.wizards.xmlimporter.ImporterWizard;
 import pl.pronux.sokker.utils.Log;
 import pl.pronux.sokker.utils.file.Database;
@@ -271,7 +271,7 @@ public class ViewerMenu extends Menu {
 		Listener updateListener = new Listener() {
 
 			public void handleEvent(Event event) {
-				new UpdaterWizard(mainShell).open();
+				CheckUpdateAction.start(mainShell, false);
 			}
 
 		};

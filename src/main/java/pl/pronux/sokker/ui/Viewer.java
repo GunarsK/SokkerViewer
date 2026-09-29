@@ -39,6 +39,7 @@ import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.resources.PropertiesResources;
+import pl.pronux.sokker.ui.actions.CheckUpdateAction;
 import pl.pronux.sokker.ui.actions.CoreAction;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.configure.Configurator;
@@ -183,8 +184,6 @@ public class Viewer extends Shell {
 		// adding tree
 		addTree(this);
 
-		// no update check: www.sokkerviewer.net, where updates were announced, no longer exists
-
 		/*
 		 * SETTINGS FOR VIEW
 		 */
@@ -306,6 +305,9 @@ public class Viewer extends Shell {
 			new LoginShell(this, SWT.PRIMARY_MODAL | SWT.CLOSE).open();
 		}
 		super.open();
+		if (settings.isInfoUpdate()) {
+			CheckUpdateAction.start(this, true);
+		}
 		while (!this.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();

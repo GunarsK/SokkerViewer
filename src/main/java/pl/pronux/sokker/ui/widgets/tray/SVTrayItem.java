@@ -10,9 +10,9 @@ import org.eclipse.swt.widgets.TrayItem;
 
 import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.actions.CheckUpdateAction;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.resources.ImageResources;
-import pl.pronux.sokker.ui.widgets.wizards.updater.UpdaterWizard;
 
 public class SVTrayItem extends TrayItem{
 
@@ -45,7 +45,7 @@ public class SVTrayItem extends TrayItem{
 		item.setText(Messages.getString("button.update")); 
 		item.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
-				new UpdaterWizard(ViewerHandler.getViewer()).open();
+				CheckUpdateAction.start(ViewerHandler.getViewer(), false);
 			}
 		});
 		item = new MenuItem(menu, SWT.SEPARATOR);
