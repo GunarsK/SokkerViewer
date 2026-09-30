@@ -58,7 +58,7 @@ public class TrainingHistoryImportAction implements RunnableWithProgress {
 		msg.setMessage(message());
 		msg.open();
 		if (result != null && result.hasChanges()) {
-			ViewerHandler.getViewer().notifyListeners(IEvents.LOAD_DATA, new UpdateEvent(false));
+			ViewerHandler.getViewer().notifyListeners(IEvents.LOAD_DATA, new UpdateEvent(true));
 		}
 	}
 

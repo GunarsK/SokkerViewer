@@ -201,7 +201,7 @@ public class ImportPage extends Page {
 	
 	@Override
 	public void onFinishPage() {
-		ViewerHandler.getViewer().notifyListeners(IEvents.LOAD_DATA, new UpdateEvent(false));
+		ViewerHandler.getViewer().notifyListeners(IEvents.LOAD_DATA, new UpdateEvent(true));
 		super.onFinishPage();
 	}
 	
