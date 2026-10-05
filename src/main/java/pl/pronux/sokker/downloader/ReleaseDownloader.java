@@ -14,6 +14,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
+import pl.pronux.sokker.actions.Bundle;
 import pl.pronux.sokker.downloader.api.Json;
 import pl.pronux.sokker.interfaces.ProgressMonitor;
 import pl.pronux.sokker.model.Release;
@@ -22,9 +23,6 @@ import pl.pronux.sokker.model.Release;
 public class ReleaseDownloader extends AbstractDownloader {
 
 	private static final String LATEST_URL = "https://api.github.com/repos/GunarsK/SokkerViewer/releases/latest";
-
-	/** the end of the windows bundle's file name */
-	private static final String ZIP_SUFFIX = "-win64-with-java.zip";
 
 	private static final String SHA256_PREFIX = "sha256:";
 
@@ -37,7 +35,7 @@ public class ReleaseDownloader extends AbstractDownloader {
 		HttpURLConnection connection = open(LATEST_URL);
 		connection.setRequestProperty("Accept", "application/vnd.github+json");
 		checkStatus(connection);
-		return parse(read(connection.getInputStream()));
+		return parse(read(connection.getInputStream()), Bundle.current());
 	}
 
 	/** streams url into target; the sha-256 of what came, null when cancelled */
@@ -72,8 +70,8 @@ public class ReleaseDownloader extends AbstractDownloader {
 		return hex(sha256.digest());
 	}
 
-	/** the release in github's json, with its windows zip when it has one */
-	static Release parse(String json) throws IOException {
+	/** the release in github's json, with the bundle's zip when it has one */
+	static Release parse(String json, Bundle bundle) throws IOException {
 		JsonObject release;
 		try {
 			release = Json.parse(json);
@@ -86,11 +84,11 @@ public class ReleaseDownloader extends AbstractDownloader {
 			throw new IOException("github release without tag_name or html_url");
 		}
 		JsonArray assets = Json.getArray(release, "assets");
-		if (assets != null) {
+		if (assets != null && bundle != null) {
 			for (JsonElement element : assets) {
 				JsonObject asset = element.isJsonObject() ? element.getAsJsonObject() : null;
 				String name = Json.getString(asset, "name");
-				if (name != null && name.endsWith(ZIP_SUFFIX)) {
+				if (name != null && name.endsWith(bundle.getZipSuffix())) {
 					String digest = Json.getString(asset, "digest");
 					String sha256 = digest != null && digest.startsWith(SHA256_PREFIX) ? digest.substring(SHA256_PREFIX.length()) : null;
 					return new Release(tag, url, Json.getString(asset, "browser_download_url"), sha256);

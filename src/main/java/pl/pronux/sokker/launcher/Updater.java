@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * swaps SokkerViewer's program files for an unpacked release after SokkerViewer closes.
@@ -46,10 +48,10 @@ public final class Updater {
 		this.backup = release.getParent().resolveSibling("update-old");
 	}
 
-	/** args: the install folder and the unpacked release folder */
+	/** args: install folder, release folder, launcher, SokkerViewer's pid */
 	public static void main(String[] args) {
-		if (args.length != 2) {
-			log("usage: Updater <install folder> <release folder>");
+		if (args.length != 4) {
+			log("usage: Updater <install folder> <release folder> <launcher> <SokkerViewer pid>");
 			return;
 		}
 		Path install = Paths.get(args[0]);
@@ -58,8 +60,28 @@ public final class Updater {
 			log("not a SokkerViewer folder: " + install + " or " + release);
 			return;
 		}
+		waitForSokkerViewer(args[3]);
 		new Updater(install, release).swap();
-		start(install);
+		start(install, args[2]);
+	}
+
+	/** waits a minute at most for SokkerViewer's process to close */
+	private static void waitForSokkerViewer(String pid) {
+		Optional<ProcessHandle> sokkerViewer;
+		try {
+			sokkerViewer = ProcessHandle.of(Long.parseLong(pid));
+		} catch (NumberFormatException e) {
+			log("not a process id: " + pid);
+			return;
+		}
+		if (!sokkerViewer.isPresent()) {
+			return;
+		}
+		try {
+			sokkerViewer.get().onExit().get(WAIT_MS, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			log("SokkerViewer did not close: " + e);
+		}
 	}
 
 	/** true when the release's program files replaced the install's */
@@ -217,9 +239,9 @@ public final class Updater {
 	}
 
 	/** starts SokkerViewer again, updated or not */
-	private static void start(Path install) {
+	private static void start(Path install, String launcher) {
 		try {
-			new ProcessBuilder(install.resolve("SokkerViewer.exe").toString()).directory(install.toFile()).start();
+			new ProcessBuilder(install.resolve(launcher).toString()).directory(install.toFile()).start();
 		} catch (IOException e) {
 			log("cannot start SokkerViewer: " + e);
 		}

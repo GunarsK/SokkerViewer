@@ -130,23 +130,62 @@
 		</profile>
 		<profile>
 			<!--
-				Ready to run bundle for Windows x64: the application, a trimmed Java runtime
-				and SokkerViewer.exe, so nothing has to be installed.
+				Ready to run bundles for Windows x64 and macOS on Apple silicon: the application,
+				a trimmed Java runtime and a launcher, so nothing has to be installed.
 
 				mvn -Pbundle clean verify
 				-> packages/release/stable/windows/sokker-${project.version}-win64-with-java.zip
+				-> packages/release/stable/macos/sokker-${project.version}-macos-arm64-with-java.zip
 
-				Needs a JDK (not a JRE) as JAVA_HOME, because it runs jlink.
+				Needs a JDK (not a JRE) as JAVA_HOME, because it runs jlink. The macOS runtime is
+				linked from the jmods of the macOS JDK below, which must be the same version as
+				JAVA_HOME; it is downloaded once into packages/cache.
 				The normal build is not affected by this profile.
 			-->
 			<id>bundle</id>
 			<properties>
-				<bundle.dir>${basedir}/packages/bundle/SokkerViewer</bundle.dir>
+				<bundle.windows.dir>${basedir}/packages/bundle/windows/SokkerViewer</bundle.windows.dir>
+				<bundle.macos.dir>${basedir}/packages/bundle/macos/SokkerViewer</bundle.macos.dir>
+				<bundle.modules>java.base,java.desktop,java.naming,java.sql,jdk.charsets,jdk.crypto.ec,jdk.localedata</bundle.modules>
 				<!-- the languages SokkerViewer is translated into, see src/main/resources/lang -->
 				<bundle.locales>en,bg,cs,da,de,el,es,et,fr,hu,it,pl,pt,ro,ru,tr,zh</bundle.locales>
+				<!-- the jlink options both runtimes are linked with -->
+				<bundle.jlink>--add-modules ${bundle.modules} --include-locales=${bundle.locales} --strip-debug --no-header-files --no-man-pages --compress=zip-6</bundle.jlink>
+				<!-- the files the macOS zip marks executable -->
+				<bundle.macos.programs>SokkerViewer.command,runtime/bin/**,runtime/lib/jspawnhelper</bundle.macos.programs>
+				<!-- the macOS JDK, <version>+<build> -->
+				<macos.jdk.version>21.0.12.1</macos.jdk.version>
+				<macos.jdk.build>1</macos.jdk.build>
+				<macos.jdk>OpenJDK21U-jdk_aarch64_mac_hotspot_${macos.jdk.version}_${macos.jdk.build}.tar.gz</macos.jdk>
+				<macos.jdk.url>https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${macos.jdk.version}%2B${macos.jdk.build}/${macos.jdk}</macos.jdk.url>
+				<macos.jdk.sha256>3623232f33a9c3baadf304480b2535f9a3cba8a58d42ecbb438ba267315d9998</macos.jdk.sha256>
+				<macos.jmods>${basedir}/packages/cache/jdk-${macos.jdk.version}+${macos.jdk.build}/Contents/Home/jmods</macos.jmods>
 			</properties>
 			<build>
 				<plugins>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>bundle-macos-swt</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.eclipse.platform</groupId>
+											<artifactId>org.eclipse.swt.cocoa.macosx.aarch64</artifactId>
+											<version>${swt.version}</version>
+											<destFileName>swt.jar</destFileName>
+										</artifactItem>
+									</artifactItems>
+									<outputDirectory>${project.build.directory}/macos</outputDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<artifactId>maven-antrun-plugin</artifactId>
 						<version>1.1</version>
@@ -159,23 +198,63 @@
 								</goals>
 								<configuration>
 									<tasks>
-										<delete dir="${bundle.dir}" />
-										<mkdir dir="${bundle.dir}" />
-										<copy todir="${bundle.dir}">
-											<fileset dir="${basedir}/packages/windows/sokker" />
+										<delete dir="${bundle.windows.dir}" />
+										<mkdir dir="${bundle.windows.dir}" />
+										<copy todir="${bundle.windows.dir}">
+											<!-- cour.ttf is Microsoft's Courier New and may not be redistributed -->
+											<fileset dir="${basedir}/packages/windows/sokker" excludes="fonts/cour.ttf" />
 										</copy>
-										<!-- cour.ttf is Microsoft's Courier New and may not be redistributed -->
-										<delete file="${bundle.dir}/fonts/cour.ttf" />
 										<exec executable="${java.home}/bin/jlink" failonerror="true">
-											<arg value="--add-modules" />
-											<arg value="java.base,java.desktop,java.naming,java.sql,jdk.charsets,jdk.crypto.ec,jdk.localedata" />
-											<arg value="--include-locales=${bundle.locales}" />
-											<arg value="--strip-debug" />
-											<arg value="--no-header-files" />
-											<arg value="--no-man-pages" />
-											<arg value="--compress=zip-6" />
+											<arg line="${bundle.jlink}" />
 											<arg value="--output" />
-											<arg value="${bundle.dir}/runtime" />
+											<arg value="${bundle.windows.dir}/runtime" />
+										</exec>
+									</tasks>
+								</configuration>
+							</execution>
+							<execution>
+								<id>bundle-runtime-macos</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<tasks>
+										<mkdir dir="${basedir}/packages/cache" />
+										<!-- an offline build keeps the cached copy -->
+										<get src="${macos.jdk.url}" dest="${basedir}/packages/cache/${macos.jdk}" usetimestamp="true" ignoreerrors="true" />
+										<checksum file="${basedir}/packages/cache/${macos.jdk}" algorithm="SHA-256"
+											property="${macos.jdk.sha256}" verifyproperty="macos.jdk.verified" />
+										<fail message="${macos.jdk} does not match its sha-256: delete it from packages/cache and build again">
+											<condition>
+												<isfalse value="${macos.jdk.verified}" />
+											</condition>
+										</fail>
+										<untar src="${basedir}/packages/cache/${macos.jdk}" dest="${basedir}/packages/cache" compression="gzip">
+											<patternset includes="*/Contents/Home/jmods/*.jmod" />
+										</untar>
+										<fail message="no java.base.jmod in ${macos.jmods}">
+											<condition>
+												<not>
+													<available file="${macos.jmods}/java.base.jmod" />
+												</not>
+											</condition>
+										</fail>
+										<delete dir="${bundle.macos.dir}" />
+										<mkdir dir="${bundle.macos.dir}" />
+										<copy todir="${bundle.macos.dir}">
+											<!-- leaves out cour.ttf, the windows icon and the windows swt -->
+											<fileset dir="${basedir}/packages/windows/sokker" excludes="fonts/cour.ttf,installSokkerViewer.ico,lib/swt.jar" />
+										</copy>
+										<copy file="${project.build.directory}/macos/swt.jar" todir="${bundle.macos.dir}/lib" />
+										<copy file="${basedir}/src/main/resources/images/sokkerViewer_ico[64x64].png" tofile="${bundle.macos.dir}/SokkerViewer.png" />
+										<fixcrlf srcdir="${basedir}/src/main/macos" destdir="${bundle.macos.dir}" includes="SokkerViewer.command" eol="lf" />
+										<exec executable="${java.home}/bin/jlink" failonerror="true">
+											<arg value="--module-path" />
+											<arg value="${macos.jmods}" />
+											<arg line="${bundle.jlink}" />
+											<arg value="--output" />
+											<arg value="${bundle.macos.dir}/runtime" />
 										</exec>
 									</tasks>
 								</configuration>
@@ -190,10 +269,29 @@
 									<tasks>
 										<zip
 											destfile="${basedir}/packages/release/stable/windows/sokker-${project.version}-win64-with-java.zip">
-											<zipfileset dir="${bundle.dir}" prefix="SokkerViewer"
+											<zipfileset dir="${bundle.windows.dir}" prefix="SokkerViewer"
 												excludes="SokkerViewer.exe" />
-											<zipfileset dir="${bundle.dir}" prefix="SokkerViewer"
+											<zipfileset dir="${bundle.windows.dir}" prefix="SokkerViewer"
 												includes="SokkerViewer.exe" filemode="755" />
+										</zip>
+									</tasks>
+								</configuration>
+							</execution>
+							<execution>
+								<id>bundle-zip-macos</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<tasks>
+										<mkdir dir="${basedir}/packages/release/stable/macos" />
+										<zip
+											destfile="${basedir}/packages/release/stable/macos/sokker-${project.version}-macos-arm64-with-java.zip">
+											<zipfileset dir="${bundle.macos.dir}" prefix="SokkerViewer"
+												excludes="${bundle.macos.programs}" />
+											<zipfileset dir="${bundle.macos.dir}" prefix="SokkerViewer"
+												includes="${bundle.macos.programs}" filemode="755" />
 										</zip>
 									</tasks>
 								</configuration>
@@ -216,7 +314,7 @@
 									<!-- the jar stays a normal file next to the exe, it is not wrapped -->
 									<dontWrapJar>true</dontWrapJar>
 									<jar>Launcher.jar</jar>
-									<outfile>${bundle.dir}/SokkerViewer.exe</outfile>
+									<outfile>${bundle.windows.dir}/SokkerViewer.exe</outfile>
 									<icon>${basedir}/src/main/resources/images/installSokkerViewer.ico</icon>
 									<!-- SokkerViewer keeps its data next to the exe, so start there -->
 									<chdir>.</chdir>
