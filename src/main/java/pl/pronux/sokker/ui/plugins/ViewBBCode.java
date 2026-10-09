@@ -42,6 +42,11 @@ public class ViewBBCode implements IPlugin {
 
 	private static final int COLOR = 4;
 
+	/** The post being written, kept when the main window is rebuilt */
+	private static String draft = "";
+
+	private static StyleRange[] draftStyles = new StyleRange[0];
+
 	private Composite composite;
 
 	private TreeItem treeItem;
@@ -214,6 +219,17 @@ public class ViewBBCode implements IPlugin {
 		formattedText = new StyledText(composite2, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
 		formattedText.setLayoutData(formData);
 		formattedText.setBackground(ColorResources.getColor(243, 247, 237));
+
+		styledText.setText(draft);
+		styledText.setStyleRanges(draftStyles);
+		text2BBCode(styledText);
+		styledText.addListener(SWT.Dispose, new Listener() {
+
+			public void handleEvent(Event event) {
+				draft = styledText.getText();
+				draftStyles = styledText.getStyleRanges();
+			}
+		});
 	}
 
 	public void setSettings(SokkerViewerSettings sokkerViewerSettings) {

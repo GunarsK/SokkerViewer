@@ -18,12 +18,10 @@ import pl.pronux.sokker.model.League;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerStats;
 import pl.pronux.sokker.model.SVNumberFormat;
-import pl.pronux.sokker.model.SokkerDate;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 import pl.pronux.sokker.ui.resources.ImageResources;
@@ -139,11 +137,7 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 			int c = 0;
 			item.setData(Player.class.getName(), player);
 			item.setImage(c++, FlagsResources.getFlag(player.getCountryfrom()));
-			
-			if(!player.getSkills()[max].isPassTraining()) {
-				item.setForeground(ColorResources.getDarkGray());
-			}
-			
+			markTraining(item, player.getSkills()[max].isPassTraining());
 			item.setText(c++, player.getName());
 			item.setText(c++, player.getSurname());
 			item.setText(c++, String.valueOf(player.getHeight()));

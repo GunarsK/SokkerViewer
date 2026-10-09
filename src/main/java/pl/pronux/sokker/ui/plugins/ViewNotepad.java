@@ -682,7 +682,9 @@ public class ViewNotepad implements IPlugin, Sort {
 		toolBar.setEnabled(true);
 		notes = Cache.getNotes();
 		setViewTableNote();
-		reminder(notes);
+		if (!ViewerHandler.getViewer().isRebuilding()) {
+			reminder(notes);
+		}
 	}
 
 	private void setViewTableNote() {

@@ -17,7 +17,6 @@ import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 import pl.pronux.sokker.ui.resources.ImageResources;
 
@@ -123,10 +122,8 @@ public class PlayerTable extends SVTable<Player> {
 		for (int i = max - 1; i >= 0; i--) {
 			int c = 0;
 			TableItem item = new TableItem(this, SWT.NONE);
-			if(!player.getSkills()[i].isPassTraining()) {
-				item.setForeground(ColorResources.getDarkGray());
-			}
-			item.setData("date", player.getSkills()[i].getDate()); 
+			markTraining(item, player.getSkills()[i].isPassTraining());
+			item.setData("date", player.getSkills()[i].getDate());
 			item.setData("player_skill", player.getSkills()[i]); 
 			item.setText(c++, player.getSkills()[i].getDate().getTrainingDate(SokkerDate.THURSDAY).toDateString());
 			item.setText(c++, player.getSkills()[i].getValue().formatIntegerCurrency());
@@ -240,23 +237,23 @@ public class PlayerTable extends SVTable<Player> {
 				PlayerSkills now = player.getSkills()[i];
 				PlayerSkills before = player.getSkills()[i - 1];
 				int idx = 1;
-				compare(now.getValue().toInt(), before.getValue().toInt(), item, idx++);
-				compare(now.getSalary().toInt(), before.getSalary().toInt(), item, idx++);
-				compare(now.getTrainingAge(), before.getTrainingAge(), item, idx++);
-				//compare(now.getWeight(), before.getWeight(), item, idx++);
-				//compare(now.getBmi(), before.getBmi(), item, idx++);
-				compare(now.getForm(), before.getForm(), item, idx++);
-				compare(now.getStamina(), before.getStamina(), item, idx++);
-				compare(now.getPace(), before.getPace(), item, idx++);
-				compare(now.getTechnique(), before.getTechnique(), item, idx++);
-				compare(now.getPassing(), before.getPassing(), item, idx++);
-				compare(now.getKeeper(), before.getKeeper(), item, idx++);
-				compare(now.getDefender(), before.getDefender(), item, idx++);
-				compare(now.getPlaymaker(), before.getPlaymaker(), item, idx++);
-				compare(now.getScorer(), before.getScorer(), item, idx++);
-				compare(now.getDiscipline(), before.getDiscipline(), item, idx++);
-				compare(now.getExperience(), before.getExperience(), item, idx++);
-				compare(now.getTeamwork(), before.getTeamwork(), item, idx++);
+				getChanges(now.getValue().toInt(), before.getValue().toInt(), item, idx++);
+				getChanges(now.getSalary().toInt(), before.getSalary().toInt(), item, idx++);
+				getChanges(now.getTrainingAge(), before.getTrainingAge(), item, idx++);
+				//getChanges(now.getWeight(), before.getWeight(), item, idx++);
+				//getChanges(now.getBmi(), before.getBmi(), item, idx++);
+				getChanges(now.getForm(), before.getForm(), item, idx++);
+				getChanges(now.getStamina(), before.getStamina(), item, idx++);
+				getChanges(now.getPace(), before.getPace(), item, idx++);
+				getChanges(now.getTechnique(), before.getTechnique(), item, idx++);
+				getChanges(now.getPassing(), before.getPassing(), item, idx++);
+				getChanges(now.getKeeper(), before.getKeeper(), item, idx++);
+				getChanges(now.getDefender(), before.getDefender(), item, idx++);
+				getChanges(now.getPlaymaker(), before.getPlaymaker(), item, idx++);
+				getChanges(now.getScorer(), before.getScorer(), item, idx++);
+				getChanges(now.getDiscipline(), before.getDiscipline(), item, idx++);
+				getChanges(now.getExperience(), before.getExperience(), item, idx++);
+				getChanges(now.getTeamwork(), before.getTeamwork(), item, idx++);
 			}
 		}
 
@@ -269,14 +266,6 @@ public class PlayerTable extends SVTable<Player> {
 			this.getColumn(MATCH_INDEX_1ST).setWidth(this.getColumn(MATCH_INDEX_2ND).getWidth());
 		} else {
 			this.getColumn(MATCH_INDEX_2ND).setWidth(this.getColumn(MATCH_INDEX_1ST).getWidth());
-		}
-	}
-
-	private void compare(double now, double before, TableItem item, int index) {
-		if (before < now) {
-			item.setBackground(index, ConfigBean.getColorIncrease());
-		} else if (before > now) {
-			item.setBackground(index, ConfigBean.getColorDecrease());
 		}
 	}
 }

@@ -62,7 +62,13 @@ public abstract class SVTable<T> extends Table {
 			tableItem.setBackground(column, ConfigBean.getColorDecrease());
 		}
 	}
-	
+
+	/** Row colours of a week with or without training */
+	public static void markTraining(TableItem item, boolean trained) {
+		item.setForeground(trained ? null : ConfigBean.getColorUntrainedFg());
+		item.setBackground(trained ? null : ConfigBean.getColorUntrainedBg());
+	}
+
 	public void openNote(TableItem item, String identifier, int column) {
 		if(item.getData(identifier) != null && item.getData(identifier) instanceof Person) {
 			Person person = (Person) item.getData(identifier);

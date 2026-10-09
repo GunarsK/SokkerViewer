@@ -537,6 +537,7 @@ public final class TeamManager {
 		} finally {
 			SQLSession.close();
 		}
+		training.setReported(false);
 	}
 	
 	public List<Junior> getJuniors(Map<Integer, Training> trainingMap) throws SQLException {

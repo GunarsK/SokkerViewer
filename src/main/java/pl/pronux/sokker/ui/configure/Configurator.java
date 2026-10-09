@@ -15,7 +15,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -35,13 +34,6 @@ import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 
 public class Configurator {
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		new Configurator(new Shell(new Display()), SWT.CLOSE | SWT.MAX | SWT.RESIZE);
-	}
 
 	private Button cancelButton;
 
@@ -73,6 +65,8 @@ public class Configurator {
 	private CLabel info;
 
 	private SokkerViewerSettings settings;
+
+	private boolean rebuild;
 
 	public Configurator(final Shell parent, int style) {
 		settings = SettingsHandler.getSokkerViewerSettings();
@@ -260,10 +254,6 @@ public class Configurator {
 		headerLine.setLayoutData(formData);
 	}
 
-	public void addItem(IViewConfigure view) {
-
-	}
-
 	private void addSash(Shell shell) {
 
 		FormData formData = new FormData();
@@ -387,12 +377,17 @@ public class Configurator {
 	}
 
 	public void setVisible(boolean visible) {
-		if (visible) {
-			shell.getParent().setEnabled(false);
-		} else {
-			shell.getParent().setEnabled(true);
-		}
+		shell.getParent().setEnabled(!visible);
 		shell.setVisible(visible);
+		if (!visible && rebuild) {
+			rebuild = false;
+			ViewerHandler.getViewer().rebuild();
+		}
+	}
+
+	/** Rebuilds the main window once Preferences closes */
+	public void rebuildOnClose() {
+		rebuild = true;
 	}
 
 	private void showView(IViewConfigure composite) {

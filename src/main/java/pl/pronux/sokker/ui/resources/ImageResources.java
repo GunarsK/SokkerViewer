@@ -5,7 +5,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 
@@ -43,6 +47,25 @@ public final class ImageResources {
 		return image;
 	}
 	
+	/** A colour swatch with a black border, cached until the display closes */
+	public static Image swatch(Color color, int width, int height) {
+		String key = "swatch " + color.getRGB() + " " + width + "x" + height;
+		Image image = cache.get(key);
+		if (image == null || image.isDisposed()) {
+			Display display = DisplayHandler.getDisplay();
+			image = new Image(display, width, height);
+			GC gc = new GC(image);
+			gc.setBackground(color);
+			gc.fillRectangle(image.getBounds());
+			gc.setForeground(display.getSystemColor(SWT.COLOR_BLACK));
+			gc.setLineWidth(2);
+			gc.drawRectangle(image.getBounds());
+			gc.dispose();
+			cache.put(key, image);
+		}
+		return image;
+	}
+
 	public static Image getImageFile(String file) {
 		Image image = cache.get(file);
 		if(image == null || image.isDisposed()) {

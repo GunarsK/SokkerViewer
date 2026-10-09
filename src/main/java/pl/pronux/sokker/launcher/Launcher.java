@@ -69,7 +69,11 @@ public class Launcher {
 			} else if (args.length == 0) {
 				Display display = new Display();
 				try {
-					new Viewer(display, SWT.SHELL_TRIM).open();
+					Viewer viewer = new Viewer(display, SWT.SHELL_TRIM, null);
+					while (viewer != null) {
+						viewer.open();
+						viewer = viewer.getRebuilt();
+					}
 				} catch (Exception e) {
 					new BugReporter(display).openErrorMessage("SokkerViewer", e);
 				} finally {

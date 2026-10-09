@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
@@ -13,6 +14,7 @@ import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.Release;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.utils.Log;
 
 /** offers a newer github release: installs it, or opens its page */
@@ -20,11 +22,14 @@ public class CheckUpdateAction implements Runnable {
 
 	private final Shell shell;
 
+	private final Display display;
+
 	/** startup check: silent unless a newer release exists */
 	private final boolean quiet;
 
 	private CheckUpdateAction(Shell shell, boolean quiet) {
 		this.shell = shell;
+		this.display = shell.getDisplay();
 		this.quiet = quiet;
 	}
 
@@ -37,14 +42,19 @@ public class CheckUpdateAction implements Runnable {
 
 	public void run() {
 		final Release release = latestRelease();
-		if (shell.isDisposed()) {
+		if (display.isDisposed()) {
 			return;
 		}
-		shell.getDisplay().asyncExec(new Runnable() {
+		display.asyncExec(new Runnable() {
 			public void run() {
 				show(release);
 			}
 		});
+	}
+
+	/** The main window to ask on: its replacement once a look change rebuilt it */
+	private Shell owner() {
+		return shell.isDisposed() ? ViewerHandler.getViewer() : shell;
 	}
 
 	/** null when github could not be read */
@@ -60,28 +70,29 @@ public class CheckUpdateAction implements Runnable {
 	}
 
 	private void show(Release release) {
-		if (shell.isDisposed()) {
+		Shell owner = owner();
+		if (owner.isDisposed()) {
 			return;
 		}
 		if (release != null && release.isNewerThan(SV.SK_VERSION)) {
 			if (UpdateManager.canUpdate(release)) {
-				if (open(SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.install"), release.getVersion())) == SWT.YES) {
-					UpdateAction.start(shell, release);
+				if (open(owner, SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.install"), release.getVersion())) == SWT.YES) {
+					UpdateAction.start(owner, release);
 				}
-			} else if (open(SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.info"), release.getVersion())) == SWT.YES) {
+			} else if (open(owner, SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.info"), release.getVersion())) == SWT.YES) {
 				Program.launch(release.getUrl());
 			}
 		} else if (!quiet) {
 			if (release == null) {
-				open(SWT.OK | SWT.ICON_ERROR, Messages.getString("message.error.connection"));
+				open(owner, SWT.OK | SWT.ICON_ERROR, Messages.getString("message.error.connection"));
 			} else {
-				open(SWT.OK | SWT.ICON_INFORMATION, Messages.getString("updater.label.info.empty"));
+				open(owner, SWT.OK | SWT.ICON_INFORMATION, Messages.getString("updater.label.info.empty"));
 			}
 		}
 	}
 
-	private int open(int style, String message) {
-		MessageBox msg = new MessageBox(shell, style);
+	private int open(Shell owner, int style, String message) {
+		MessageBox msg = new MessageBox(owner, style);
 		msg.setText(Messages.getString("viewer.menu.help.update"));
 		msg.setMessage(message);
 		return msg.open();

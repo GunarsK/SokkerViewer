@@ -68,6 +68,7 @@ import pl.pronux.sokker.ui.widgets.shells.NoteShell;
 import pl.pronux.sokker.ui.widgets.tables.JuniorTrainedTable;
 import pl.pronux.sokker.ui.widgets.tables.PlayerTable;
 import pl.pronux.sokker.ui.widgets.tables.PlayersTable;
+import pl.pronux.sokker.ui.widgets.tables.SVTable;
 import pl.pronux.sokker.utils.file.OperationOnFile;
 import pl.pronux.sokker.utils.pdf.PDFexport;
 
@@ -637,11 +638,7 @@ public class ViewPlayers implements IPlugin, Sort {
 							PlayerSkills pSkills = (PlayerSkills) item.getData("player_skill");
 							try {
 								playersManager.changePlayerPassTraining(pSkills);
-								if (pSkills.isPassTraining()) {
-									item.setForeground(ColorResources.getBlack());
-								} else {
-									item.setForeground(ColorResources.getDarkGray());
-								}
+								SVTable.markTraining(item, pSkills.isPassTraining());
 							} catch (SQLException e) {
 								new BugReporter(composite.getDisplay()).openErrorMessage("ViewPlayer", e);
 							}

@@ -86,6 +86,9 @@ public class ViewTranslator implements IPlugin {
 
 	private Clipboard cb;
 
+	/** The text being translated, kept when the main window is rebuilt */
+	private static String draft = "";
+
 	private Text text;
 
 	private Player player;
@@ -98,6 +101,13 @@ public class ViewTranslator implements IPlugin {
 
 	private void addComposite(final Composite composite) {
 		text = new Text(composite, SWT.BORDER | SWT.MULTI);
+		text.setText(draft);
+		text.addListener(SWT.Dispose, new Listener() {
+
+			public void handleEvent(Event event) {
+				draft = text.getText();
+			}
+		});
 
 		FormData formData = new FormData();
 		formData.top = new FormAttachment(0, 0);
@@ -776,7 +786,7 @@ public class ViewTranslator implements IPlugin {
 
 	public void init(Composite composite) {
 		this.composite = composite;
-		cb = new Clipboard(composite.getDisplay());
+		cb = ViewerHandler.getClipboard();
 		this.composite.setLayout(new FormLayout());
 		addComposite(composite);
 		addDescriptionComposite();

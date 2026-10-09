@@ -226,59 +226,10 @@ public class PropertiesChecker {
 		return true;
 	}
 
-	public boolean checkUserProperties() {
-
-		SVProperties userProperties = new SVProperties();
-		File file = new File(baseDir + SEP + "settings" + SEP
-				+ "user.properties");
-		if (file.exists()) {
-			try {
-				userProperties.loadFile(file);
-
-				HashMap<String, String> hmValues = new HashMap<String, String>();
-				hmValues.put("font.table", "1|Arial|8|0|GTK|1|");
-				hmValues.put("color.injuryBg", "255,255,255");
-				hmValues.put("color.trainedJunior", "10,150,0");
-				hmValues.put("color.decreaseTable", "255,210,210");
-				hmValues.put("font.description", "1|Courier New|8|0|GTK|1|");
-				hmValues.put("color.newTableItem", "220,222,245");
-				hmValues.put("color.increaseDescription", "0,147,0");
-				hmValues.put("color.injuryFg", "255,0,0");
-				hmValues.put("font.main", "1|Arial|8|0|GTK|1|");
-				hmValues.put("color.increaseTable", "233,252,224");
-				hmValues.put("color.newTreeItem", "0,0,255");
-				hmValues.put("color.decreaseDescription", "255,0,0");
-				hmValues.put("color.error", "255,0,0");
-
-				Set<String> keys = hmValues.keySet();
-				String value;
-				String tempValue;
-				for (String key : keys) {
-					value = hmValues.get(key);
-					tempValue = userProperties.getProperty(key);
-					if (tempValue == null) {
-						userProperties.setProperty(key, value);
-					}
-				}
-				userProperties.synchronize();
-			} catch (FileNotFoundException e) {
-				Log.warning("Properties Checker", e);
-				return false;
-			} catch (IOException e) {
-				Log.warning("Properties Checker", e);
-				return false;
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	public boolean checkAll() {
 		checkBackupProperties();
 		checkSokkerProperties();
 		checkPluginsProperties();
-		checkUserProperties();
 		return true;
 	}
 }

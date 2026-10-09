@@ -1,231 +1,175 @@
 package pl.pronux.sokker.ui.beans;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 
+import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 
 public class ConfigBean {
-	private static Color colorDecrease;
 
-	private static Color colorDecreaseDescription;
+	private static final String DECREASE_TABLE = "color.decreaseTable";
 
-	private static Color colorError;
+	private static final String DECREASE_DESCRIPTION = "color.decreaseDescription";
 
-	private static Color colorFont;
+	private static final String ERROR = "color.error";
 
-	private static Color colorIncrease;
+	private static final String INCREASE_TABLE = "color.increaseTable";
 
-	private static Color colorIncreaseDescription;
+	private static final String INCREASE_DESCRIPTION = "color.increaseDescription";
 
-	private static Color colorInjuryBg;
+	private static final String INJURY_BG = "color.injuryBg";
 
-	private static Color colorInjuryFg;
+	private static final String INJURY_FG = "color.injuryFg";
 
-	private static Color colorNewTableObject;
+	private static final String NEW_TABLE_ITEM = "color.newTableItem";
 
-	private static Color colorNewTreeObject;
+	private static final String NEW_TREE_ITEM = "color.newTreeItem";
 
-	private static Color colorTrainedJunior;
+	private static final String TRAINED_JUNIOR = "color.trainedJunior";
 
-	private static Color colorTransferList;
-	
-	private static Font fontCurier;
+	private static final String UNTRAINED_FG = "color.untrainedFg";
 
-	private static Font fontCurrent;
+	private static final String UNTRAINED_BG = "color.untrainedBg";
 
-	private static Font fontItalic;
+	private static final String FONT_TABLE = "font.table";
 
-	private static Font fontMain;
+	private static final String FONT_DESCRIPTION = "font.description";
 
-	private static Font fontTable;
+	private static final String FONT_MAIN = "font.main";
 
-	public static Color getColorFont() {
-		return colorFont;
+	/** Look page colour keys, in its order */
+	public static final String[] COLORS = {
+		DECREASE_TABLE, DECREASE_DESCRIPTION, ERROR, INCREASE_TABLE, INCREASE_DESCRIPTION, INJURY_BG, INJURY_FG,
+		NEW_TABLE_ITEM, NEW_TREE_ITEM, TRAINED_JUNIOR, UNTRAINED_FG, UNTRAINED_BG
+	};
+
+	/** Look page font keys, in its order */
+	public static final String[] FONTS = {FONT_TABLE, FONT_DESCRIPTION, FONT_MAIN};
+
+	private static final Map<String, Color> colors = new HashMap<String, Color>();
+
+	private static final Map<String, Font> fonts = new HashMap<String, Font>();
+
+	/** Reads the look from user.properties, default.properties for missing keys */
+	public static void load() throws IOException {
+		Properties properties = new Properties(SettingsHandler.getDefaultProperties());
+		File file = userFile();
+		if (file.exists()) {
+			InputStream in = new FileInputStream(file);
+			try {
+				properties.load(in);
+			} finally {
+				in.close();
+			}
+		}
+		for (String key : COLORS) {
+			String[] rgb = properties.getProperty(key).split(",");
+			colors.put(key, ColorResources.getColor(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2])));
+		}
+		for (String key : FONTS) {
+			fonts.put(key, Fonts.getFont(DisplayHandler.getDisplay(), new FontData[] {new FontData(properties.getProperty(key))}));
+		}
 	}
 
-	public static Color getColorIncrease() {
-		return colorIncrease;
+	/** Writes the look to user.properties and loads it */
+	public static void save(Properties properties) throws IOException {
+		OutputStream out = new FileOutputStream(userFile());
+		try {
+			properties.store(out, "");
+		} finally {
+			out.close();
+		}
+		load();
 	}
 
-	public static Color getColorIncreaseDescription() {
-		return colorIncreaseDescription;
+	private static File userFile() {
+		return new File(SettingsHandler.getSokkerViewerSettings().getBaseDirectory() + File.separator + "settings" + File.separator + "user.properties");
 	}
 
-	public static Color getColorNewTreeObject() {
-		return colorNewTreeObject;
+	public static Color getColor(String key) {
+		return colors.get(key);
 	}
 
-	public static Color getColorNewTableObject() {
-		return colorNewTableObject;
-	}
-
-	public static Color getColorError() {
-		return colorError;
-	}
-
-	public static Color getColorInjuryBg() {
-		return colorInjuryBg;
-	}
-
-	public static Color getColorTrainedJunior() {
-		return colorTrainedJunior;
-	}
-
-	public static Color getColorTransferList() {
-		return colorTransferList;
-	}
-
-	public static Color getColorInjuryFg() {
-		return colorInjuryFg;
+	public static Font getFont(String key) {
+		return fonts.get(key);
 	}
 
 	public static Color getColorDecrease() {
-		return colorDecrease;
+		return colors.get(DECREASE_TABLE);
 	}
 
 	public static Color getColorDecreaseDescription() {
-		return colorDecreaseDescription;
+		return colors.get(DECREASE_DESCRIPTION);
 	}
 
-	public static Font getFontDescription() {
-		return fontCurier;
+	public static Color getColorError() {
+		return colors.get(ERROR);
 	}
 
-	public static Font getFontItalic() {
-		return fontItalic;
+	public static Color getColorIncrease() {
+		return colors.get(INCREASE_TABLE);
 	}
 
-	public static Font getFontMain() {
-		return fontMain;
+	public static Color getColorIncreaseDescription() {
+		return colors.get(INCREASE_DESCRIPTION);
 	}
 
-	public static Font getFontCurrent() {
-		return fontCurrent;
+	public static Color getColorInjuryBg() {
+		return colors.get(INJURY_BG);
+	}
+
+	public static Color getColorInjuryFg() {
+		return colors.get(INJURY_FG);
+	}
+
+	public static Color getColorNewTableObject() {
+		return colors.get(NEW_TABLE_ITEM);
+	}
+
+	public static Color getColorNewTreeObject() {
+		return colors.get(NEW_TREE_ITEM);
+	}
+
+	public static Color getColorTrainedJunior() {
+		return colors.get(TRAINED_JUNIOR);
+	}
+
+	public static Color getColorUntrainedFg() {
+		return colors.get(UNTRAINED_FG);
+	}
+
+	public static Color getColorUntrainedBg() {
+		return colors.get(UNTRAINED_BG);
+	}
+
+	/** Name background of a player on the transfer list */
+	public static Color getColorTransferList() {
+		return ColorResources.getColor(221, 255, 255);
 	}
 
 	public static Font getFontTable() {
-		return fontTable;
+		return fonts.get(FONT_TABLE);
 	}
 
-	public static void setColorError(Color colorError) {
-		ConfigBean.colorError = colorError;
+	public static Font getFontDescription() {
+		return fonts.get(FONT_DESCRIPTION);
 	}
 
-	public static void setColorIncrease(Color colorIncrease) {
-		ConfigBean.colorIncrease = colorIncrease;
+	public static Font getFontMain() {
+		return fonts.get(FONT_MAIN);
 	}
-
-	public static void setColorIncreaseDescription(Color colorIncreaseDescription) {
-		ConfigBean.colorIncreaseDescription = colorIncreaseDescription;
-	}
-
-	public static void setColorFont(Color colorFont) {
-		ConfigBean.colorFont = colorFont;
-	}
-
-	public static void setColorDecrease(Color colorDecrease) {
-		ConfigBean.colorDecrease = colorDecrease;
-	}
-
-	public static void setColorDecreaseDescription(Color colorDecreaseDescription) {
-		ConfigBean.colorDecreaseDescription = colorDecreaseDescription;
-	}
-
-	public static void setColorInjuryBg(Color colorInjuryBg) {
-		ConfigBean.colorInjuryBg = colorInjuryBg;
-	}
-
-	public static void setColorNewTableObject(Color colorNewTableObject) {
-		ConfigBean.colorNewTableObject = colorNewTableObject;
-	}
-
-	public static void setColorInjuryFg(Color colorInjuryFg) {
-		ConfigBean.colorInjuryFg = colorInjuryFg;
-	}
-
-	public static void setColorNewTreeObject(Color colorNewTreeObject) {
-		ConfigBean.colorNewTreeObject = colorNewTreeObject;
-	}
-
-	public static void setColorTrainedJunior(Color colorTrainedJunior) {
-		ConfigBean.colorTrainedJunior = colorTrainedJunior;
-	}
-
-	public static void setColorTransferList(Color colorTransferList) {
-		ConfigBean.colorTransferList = colorTransferList;
-	}
-
-	public static void setFontCurrent(Font fontCurrent) {
-		ConfigBean.fontCurrent = fontCurrent;
-	}
-
-	public static void setFontDescription(Font fontCurier) {
-		ConfigBean.fontCurier = fontCurier;
-	}
-
-	public static void setFontItalic(Font font) {
-		ConfigBean.fontItalic = font;
-	}
-
-	public static void setFontMain(Font fontMain) {
-		ConfigBean.fontMain = fontMain;
-	}
-
-	public static void setFontTable(Font fontTable) {
-		ConfigBean.fontTable = fontTable;
-	}
-
-	public static void setDefaults(Properties defaultProperties) {
-			String string;
-			String[] tempTable;
-	
-			tempTable = defaultProperties.getProperty("color.decreaseTable").split(",");  
-			setColorDecrease(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.decreaseDescription").split(",");  
-			setColorDecreaseDescription(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.error").split(",");  
-			setColorError(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-	//		tempTable = defaultProperties.getProperty("color.font").split(",");
-	//		SokkerBean.setColorFont(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.increaseTable").split(",");  
-			setColorIncrease(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.increaseDescription").split(",");  
-			setColorIncreaseDescription(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.injuryBg").split(",");  
-			setColorInjuryBg(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.injuryFg").split(",");  
-			setColorInjuryFg(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.newTableItem").split(",");  
-			setColorNewTableObject(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.newTreeItem").split(",");  
-			setColorNewTreeObject(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-			tempTable = defaultProperties.getProperty("color.trainedJunior").split(",");  
-			setColorTrainedJunior(ColorResources.getColor(Integer.valueOf(tempTable[0]), Integer.valueOf(tempTable[1]), Integer.valueOf(tempTable[2])));
-	
-	
-			string = defaultProperties.getProperty("font.main"); 
-			setFontMain(Fonts.getFont(DisplayHandler.getDisplay(), new FontData[] {new FontData(string)}));
-			
-			string = defaultProperties.getProperty("font.table"); 
-			setFontTable(Fonts.getFont(DisplayHandler.getDisplay(), new FontData[] {new FontData(string)}));
-			
-			string = defaultProperties.getProperty("font.description"); 
-			setFontDescription(Fonts.getFont(DisplayHandler.getDisplay(), new FontData[] {new FontData(string)}));
-		}
 }

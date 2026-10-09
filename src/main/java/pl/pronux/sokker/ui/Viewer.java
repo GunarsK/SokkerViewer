@@ -7,13 +7,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -36,12 +35,15 @@ import pl.pronux.sokker.data.properties.SVProperties;
 import pl.pronux.sokker.enums.Language;
 import pl.pronux.sokker.exceptions.SVException;
 import pl.pronux.sokker.handlers.SettingsHandler;
+import pl.pronux.sokker.interfaces.ProgressMonitor;
+import pl.pronux.sokker.interfaces.RunnableWithProgress;
 import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.resources.PropertiesResources;
 import pl.pronux.sokker.ui.actions.CheckUpdateAction;
 import pl.pronux.sokker.ui.actions.CoreAction;
+import pl.pronux.sokker.ui.actions.SetUIAction;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.configure.Configurator;
 import pl.pronux.sokker.ui.events.UpdateEvent;
@@ -49,8 +51,6 @@ import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
-import pl.pronux.sokker.ui.resources.ColorResources;
-import pl.pronux.sokker.ui.resources.Fonts;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.StatusBar;
 import pl.pronux.sokker.ui.widgets.dialogs.ProgressBarDialog;
@@ -65,8 +65,6 @@ import pl.pronux.sokker.ui.widgets.tree.SVTree;
 public class Viewer extends Shell {
 
 	private SettingsManager settingsManager = SettingsManager.getInstance();
-	
-	private Properties defaultProperties;
 
 	private Display display;
 
@@ -76,8 +74,6 @@ public class Viewer extends Shell {
 
 	private StatusBar statusBar;
 
-	private SVProperties userProperties;
-
 	private List<IPlugin> plugins;
 
 	private Clipboard cb;
@@ -85,8 +81,6 @@ public class Viewer extends Shell {
 	private Configurator configurator;
 
 	private Composite currentView;
-
-	private Font fontCurrent;
 
 	private SokkerViewerSettings settings;
 
@@ -98,8 +92,24 @@ public class Viewer extends Shell {
 
 	private Group viewGroup;
 
-	public Viewer(Display display, int style) throws IOException, SVException {
+	/** Class of the plugin a rebuilt window shows, empty when it shows no data, null at startup */
+	private final String page;
+
+	/** The window that replaced this one */
+	private Viewer rebuilt;
+
+	/** True while the views show loaded data */
+	private boolean filled;
+
+	/** True while a rebuilt window fills its views from memory */
+	private boolean rebuilding;
+
+	/** True once Preferences asked for this window to be replaced */
+	private boolean rebuildRequested;
+
+	public Viewer(Display display, int style, String page) throws IOException, SVException {
 		super(display, style);
+		this.page = page;
 		monitor = display.getPrimaryMonitor();
 		// checking OS
 		ViewerHandler.setViewer(this);
@@ -109,8 +119,6 @@ public class Viewer extends Shell {
 		splash = new Splash(display, SWT.ON_TOP);
 		splash.setStatus(this.getClass().getSimpleName());
 		splash.open();
-
-		addColors();
 
 		cb = new Clipboard(display);
 
@@ -156,22 +164,17 @@ public class Viewer extends Shell {
 			}
 		});
 
-		// settings fonts
-		addFonts();
-
 		addTrayItem(this);
-		defaultProperties = PropertiesResources.getProperties("default.properties"); 
-		SettingsHandler.setDefaultProperties(defaultProperties);
+		this.addListener(SWT.Dispose, new Listener() {
 
-		// loading default colors
-		if (new File(settings.getBaseDirectory() + File.separator + "settings" + File.separator + "user.properties").exists()) {  
-			userProperties = new SVProperties();
-			userProperties.loadFile(settings.getBaseDirectory() + File.separator + "settings" + File.separator + "user.properties");  
-			SettingsHandler.setUserProperties(userProperties);
-			ConfigBean.setDefaults(userProperties);
-		} else {
-			ConfigBean.setDefaults(defaultProperties);
-		}
+			public void handleEvent(Event event) {
+				if (trayItem != null) {
+					trayItem.dispose();
+				}
+			}
+		});
+		SettingsHandler.setDefaultProperties(PropertiesResources.getProperties("default.properties"));
+		ConfigBean.load();
 
 		// adding menu
 		this.setMenuBar(new ViewerMenu(this, SWT.BAR));
@@ -261,35 +264,7 @@ public class Viewer extends Shell {
 
 			public void handleEvent(Event event) {
 				if (event instanceof UpdateEvent) {
-					UpdateEvent updateEvent = (UpdateEvent) event;
-
-					final ProgressBarDialog dialog = new ProgressBarDialog(Viewer.this, SWT.PRIMARY_MODAL | SWT.CLOSE);
-					try {
-						dialog.run(false, false, true, new CoreAction(updateEvent.isUpdate()));
-					} catch (InterruptedException e) {
-						new BugReporter(Viewer.this).openErrorMessage("Viewer", e);
-					} catch (InvocationTargetException e) {
-						new BugReporter(Viewer.this).openErrorMessage("Viewer", e);
-					}
-
-					Thread monitorThread = new Thread(new Runnable() {
-
-						public void run() {
-							final pl.pronux.sokker.ui.widgets.custom.Monitor monitor = dialog.getProgressMonitor();
-
-							while (!monitor.isDone() && !monitor.isCanceled() && !monitor.isInterrupted()) {
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e) {
-								}
-							}
-
-							if (monitor.isCanceled() || monitor.isInterrupted()) {
-								Viewer.this.clear();
-							}
-						}
-					});
-					monitorThread.start();
+					load(new CoreAction(((UpdateEvent) event).isUpdate()));
 				}
 			}
 		});
@@ -299,57 +274,151 @@ public class Viewer extends Shell {
 
 	@Override
 	public void open() {
-		if (settings.isStartup()) {
+		if (page != null) {
+			if (!page.isEmpty()) {
+				load(new RunnableWithProgress() {
+
+					public void run(ProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						rebuilding = true;
+						try {
+							Viewer.this.clear();
+							new SetUIAction().run(monitor);
+							showPage();
+							monitor.done();
+						} catch (RuntimeException e) {
+							throw new InvocationTargetException(e, "Viewer");
+						} finally {
+							rebuilding = false;
+						}
+					}
+
+					public void onFinish() {
+					}
+				});
+			}
+			this.setEnabled(true);
+		} else if (settings.isStartup()) {
 			this.notifyListeners(IEvents.LOAD_DATA, new UpdateEvent(settings.isUpdate()));
 			this.setEnabled(true);
 		} else {
 			new LoginShell(this, SWT.PRIMARY_MODAL | SWT.CLOSE).open();
 		}
 		super.open();
-		UpdateManager.cleanUp();
-		if (settings.isInfoUpdate()) {
-			CheckUpdateAction.start(this, true);
+		if (page == null) {
+			UpdateManager.cleanUp();
+			if (settings.isInfoUpdate()) {
+				CheckUpdateAction.start(this, true);
+			}
 		}
 		while (!this.isDisposed()) {
-			if (!display.readAndDispatch()) {
+			if (rebuildRequested && !busy()) {
+				replace();
+			} else if (!display.readAndDispatch()) {
 				display.sleep();
 			}
 		}
 		cb.dispose();
 	}
 
-	private void addColors() {
-		ConfigBean.setColorDecrease(ColorResources.getColor(255, 210, 210));
-		ConfigBean.setColorDecreaseDescription(ColorResources.getColor(255, 0, 0));
-		ConfigBean.setColorError(ColorResources.getColor(255, 0, 0));
-		ConfigBean.setColorFont(ColorResources.getColor(255, 0, 0));
-		ConfigBean.setColorIncrease(ColorResources.getColor(233, 252, 224));
-		ConfigBean.setColorIncreaseDescription(ColorResources.getColor(10, 150, 0));
-		ConfigBean.setColorInjuryBg(ColorResources.getColor(255, 255, 255));
-		ConfigBean.setColorInjuryFg(ColorResources.getColor(255, 0, 0));
-		ConfigBean.setColorNewTableObject(ColorResources.getColor(220, 222, 245));
-		ConfigBean.setColorNewTreeObject(ColorResources.getColor(0, 0, 255));
-		ConfigBean.setColorTrainedJunior(ColorResources.getColor(10, 150, 0));
-		ConfigBean.setColorTransferList(ColorResources.getColor(221, 255, 255));
+	/** Runs a load in the progress dialog; a failed or cancelled one empties the views */
+	private void load(RunnableWithProgress action) {
+		final ProgressBarDialog dialog = new ProgressBarDialog(this, SWT.PRIMARY_MODAL | SWT.CLOSE);
+		try {
+			dialog.run(false, false, true, action);
+		} catch (InterruptedException e) {
+			new BugReporter(this).openErrorMessage("Viewer", e);
+		} catch (InvocationTargetException e) {
+			new BugReporter(this).openErrorMessage("Viewer", e);
+		}
+
+		Thread monitorThread = new Thread(new Runnable() {
+
+			public void run() {
+				final pl.pronux.sokker.ui.widgets.custom.Monitor monitor = dialog.getProgressMonitor();
+
+				while (!monitor.isDone() && !monitor.isCanceled() && !monitor.isInterrupted()) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+					}
+				}
+
+				if (monitor.isCanceled() || monitor.isInterrupted()) {
+					Viewer.this.clear();
+				}
+			}
+		});
+		monitorThread.start();
 	}
 
-	private void addFonts() {
-		// ustawiam fonty
-		ConfigBean.setFontCurrent(this.getFont());
-		fontCurrent = ConfigBean.getFontCurrent();
+	/** Replaces this window with one built by the startup code, once no dialog of it is open */
+	public void rebuild() {
+		rebuildRequested = true;
+	}
 
-		if (SettingsHandler.IS_WINDOWS) {
-			ConfigBean.setFontMain(Fonts.getFont(display, fontCurrent.getFontData()[0].getName(), fontCurrent.getFontData()[0].height, SWT.NORMAL));
-			ConfigBean.setFontDescription(Fonts.getFont(display,
-														"Bitstream Vera Sans Mono, Luxi Mono,Nimbus Mono L", fontCurrent.getFontData()[0].height, SWT.NORMAL)); 
-			ConfigBean.setFontTable(Fonts.getFont(display, fontCurrent.getFontData()[0].getName(), fontCurrent.getFontData()[0].height, SWT.NORMAL));
-			ConfigBean.setFontItalic(Fonts.getFont(display, fontCurrent.getFontData()[0].getName(), fontCurrent.getFontData()[0].height, SWT.ITALIC));
-		} else {
-			ConfigBean.setFontMain(Fonts.getFont(display, "Arial", fontCurrent.getFontData()[0].height, SWT.NORMAL));
-			ConfigBean.setFontDescription(Fonts.getFont(display, "Courier New", fontCurrent.getFontData()[0].height + 1, SWT.NORMAL));
-			ConfigBean.setFontTable(Fonts.getFont(display, "Arial", fontCurrent.getFontData()[0].height, SWT.NORMAL));
-			ConfigBean.setFontItalic(Fonts.getFont(display, "Courier New", fontCurrent.getFontData()[0].height + 1, SWT.ITALIC));
+	/** Disposes this window and builds its replacement */
+	private void replace() {
+		String shown = filled ? currentPage() : "";
+		FormAttachment sash = ((FormData) mainShellSashVertical.getLayoutData()).left;
+		Rectangle bounds = getBounds();
+		boolean maximized = getMaximized();
+		dispose();
+		try {
+			rebuilt = new Viewer(display, SWT.SHELL_TRIM, shown);
+			((FormData) rebuilt.mainShellSashVertical.getLayoutData()).left = sash;
+			rebuilt.setBounds(bounds);
+			rebuilt.setMaximized(maximized);
+			rebuilt.layout();
+		} catch (IOException e) {
+			new BugReporter(display).openErrorMessage("Viewer", e);
+		} catch (SVException e) {
+			new BugReporter(display).openErrorMessage("Viewer", e);
 		}
+	}
+
+	/** The window that replaced this one, null when SokkerViewer closes */
+	public Viewer getRebuilt() {
+		return rebuilt;
+	}
+
+	public boolean isRebuilding() {
+		return rebuilding;
+	}
+
+	/** True while a dialog of this window is open */
+	private boolean busy() {
+		for (Shell shell : getShells()) {
+			if (shell.isVisible()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Class of the plugin this window shows */
+	private String currentPage() {
+		for (IPlugin plugin : plugins) {
+			if (plugin.getComposite() == currentView) {
+				return plugin.getClass().getName();
+			}
+		}
+		return "";
+	}
+
+	/** Shows the plugin the replaced window showed */
+	private void showPage() {
+		display.syncExec(new Runnable() {
+
+			public void run() {
+				for (IPlugin plugin : plugins) {
+					if (plugin.getClass().getName().equals(page)) {
+						getTree().setSelection(plugin.getTreeItem());
+						showView(plugin.getComposite());
+						return;
+					}
+				}
+			}
+		});
 	}
 
 	private void addSashVertical(Shell parent) {
@@ -408,6 +477,7 @@ public class Viewer extends Shell {
 		DisplayHandler.getDisplay().syncExec(new Runnable() {
 
 			public void run() {
+				filled = false;
 				for (int i = 0; i < plugins.size(); i++) {
 					plugins.get(i).clear();
 				}
@@ -431,14 +501,6 @@ public class Viewer extends Shell {
 		return currentView;
 	}
 
-	public void setConfigurator(Configurator configurator) {
-		this.configurator = configurator;
-	}
-
-	public void setCurrentView(Composite currentView) {
-		this.currentView = currentView;
-	}
-
 	public void setPlugin(final IPlugin plugin) {
 		DisplayHandler.getDisplay().syncExec(new Runnable() {
 
@@ -452,6 +514,7 @@ public class Viewer extends Shell {
 		this.getDisplay().syncExec(new Runnable() {
 
 			public void run() {
+				filled = true;
 				Viewer.this.getConfigurator().setView();
 				Viewer.this.update();
 				Viewer.this.layout();
@@ -467,10 +530,6 @@ public class Viewer extends Shell {
 
 	public List<IPlugin> getPlugins() {
 		return plugins;
-	}
-
-	public void setPluginsList(List<IPlugin> pluginsList) {
-		this.plugins = pluginsList;
 	}
 
 	public void setLastUpdateDate(final String date) {

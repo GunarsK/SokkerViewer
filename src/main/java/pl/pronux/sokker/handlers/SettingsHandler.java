@@ -2,7 +2,6 @@ package pl.pronux.sokker.handlers;
 
 import java.util.Properties;
 
-import pl.pronux.sokker.data.properties.SVProperties;
 import pl.pronux.sokker.enums.OperatingSystem;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 
@@ -27,7 +26,6 @@ public class SettingsHandler {
 	private static boolean logged;
 	private static SokkerViewerSettings sokkerViewerSettings;
 	private static Properties defaultProperties;
-	private static SVProperties userProperties;
 
 	public static boolean isLogged() {
 		return SettingsHandler.logged;
@@ -49,16 +47,8 @@ public class SettingsHandler {
 		return SettingsHandler.defaultProperties;
 	}
 
-	public static SVProperties getUserProperties() {
-		return SettingsHandler.userProperties;
-	}
-
 	public static void setDefaultProperties(Properties defaultProperties) {
 		SettingsHandler.defaultProperties = defaultProperties;
-	}
-
-	public static void setUserProperties(SVProperties userProperties) {
-		SettingsHandler.userProperties = userProperties;
 	}
 
 }
