@@ -130,36 +130,34 @@
 		</profile>
 		<profile>
 			<!--
-				Ready to run bundles for Windows x64 and macOS on Apple silicon: the application,
-				a trimmed Java runtime and a launcher, so nothing has to be installed.
+				Ready to run bundles for Windows x64 and for macOS on Apple silicon and Intel: the
+				application, a trimmed Java runtime and a launcher, so nothing has to be installed.
 
 				mvn -Pbundle clean verify
 				-> packages/release/stable/windows/sokker-${project.version}-win64-with-java.zip
 				-> packages/release/stable/macos/sokker-${project.version}-macos-arm64-with-java.zip
+				-> packages/release/stable/macos/sokker-${project.version}-macos-x64-with-java.zip
 
-				Needs a JDK (not a JRE) as JAVA_HOME, because it runs jlink. The macOS runtime is
-				linked from the jmods of the macOS JDK below, which must be the same version as
-				JAVA_HOME; it is downloaded once into packages/cache.
+				Needs a JDK (not a JRE) as JAVA_HOME, because it runs jlink. The macOS runtimes are
+				linked from the jmods of the macOS JDKs below, which must be the same version as
+				JAVA_HOME; they are downloaded once into packages/cache.
 				The normal build is not affected by this profile.
 			-->
 			<id>bundle</id>
 			<properties>
 				<bundle.windows.dir>${basedir}/packages/bundle/windows/SokkerViewer</bundle.windows.dir>
-				<bundle.macos.dir>${basedir}/packages/bundle/macos/SokkerViewer</bundle.macos.dir>
 				<bundle.modules>java.base,java.desktop,java.naming,java.sql,jdk.charsets,jdk.crypto.ec,jdk.localedata</bundle.modules>
 				<!-- the languages SokkerViewer is translated into, see src/main/resources/lang -->
 				<bundle.locales>en,bg,cs,da,de,el,es,et,fr,hu,it,pl,pt,ro,ru,tr,zh</bundle.locales>
-				<!-- the jlink options both runtimes are linked with -->
+				<!-- the jlink options every runtime is linked with -->
 				<bundle.jlink>--add-modules ${bundle.modules} --include-locales=${bundle.locales} --strip-debug --no-header-files --no-man-pages --compress=zip-6</bundle.jlink>
-				<!-- the files the macOS zip marks executable -->
+				<!-- the files the macOS zips mark executable -->
 				<bundle.macos.programs>SokkerViewer.command,runtime/bin/**,runtime/lib/jspawnhelper</bundle.macos.programs>
-				<!-- the macOS JDK, <version>+<build> -->
+				<!-- the macOS JDKs, <version>+<build> -->
 				<macos.jdk.version>21.0.12.1</macos.jdk.version>
 				<macos.jdk.build>1</macos.jdk.build>
-				<macos.jdk>OpenJDK21U-jdk_aarch64_mac_hotspot_${macos.jdk.version}_${macos.jdk.build}.tar.gz</macos.jdk>
-				<macos.jdk.url>https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${macos.jdk.version}%2B${macos.jdk.build}/${macos.jdk}</macos.jdk.url>
-				<macos.jdk.sha256>3623232f33a9c3baadf304480b2535f9a3cba8a58d42ecbb438ba267315d9998</macos.jdk.sha256>
-				<macos.jmods>${basedir}/packages/cache/jdk-${macos.jdk.version}+${macos.jdk.build}/Contents/Home/jmods</macos.jmods>
+				<macos.jdk.sha256.aarch64>3623232f33a9c3baadf304480b2535f9a3cba8a58d42ecbb438ba267315d9998</macos.jdk.sha256.aarch64>
+				<macos.jdk.sha256.x64>44db0f08196daf19a47f90d13388b0c943b67663cb537f998fe29e836fa842ce</macos.jdk.sha256.x64>
 			</properties>
 			<build>
 				<plugins>
@@ -179,9 +177,16 @@
 											<artifactId>org.eclipse.swt.cocoa.macosx.aarch64</artifactId>
 											<version>${swt.version}</version>
 											<destFileName>swt.jar</destFileName>
+											<outputDirectory>${project.build.directory}/macos-arm64</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.eclipse.platform</groupId>
+											<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
+											<version>${swt.version}</version>
+											<destFileName>swt.jar</destFileName>
+											<outputDirectory>${project.build.directory}/macos-x64</outputDirectory>
 										</artifactItem>
 									</artifactItems>
-									<outputDirectory>${project.build.directory}/macos</outputDirectory>
 								</configuration>
 							</execution>
 						</executions>
@@ -220,42 +225,69 @@
 								</goals>
 								<configuration>
 									<tasks>
-										<mkdir dir="${basedir}/packages/cache" />
-										<!-- an offline build keeps the cached copy -->
-										<get src="${macos.jdk.url}" dest="${basedir}/packages/cache/${macos.jdk}" usetimestamp="true" ignoreerrors="true" />
-										<checksum file="${basedir}/packages/cache/${macos.jdk}" algorithm="SHA-256"
-											property="${macos.jdk.sha256}" verifyproperty="macos.jdk.verified" />
-										<fail message="${macos.jdk} does not match its sha-256: delete it from packages/cache and build again">
-											<condition>
-												<isfalse value="${macos.jdk.verified}" />
-											</condition>
-										</fail>
-										<untar src="${basedir}/packages/cache/${macos.jdk}" dest="${basedir}/packages/cache" compression="gzip">
-											<patternset includes="*/Contents/Home/jmods/*.jmod" />
-										</untar>
-										<fail message="no java.base.jmod in ${macos.jmods}">
-											<condition>
-												<not>
-													<available file="${macos.jmods}/java.base.jmod" />
-												</not>
-											</condition>
-										</fail>
-										<delete dir="${bundle.macos.dir}" />
-										<mkdir dir="${bundle.macos.dir}" />
-										<copy todir="${bundle.macos.dir}">
-											<!-- leaves out cour.ttf, the windows icon and the windows swt -->
-											<fileset dir="${basedir}/packages/windows/sokker" excludes="fonts/cour.ttf,installSokkerViewer.ico,lib/swt.jar" />
-										</copy>
-										<copy file="${project.build.directory}/macos/swt.jar" todir="${bundle.macos.dir}/lib" />
-										<copy file="${basedir}/src/main/resources/images/sokkerViewer_ico[64x64].png" tofile="${bundle.macos.dir}/SokkerViewer.png" />
-										<fixcrlf srcdir="${basedir}/src/main/macos" destdir="${bundle.macos.dir}" includes="SokkerViewer.command" eol="lf" />
-										<exec executable="${java.home}/bin/jlink" failonerror="true">
-											<arg value="--module-path" />
-											<arg value="${macos.jmods}" />
-											<arg line="${bundle.jlink}" />
-											<arg value="--output" />
-											<arg value="${bundle.macos.dir}/runtime" />
-										</exec>
+										<!-- builds and zips the macOS bundle for one cpu -->
+										<macrodef name="macos-bundle">
+											<!-- temurin's name for the cpu -->
+											<attribute name="jdkarch" />
+											<!-- the cpu in the zip's name -->
+											<attribute name="ziparch" />
+											<attribute name="sha256" />
+											<sequential>
+												<property name="macos.jdk.name.@{jdkarch}"
+													value="OpenJDK21U-jdk_@{jdkarch}_mac_hotspot_${macos.jdk.version}_${macos.jdk.build}.tar.gz" />
+												<property name="macos.jdk.@{jdkarch}" value="${basedir}/packages/cache/${macos.jdk.name.@{jdkarch}}" />
+												<property name="macos.jmods.@{jdkarch}"
+													value="${basedir}/packages/cache/@{jdkarch}/jdk-${macos.jdk.version}+${macos.jdk.build}/Contents/Home/jmods" />
+												<property name="macos.dir.@{jdkarch}" value="${basedir}/packages/bundle/macos-@{ziparch}/SokkerViewer" />
+												<mkdir dir="${basedir}/packages/cache" />
+												<!-- an offline build keeps the cached copy -->
+												<get src="https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${macos.jdk.version}%2B${macos.jdk.build}/${macos.jdk.name.@{jdkarch}}"
+													dest="${macos.jdk.@{jdkarch}}" usetimestamp="true" ignoreerrors="true" />
+												<checksum file="${macos.jdk.@{jdkarch}}" algorithm="SHA-256"
+													property="@{sha256}" verifyproperty="macos.jdk.verified.@{jdkarch}" />
+												<fail message="${macos.jdk.@{jdkarch}} does not match its sha-256: delete it and build again">
+													<condition>
+														<isfalse value="${macos.jdk.verified.@{jdkarch}}" />
+													</condition>
+												</fail>
+												<untar src="${macos.jdk.@{jdkarch}}" dest="${basedir}/packages/cache/@{jdkarch}" compression="gzip">
+													<patternset includes="*/Contents/Home/jmods/*.jmod" />
+												</untar>
+												<fail message="no java.base.jmod in ${macos.jmods.@{jdkarch}}">
+													<condition>
+														<not>
+															<available file="${macos.jmods.@{jdkarch}}/java.base.jmod" />
+														</not>
+													</condition>
+												</fail>
+												<delete dir="${macos.dir.@{jdkarch}}" />
+												<mkdir dir="${macos.dir.@{jdkarch}}" />
+												<copy todir="${macos.dir.@{jdkarch}}">
+													<!-- leaves out cour.ttf, the windows icon and the windows swt -->
+													<fileset dir="${basedir}/packages/windows/sokker" excludes="fonts/cour.ttf,installSokkerViewer.ico,lib/swt.jar" />
+												</copy>
+												<copy file="${project.build.directory}/macos-@{ziparch}/swt.jar" todir="${macos.dir.@{jdkarch}}/lib" />
+												<copy file="${basedir}/src/main/resources/images/sokkerViewer_ico[64x64].png" tofile="${macos.dir.@{jdkarch}}/SokkerViewer.png" />
+												<fixcrlf srcdir="${basedir}/src/main/macos" destdir="${macos.dir.@{jdkarch}}" includes="SokkerViewer.command" eol="lf" />
+												<exec executable="${java.home}/bin/jlink" failonerror="true">
+													<arg value="--module-path" />
+													<arg value="${macos.jmods.@{jdkarch}}" />
+													<arg line="${bundle.jlink}" />
+													<arg value="--output" />
+													<arg value="${macos.dir.@{jdkarch}}/runtime" />
+												</exec>
+												<mkdir dir="${basedir}/packages/release/stable/macos" />
+												<zip
+													destfile="${basedir}/packages/release/stable/macos/sokker-${project.version}-macos-@{ziparch}-with-java.zip">
+													<zipfileset dir="${macos.dir.@{jdkarch}}" prefix="SokkerViewer"
+														excludes="${bundle.macos.programs}" />
+													<zipfileset dir="${macos.dir.@{jdkarch}}" prefix="SokkerViewer"
+														includes="${bundle.macos.programs}" filemode="755" />
+												</zip>
+											</sequential>
+										</macrodef>
+										<macos-bundle jdkarch="aarch64" ziparch="arm64" sha256="${macos.jdk.sha256.aarch64}" />
+										<macos-bundle jdkarch="x64" ziparch="x64" sha256="${macos.jdk.sha256.x64}" />
 									</tasks>
 								</configuration>
 							</execution>
@@ -273,25 +305,6 @@
 												excludes="SokkerViewer.exe" />
 											<zipfileset dir="${bundle.windows.dir}" prefix="SokkerViewer"
 												includes="SokkerViewer.exe" filemode="755" />
-										</zip>
-									</tasks>
-								</configuration>
-							</execution>
-							<execution>
-								<id>bundle-zip-macos</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-								<configuration>
-									<tasks>
-										<mkdir dir="${basedir}/packages/release/stable/macos" />
-										<zip
-											destfile="${basedir}/packages/release/stable/macos/sokker-${project.version}-macos-arm64-with-java.zip">
-											<zipfileset dir="${bundle.macos.dir}" prefix="SokkerViewer"
-												excludes="${bundle.macos.programs}" />
-											<zipfileset dir="${bundle.macos.dir}" prefix="SokkerViewer"
-												includes="${bundle.macos.programs}" filemode="755" />
 										</zip>
 									</tasks>
 								</configuration>

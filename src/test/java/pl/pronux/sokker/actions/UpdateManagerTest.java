@@ -27,7 +27,7 @@ public class UpdateManagerTest {
 		File spawnHelper = file(unpacked, "runtime/lib/jspawnhelper");
 		File library = file(unpacked, "runtime/lib/libjli.dylib");
 
-		UpdateManager.makeExecutable(unpacked, Bundle.MACOS);
+		UpdateManager.makeExecutable(unpacked, Bundle.MACOS_ARM64);
 
 		assertTrue(launcher.canExecute());
 		assertTrue(java.canExecute());

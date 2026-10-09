@@ -7,7 +7,9 @@ public enum Bundle {
 
 	WINDOWS("-win64-with-java.zip", "SokkerViewer.exe", "javaw.exe"),
 
-	MACOS("-macos-arm64-with-java.zip", "SokkerViewer.command", "java");
+	MACOS_ARM64("-macos-arm64-with-java.zip", "SokkerViewer.command", "java"),
+
+	MACOS_X64("-macos-x64-with-java.zip", "SokkerViewer.command", "java");
 
 	/** the end of the zip's file name */
 	private final String zipSuffix;
@@ -41,8 +43,14 @@ public enum Bundle {
 		if (SettingsHandler.IS_WINDOWS) {
 			return WINDOWS;
 		}
-		if (SettingsHandler.IS_MACOSX && "aarch64".equals(System.getProperty("os.arch"))) {
-			return MACOS;
+		if (SettingsHandler.IS_MACOSX) {
+			String arch = System.getProperty("os.arch");
+			if ("aarch64".equals(arch)) {
+				return MACOS_ARM64;
+			}
+			if ("x86_64".equals(arch)) {
+				return MACOS_X64;
+			}
 		}
 		return null;
 	}
