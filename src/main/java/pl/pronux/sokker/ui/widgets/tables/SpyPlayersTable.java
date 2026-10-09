@@ -62,9 +62,8 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 				Messages.getString("table.rating.min.short"), 
 				Messages.getString("table.formation"),
 				Messages.getString("table.cards"), 
-				Messages.getString("table.injury"), 
-				// Messages.getString("table.note.short"), 
-				"" 
+				Messages.getString("table.injury"),
+				""
 		};
 
 		for (int j = 0; j < titles.length; j++) {
@@ -79,14 +78,7 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 			column.setText(titles[j]);
 			column.setResizable(false);
 			column.setMoveable(false);
-			// if (titles[j].equals(Messages.getString("table.value"))) {
-			// column.setWidth(100);
-			// } else if (titles[j].equals(Messages.getString("table.salary")))
-			// {
-			// column.setWidth(70);
-			// } else
 			if (j == titles.length - 1) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -95,9 +87,7 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 			} else if ( j == SpyPlayersComparator.RANKING_AVG) {
 				column.setWidth(120);
 			} else {
-				// column.setWidth(40);
 				column.setWidth(40);
-//				column.pack();
 			}
 		}
 
@@ -116,7 +106,6 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 	public void fill(List<Player> players) {
 
 		this.players = players;
-		int max = 0;
 		// Turn off drawing to avoid flicker
 		this.setRedraw(false);
 
@@ -125,7 +114,7 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 		this.remove(0, this.getItemCount() - 1);
 		Collections.sort(players, comparator);
 		for (Player player : players) {
-			max = player.getSkills().length - 1;
+			int max = player.getSkills().length - 1;
 			TableItem item = new TableItem(this, SWT.NONE);
 			int c = 0;
 			item.setData(Player.class.getName(), player);
@@ -177,32 +166,19 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 				c++;
 			}
 
-			// if (player.getNote() != null) {
-			// if (player.getNote().equals("")) { 
-			// c++;
-			// } else {
-			// item.setImage(c++, ImageResources.getImageResources("note.png"));
-			// 
-			// }
-			// }
-
 			if (player.getTransferList() > 0) {
 				item.setBackground(1, ConfigBean.getColorTransferList());
 				item.setBackground(2, ConfigBean.getColorTransferList());
 			}
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			if (i == SpyPlayersComparator.INJURY) {
-//				this.getColumn(i).setWidth(50);
-			} else if (i == SpyPlayersComparator.RANKING_AVG) {
-//				this.getColumn(i).setWidth(120);
-			} else {
-				this.getColumn(i).pack();
-				// this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 5);
-			}
-		}
+		this.layoutColumns();
 
 		this.setRedraw(true);
+	}
+
+	@Override
+	protected void packColumns() {
+		packColumns(0, SpyPlayersComparator.INJURY, SpyPlayersComparator.RANKING_AVG);
 	}
 
 	public SpyPlayersComparator getComparator() {

@@ -102,17 +102,14 @@ public class PlayerStatsTable extends SVTable<PlayerStats> implements IViewSort<
 		this.addListener(SWT.MouseDown, new Listener() {
 
 			public void handleEvent(Event event) {
-				Rectangle clientArea = PlayerStatsTable.this.getClientArea();
 				Point pt = new Point(event.x, event.y);
 				final TableItem item = PlayerStatsTable.this.getItem(pt);
 				if (item != null) {
 					if (((PlayerStats) item.getData(PlayerStats.class.getName())).getIsInjured() == PlayerStats.NOT_INJURED) {
 						return;
 					}
-					boolean visible = false;
 					Rectangle rect = item.getBounds(PlayerStatsComparator.INJURY);
 					if (rect.contains(pt)) {
-						final int column = PlayerStatsComparator.INJURY;
 						final Text text = new Text(PlayerStatsTable.this, SWT.RIGHT);
 						text.setTextLimit(2);
 						text.setFont(ConfigBean.getFontTable());
@@ -126,94 +123,17 @@ public class PlayerStatsTable extends SVTable<PlayerStats> implements IViewSort<
 
 						Listener textListener = new Listener() {
 
-							private int temp;
-							private int value;
-							private PlayerStats stats;
-
 							public void handleEvent(final Event e) {
 								switch (e.type) {
 								case SWT.FocusOut:
-
-									if (text.getText().isEmpty()) {
-										text.setText("0"); 
-									}
-
-									if (!item.getText(column).isEmpty()) {
-										temp = Integer.valueOf(item.getText(column).replaceAll("[^0-9]", "")).intValue();  
-									} else {
-										temp = 0;
-									}
-
-									value = Integer.valueOf(text.getText().replaceAll("[^0-9]", "")).intValue();  
-
-									if (temp != value) {
-										stats = (PlayerStats) item.getData(PlayerStats.class.getName());
-										stats.setInjuryDays(value);
-										try {
-											playersManager.updatePlayerStatsInjury(stats);
-										} catch (SQLException e1) {
-											new BugReporter(PlayerStatsTable.this.getDisplay()).openErrorMessage("PlayerStatsTable -> injury1", e1);
-										}
-										if (value != 0) {
-											item.setText(column, String.valueOf(value));
-											PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).pack();
-											PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).setWidth(
-																												   PlayerStatsTable.this
-																													   .getColumn(PlayerStatsComparator.INJURY)
-																													   .getWidth() + 15);
-										} else {
-											item.setText(column, ""); 
-											PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).pack();
-											PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).setWidth(
-																												   PlayerStatsTable.this
-																													   .getColumn(PlayerStatsComparator.INJURY)
-																													   .getWidth() + 15);
-										}
-									}
+									saveInjury(item, text, "PlayerStatsTable -> injury1");
 									text.dispose();
 									break;
 								case SWT.Traverse:
 									switch (e.detail) {
 									case SWT.TRAVERSE_RETURN:
-
-										if (text.getText().isEmpty()) {
-											text.setText("0"); 
-										}
-
-										if (!item.getText(column).isEmpty()) {
-											temp = Integer.valueOf(item.getText(column).replaceAll("[^0-9]", "")).intValue();  
-										} else {
-											temp = 0;
-										}
-
-										value = Integer.valueOf(text.getText().replaceAll("[^0-9]", "")).intValue();  
-
-										if (temp != value) {
-
-											stats = (PlayerStats) item.getData(PlayerStats.class.getName());
-											stats.setInjuryDays(value);
-											try {
-												playersManager.updatePlayerStatsInjury(stats);
-											} catch (SQLException e1) {
-												new BugReporter(PlayerStatsTable.this.getDisplay()).openErrorMessage("PlayerStatsTable -> injury2", e1);
-											}
-											if (value != 0) {
-												item.setText(column, String.valueOf(value));
-												PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).pack();
-												PlayerStatsTable.this
-													.getColumn(PlayerStatsComparator.INJURY)
-													.setWidth(PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).getWidth() + 15);
-											} else {
-												item.setText(column, ""); 
-												PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).pack();
-												PlayerStatsTable.this
-													.getColumn(PlayerStatsComparator.INJURY)
-													.setWidth(PlayerStatsTable.this.getColumn(PlayerStatsComparator.INJURY).getWidth() + 15);
-
-											}
-										}
+										saveInjury(item, text, "PlayerStatsTable -> injury2");
 										break;
-									// FALL THROUGH
 									case SWT.TRAVERSE_ESCAPE:
 										text.dispose();
 										e.doit = false;
@@ -240,13 +160,6 @@ public class PlayerStatsTable extends SVTable<PlayerStats> implements IViewSort<
 
 						text.selectAll();
 						text.setFocus();
-						return;
-					}
-					if (!visible && rect.intersects(clientArea)) {
-						visible = true;
-					}
-					if (!visible) {
-						return;
 					}
 				}
 
@@ -283,15 +196,6 @@ public class PlayerStatsTable extends SVTable<PlayerStats> implements IViewSort<
 				item.setText(i++, match.getHomeTeamName());
 				item.setText(i++, match.getAwayTeamName());
 
-				// if (playerStats.getFormation() == PlayerStats.GK) {
-				// item.setBackground(i, ColorResources.getColor(221, 255, 255));
-				// } else if (playerStats.getFormation() == PlayerStats.DEF) {
-				// item.setBackground(i, ColorResources.getColor(255, 230, 214));
-				// } else if (playerStats.getFormation() == PlayerStats.MID) {
-				// item.setBackground(i, ColorResources.getColor(255, 255, 208));
-				// } else if (playerStats.getFormation() == PlayerStats.ATT) {
-				// item.setBackground(i, ColorResources.getColor(226, 255, 208));
-				// }
 				if (playerStats.getFormation() >= 0 && playerStats.getFormation() <= 4) {
 					item.setText(i++, Messages.getString("formation." + playerStats.getFormation())); 
 				} else {
@@ -342,13 +246,42 @@ public class PlayerStatsTable extends SVTable<PlayerStats> implements IViewSort<
 
 			}
 		}
-		for (int i = 1; i < this.getColumnCount() - 1; i++) {
-			if (i != PlayerStatsComparator.STARS) {
-				this.getColumn(i).pack();
-				this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 15);
-			}
-		}
+		this.layoutColumns();
 		this.setRedraw(true);
+	}
+
+	@Override
+	protected void packColumns() {
+		packColumns(15, 0, PlayerStatsComparator.STARS);
+	}
+
+	/** Saves the injury days typed into the editor when they changed */
+	private void saveInjury(TableItem item, Text text, String source) {
+		if (text.getText().isEmpty()) {
+			text.setText("0");
+		}
+		String shown = item.getText(PlayerStatsComparator.INJURY);
+		int before = shown.isEmpty() ? 0 : Integer.valueOf(shown.replaceAll("[^0-9]", "")).intValue();
+		int value = Integer.valueOf(text.getText().replaceAll("[^0-9]", "")).intValue();
+		if (before != value) {
+			PlayerStats stats = (PlayerStats) item.getData(PlayerStats.class.getName());
+			stats.setInjuryDays(value);
+			try {
+				playersManager.updatePlayerStatsInjury(stats);
+			} catch (SQLException e) {
+				new BugReporter(getDisplay()).openErrorMessage(source, e);
+			}
+			item.setText(PlayerStatsComparator.INJURY, value != 0 ? String.valueOf(value) : "");
+			repackInjury();
+		}
+	}
+
+	/** Fits the injury column after an edit, keeping hidden columns hidden */
+	private void repackInjury() {
+		TableColumn column = this.getColumn(PlayerStatsComparator.INJURY);
+		column.pack();
+		column.setWidth(column.getWidth() + 15);
+		this.hideColumns();
 	}
 
 	@Override

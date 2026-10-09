@@ -7,7 +7,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import pl.pronux.sokker.comparators.MatchesComparator;
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.model.League;
 import pl.pronux.sokker.model.Match;
@@ -19,26 +18,19 @@ import pl.pronux.sokker.ui.resources.Fonts;
 
 public class MatchesTable extends SVTable<Match> {
 
-	private MatchesComparator comparator;
-	
 	private MatchUIManager matchUIManager = MatchUIManager.instance();
 
 	public MatchesTable(Composite parent, int style) {
 		super(parent, style);
-		comparator = new MatchesComparator();
-		comparator.setColumn(MatchesComparator.WEEK_DAY);
-		comparator.setDirection(MatchesComparator.DESCENDING);
 
 		String[] columns = {
-				"", 
-				Messages.getString("table.date"), 
-				Messages.getString("table.week"), 
-//				"",
-				Messages.getString("table.team.home"), 
-				Messages.getString("table.match.result"), 
-				Messages.getString("table.team.away"), 
-//				"",
-				"" 
+				"",
+				Messages.getString("table.date"),
+				Messages.getString("table.week"),
+				Messages.getString("table.team.home"),
+				Messages.getString("table.match.result"),
+				Messages.getString("table.team.away"),
+				""
 		};
 
 		for (int i = 0; i < columns.length; i++) {
@@ -66,7 +58,6 @@ public class MatchesTable extends SVTable<Match> {
 		this.setRedraw(false);
 
 		this.remove(0, this.getItemCount() - 1);
-		// Collections.sort(matches, comparator);
 
 		int c;
 		for (Match match : matches) {
@@ -86,11 +77,6 @@ public class MatchesTable extends SVTable<Match> {
 				
 				item.setText(c++, match.getDateStarted().toDateString());
 				item.setText(c++, String.valueOf(match.getWeek()));
-//				if(match.getHomeTeamStats() == null) {
-//					c++;
-//				} else {
-//					item.setText(c++, SVNumberFormat.formatDouble(match.getHomeTeamStats().getAverageRating()));	
-//				}
 				item.setText(c++, match.getHomeTeamName());
 
 				if (match.getHomeTeamScore() < 0 || match.getAwayTeamScore() < 0) {
@@ -116,28 +102,17 @@ public class MatchesTable extends SVTable<Match> {
 				}
 				
 				item.setText(c++, match.getAwayTeamName());
-				
-//				if (match.getHomeTeamScore() > match.getAwayTeamScore()) {
-//					item.setFont(c - 3, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-//				} else if (match.getHomeTeamScore() < match.getAwayTeamScore()) {
-//					item.setFont(c - 1, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-//				}
-				
-//				if(match.getAwayTeamStats() == null) {
-//					c++;
-//				} else {
-//					item.setText(c++, SVNumberFormat.formatDouble(match.getAwayTeamStats().getAverageRating()));
-//				}
-
 			}
 		}
 
-		for (int i = 1; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 3);
-		}
+		this.layoutColumns();
 
 		this.setRedraw(true);
+	}
+
+	@Override
+	protected void packColumns() {
+		packColumns(3, 0);
 	}
 
 }

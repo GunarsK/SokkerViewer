@@ -73,12 +73,6 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 			column.setText(titles[j]);
 			column.setResizable(false);
 			column.setMoveable(false);
-			// if (titles[j].equals(langProperties.getProperty("table.skill"))) {
-			// column.setWidth(50);
-			// } else if (titles[j].equals(langProperties.getProperty("table.week")))
-			// {
-			// column.setWidth(50);
-			// } else
 			if (titles[j].isEmpty()) {
 
 				// potrzebne do dopelnienia tabel w Linuxie
@@ -97,7 +91,6 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 	}
 	
 	public void fill(List<Junior> juniors) {
-		int maxSkill = 0;
 		// Turn off drawing to avoid flicker
 		this.setRedraw(false);
 
@@ -106,11 +99,10 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 		this.removeAll();
 		Collections.sort(juniors, comparator);
 		for (Junior junior : juniors) {
-			maxSkill = junior.getSkills().length - 1;
+			int maxSkill = junior.getSkills().length - 1;
 			TableItem item = new TableItem(this, SWT.NONE);
 			int c = 0;
 			item.setData(Junior.class.getName(), junior);
-			// item.setData("id", junior.getId());
 			item.setImage(FlagsResources.getFlag(Cache.getClub().getCountry()));
 			item.setText(c++, junior.getName());
 			item.setText(c++, junior.getSurname());
@@ -148,7 +140,6 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 			item.setText(c++, junior.getEndDate().toDateString());
 			item.setText(c++, junior.getMoneySpent().formatIntegerCurrencySymbol());
 			item.setText(c++, junior.getRestMoneyToSpend().formatIntegerCurrencySymbol());
-//			item.setText(c++, Money.formatIntegerCurrency((junior.getSkills()[0].getWeeks() + 1) * juniorCost.toInt()));
 			item.setText(c++, junior.getAllMoneyToSpend().formatIntegerCurrencySymbol());
 			
 			
@@ -167,10 +158,7 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 			}
 		}
 
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-//			table.getColumn(i).setWidth(table.getColumn(i).getWidth() + 15);
-		}
+		this.layoutColumns();
 		// Turn drawing back on
 		this.setRedraw(true);
 	}

@@ -181,7 +181,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 		return _treeItem;
 	}
 
-	private void addTableEditor(final Table table) {
+	private void addTableEditor(final PlayersHistoryTable table) {
 		final TableEditor editor = new TableEditor(table);
 		editor.horizontalAlignment = SWT.LEFT;
 		editor.grabHorizontal = true;
@@ -232,7 +232,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 											} catch (SQLException e) {
 												new BugReporter(vComposite.getDisplay()).openErrorMessage("ViewPlayerHistory->FocusOut", e);
 											}
-											table.getColumn(table.getColumnCount() - 2).pack();
+											table.layoutColumns();
 										}
 										text.dispose();
 										break;
@@ -257,7 +257,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 												} catch (SQLException e) {
 													new BugReporter(vComposite.getDisplay()).openErrorMessage("ViewPlayerHistory->Traverse", e);
 												}
-												table.getColumn(table.getColumnCount() - 2).pack();
+												table.layoutColumns();
 											}
 											break;
 										// FALL THROUGH

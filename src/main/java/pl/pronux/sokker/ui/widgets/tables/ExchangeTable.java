@@ -57,7 +57,6 @@ public class ExchangeTable extends SVTable<Exchange> implements IViewSort<Exchan
 			}
 
 			if (titles[i].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -92,9 +91,7 @@ public class ExchangeTable extends SVTable<Exchange> implements IViewSort<Exchan
 			item.setText(4, exchange.getCurrency());
 			item.setText(5, Money.formatDoubleCurrency(exchange.getValue()));
 		}
-		for(int i = 0 ; i < this.getColumnCount()-1; i++ ) {
-			this.getColumn(i).pack();
-		}
+		this.layoutColumns();
 
 		this.setRedraw(true);
 	}

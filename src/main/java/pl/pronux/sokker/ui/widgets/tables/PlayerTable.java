@@ -1,6 +1,5 @@
 package pl.pronux.sokker.ui.widgets.tables;
 
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableColumn;
@@ -70,9 +69,7 @@ public class PlayerTable extends SVTable<Player> {
 				Messages.getString("table.date"), 
 				Messages.getString("table.value"), 
 				Messages.getString("table.salary"), 
-				Messages.getString("table.age"), 
-				//Messages.getString("table.weight"),
-				//Messages.getString("table.bmi"), 
+				Messages.getString("table.age"),
 				Messages.getString("table.form"), 
 				Messages.getString("table.stamina"), 
 				Messages.getString("table.pace"), 
@@ -104,21 +101,17 @@ public class PlayerTable extends SVTable<Player> {
 			column.setResizable(false);
 			column.setMoveable(false);
 			if (titles[j].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
 			} else {
-				// column.setWidth(40);
 				column.pack();
 			}
 		}
 	}
 
 	public void fill(Player player) {
-		int max = 0;
-		
-		max = player.getSkills().length;
+		int max = player.getSkills().length;
 		for (int i = max - 1; i >= 0; i--) {
 			int c = 0;
 			TableItem item = new TableItem(this, SWT.NONE);
@@ -129,8 +122,6 @@ public class PlayerTable extends SVTable<Player> {
 			item.setText(c++, player.getSkills()[i].getValue().formatIntegerCurrency());
 			item.setText(c++, player.getSkills()[i].getSalary().formatIntegerCurrency());
 			item.setText(c++, String.valueOf(player.getSkills()[i].getTrainingAge()));
-			//item.setText(c++, String.valueOf(player.getSkills()[i].getWeight()));
-			//item.setText(c++, String.valueOf(player.getSkills()[i].getBmi()));
 			item.setText(c++, String.valueOf(player.getSkills()[i].getForm()));
 			item.setText(c++, String.valueOf(player.getSkills()[i].getStamina()));
 			item.setText(c++, String.valueOf(player.getSkills()[i].getPace()));
@@ -240,8 +231,6 @@ public class PlayerTable extends SVTable<Player> {
 				getChanges(now.getValue().toInt(), before.getValue().toInt(), item, idx++);
 				getChanges(now.getSalary().toInt(), before.getSalary().toInt(), item, idx++);
 				getChanges(now.getTrainingAge(), before.getTrainingAge(), item, idx++);
-				//getChanges(now.getWeight(), before.getWeight(), item, idx++);
-				//getChanges(now.getBmi(), before.getBmi(), item, idx++);
 				getChanges(now.getForm(), before.getForm(), item, idx++);
 				getChanges(now.getStamina(), before.getStamina(), item, idx++);
 				getChanges(now.getPace(), before.getPace(), item, idx++);
@@ -257,11 +246,12 @@ public class PlayerTable extends SVTable<Player> {
 			}
 		}
 
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-//			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 5);
-		}
+		this.layoutColumns();
+	}
 
+	@Override
+	protected void packColumns() {
+		super.packColumns();
 		if (this.getColumn(MATCH_INDEX_1ST).getWidth() < this.getColumn(MATCH_INDEX_2ND).getWidth()) {
 			this.getColumn(MATCH_INDEX_1ST).setWidth(this.getColumn(MATCH_INDEX_2ND).getWidth());
 		} else {

@@ -57,8 +57,6 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				Messages.getString("table.name"), 
 				Messages.getString("table.surname"), 
 				Messages.getString("table.height"),
-				//Messages.getString("table.weight"),
-				//Messages.getString("table.bmi"),
 				Messages.getString("table.value"), 
 				Messages.getString("table.salary"), 
 				Messages.getString("table.age"), 
@@ -103,27 +101,19 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 			column.setText(titles[j]);
 			column.setResizable(false);
 			column.setMoveable(false);
-			// if (titles[j].equals(Messages.getString("table.value"))) {
-			// column.setWidth(100);
-			// } else if (titles[j].equals(Messages.getString("table.salary"))) {
-			// column.setWidth(70);
-			// } else
 			if (titles[j].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
 			} else {
-				// column.setWidth(40);
 				column.pack();
 			}
 		}
-		
+
 		this.addLabelsListener();
 	}
 
 	public void fill(List<Player> players) {
-		int max = 0;
 		// Turn off drawing to avoid flicker
 		this.setRedraw(false);
 
@@ -132,7 +122,7 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 		this.removeAll();
 		Collections.sort(players, comparator);
 		for (Player player : players) {
-			max = player.getSkills().length - 1;
+			int max = player.getSkills().length - 1;
 			TableItem item = new TableItem(this, SWT.NONE);
 			int c = 0;
 			item.setData(Player.class.getName(), player);
@@ -141,8 +131,6 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 			item.setText(c++, player.getName());
 			item.setText(c++, player.getSurname());
 			item.setText(c++, String.valueOf(player.getHeight()));
-			//item.setText(c++, String.format("%.2f", player.getSkills()[max].getWeight()));
-			//item.setText(c++, String.format("%.2f", player.getSkills()[max].getBmi()));
 			item.setText(c++, player.getSkills()[max].getValue().formatIntegerCurrency());
 			item.setText(c++, player.getSkills()[max].getSalary().formatIntegerCurrency());
 			item.setText(c++, String.valueOf(player.getSkills()[max].getAge()));
@@ -280,8 +268,6 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 			}
 			
 			if (max > 0) {
-				//this.getChanges(player.getSkills()[max].getWeight(), player.getSkills()[max - 1].getWeight(), item, PlayerComparator.WEIGHT);
-				//this.getChanges(player.getSkills()[max].getBmi(), player.getSkills()[max - 1].getBmi(), item, PlayerComparator.BMI);
 				this.getChanges(player.getSkills()[max].getValue().toInt(), player.getSkills()[max - 1].getValue().toInt(), item, PlayerComparator.VALUE);
 				this.getChanges(player.getSkills()[max].getSalary().toInt(), player.getSkills()[max - 1].getSalary().toInt(), item, PlayerComparator.SALARY);
 				this.getChanges(player.getSkills()[max].getAge(), player.getSkills()[max - 1].getAge(), item, PlayerComparator.AGE);
@@ -306,13 +292,8 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				item.setBackground(2, ConfigBean.getColorTransferList());
 			}
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-			// table.getColumn(i).setWidth(table.getColumn(i).getWidth());
-		}
+		this.layoutColumns();
 
-		// table.getColumn(PlayerComparator.CARDS).setWidth(30);
-		// table.getColumn(PlayerComparator.NOTE).setWidth(30);
 		// Turn drawing back on
 		this.setRedraw(true);
 	}

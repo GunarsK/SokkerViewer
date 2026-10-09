@@ -65,12 +65,10 @@ public class TransfersTable extends SVTable<Transfer> implements IViewSort<Trans
 			column.setMoveable(false);
 
 			if (j == columns.length - 1) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
 			} else {
-				// column.setWidth(40);
 				column.pack();
 				column.addSelectionListener(new SortTableListener<Transfer>(this, comparator));
 			}
@@ -116,12 +114,14 @@ public class TransfersTable extends SVTable<Transfer> implements IViewSort<Trans
 			item.setText(c++, transfer.getPlayerValue().formatIntegerCurrency());
 
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 5);
-		}
+		this.layoutColumns();
 		// Turn drawing back on
 		this.setRedraw(true);
+	}
+
+	@Override
+	protected void packColumns() {
+		packColumns(5);
 	}
 
 	public void fill(List<Transfer> alTransfers) {

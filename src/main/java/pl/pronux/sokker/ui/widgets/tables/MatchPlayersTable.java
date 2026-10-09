@@ -2,7 +2,6 @@ package pl.pronux.sokker.ui.widgets.tables;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -61,7 +60,6 @@ public class MatchPlayersTable extends SVTable<PlayerStats> implements IViewSort
 				column.setToolTipText(columnsTooltips[i]);
 				column.addSelectionListener(new SortTableListener<PlayerStats>(this, comparator));
 			}
-			// column.pack();
 		}
 
 		this.setLinesVisible(false);
@@ -175,33 +173,15 @@ public class MatchPlayersTable extends SVTable<PlayerStats> implements IViewSort
 			} else {
 				i++;
 			}
-			// item.setText(i++, String.valueOf(playerStats.getYellowCards() + "
-			// " +
-			// playerStats.getRedCards()));
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-
-			if (i == 0) {
-				this.getColumn(i).setWidth(25);
-			} else {
-				this.getColumn(i).pack();
-			}
-			// else {
-			// this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 3);
-			// }
-		}
-
-		// for (int i = 0; i < this.getItemCount(); i++) {
-		// if ((i % 2) == 1) {
-		// this.getItem(i).setBackground(this.getDisplay().getSystemColor(SWT.COLOR_GRAY));
-		// }
-		// }
+		this.layoutColumns();
 		this.setRedraw(true);
-		// table.pack();
-		// table.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 	}
 
-	public void translate(ResourceBundle langResources) {
+	@Override
+	protected void packColumns() {
+		packColumns(0, 0);
+		this.getColumn(0).setWidth(25);
 	}
 
 	public void sort(SVComparator<PlayerStats> comparator) {

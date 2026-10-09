@@ -41,7 +41,6 @@ public class StatisticsRankTable extends SVTable<Club> {
 			column.setAlignment(SWT.RIGHT);
 
 			if (columns3[i].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -75,9 +74,11 @@ public class StatisticsRankTable extends SVTable<Club> {
 
 		this.getChanges(columns);
 
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 15);
-		}
+		this.layoutColumns();
+	}
+
+	@Override
+	protected void packColumns() {
+		packColumns(15);
 	}
 }

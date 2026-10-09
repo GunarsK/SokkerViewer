@@ -43,14 +43,8 @@ public class StatisticsFansTable extends SVTable<Club> {
 			column.setResizable(false);
 
 			column.setAlignment(SWT.RIGHT);
-			// if (i == 0) {
-			// column.setAlignment(SWT.LEFT);
-			// } else {
-			// column.setAlignment(SWT.RIGHT);
-			// }
 
 			if (columns[i].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -89,6 +83,11 @@ public class StatisticsFansTable extends SVTable<Club> {
 		int[] columns = { 1, 2, };
 		this.getChanges(columns);
 
+		this.layoutColumns();
+	}
+
+	@Override
+	protected void packColumns() {
 		for (int i = 0; i < this.getColumnCount() - 1; i++) {
 			this.getColumn(i).setWidth(0); // without this line columns doesn't pack well. problem with tabs in statistics
 			this.getColumn(i).pack();

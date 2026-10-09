@@ -147,9 +147,7 @@ public class CoachesTable extends SVTable<Coach> implements IViewSort<Coach> {
 				}
 			}
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-		}
+		this.layoutColumns();
 		// Turn drawing back on
 		this.setRedraw(true);
 	}

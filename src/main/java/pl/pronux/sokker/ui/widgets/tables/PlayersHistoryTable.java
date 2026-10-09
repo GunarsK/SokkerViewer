@@ -37,8 +37,6 @@ public class PlayersHistoryTable extends SVTable<Player> {
 		comparator.setColumn(PlayerHistoryComparator.SURNAME);
 		comparator.setDirection(PlayerHistoryComparator.ASCENDING);
 
-		// tworzymy kolumny dla trenerow
-
 		String[] titles = {
 				"", 
 				Messages.getString("table.name"), 
@@ -75,12 +73,10 @@ public class PlayersHistoryTable extends SVTable<Player> {
 			column.setResizable(false);
 			column.setMoveable(false);
 			if (titles[j].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
 			} else {
-				// column.setWidth(40);
 				column.pack();
 			}
 		}
@@ -101,7 +97,6 @@ public class PlayersHistoryTable extends SVTable<Player> {
 		Map<Integer, TableItem> tableItemMap = new HashMap<Integer, TableItem>();
 
 		this.players = players;
-		int maxSkill = 0;
 		// Turn off drawing to avoid flicker
 		this.setRedraw(false);
 
@@ -110,7 +105,7 @@ public class PlayersHistoryTable extends SVTable<Player> {
 		this.remove(0, this.getItemCount() - 1);
 		Collections.sort(players, comparator);
 		for (Player player : players) {
-			maxSkill = player.getSkills().length - 1;
+			int maxSkill = player.getSkills().length - 1;
 			TableItem item = new TableItem(this, SWT.NONE);
 
 			tableItemMap.put(player.getId(), item);
@@ -143,9 +138,7 @@ public class PlayersHistoryTable extends SVTable<Player> {
 
 		}
 
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-		}
+		this.layoutColumns();
 		// Turn drawing back on
 		this.setRedraw(true);
 

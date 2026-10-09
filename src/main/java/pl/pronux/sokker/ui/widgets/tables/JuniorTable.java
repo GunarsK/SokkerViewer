@@ -61,8 +61,7 @@ public class JuniorTable extends SVTable<Junior> {
 
 		this.setData(Junior.class.getName(), junior); 
 
-		int maxSkill = 0;
-		maxSkill = junior.getSkills().length;
+		int maxSkill = junior.getSkills().length;
 		int[] columns = {
 			1
 		};
@@ -82,14 +81,16 @@ public class JuniorTable extends SVTable<Junior> {
 			}
 			thisItem.setText(4, String.valueOf(junior.getSkills()[i].getTrainingAge()));
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 15);
-		}
+		this.layoutColumns();
 
 		this.getChanges(columns);
 
 		this.setRedraw(true);
+	}
+
+	@Override
+	protected void packColumns() {
+		packColumns(15);
 	}
 
 }

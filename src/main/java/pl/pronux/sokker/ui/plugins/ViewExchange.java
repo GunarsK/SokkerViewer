@@ -54,14 +54,6 @@ public class ViewExchange implements IPlugin {
 	private List<Country> countries;
 	private Listener verifyCurrencyList;
 
-//	public ViewExchange(Composite parent, int style) {
-//		super(parent, style);
-//		thisComposite = this;
-//		langProperties = SokkerBean.getLangProperties();
-//		confProperties = SokkerBean.getConfProperties();
-//		this.setLayout(new FormLayout());
-//	}
-
 	public void clear() {
 	}
 
@@ -90,7 +82,6 @@ public class ViewExchange implements IPlugin {
 
 
 	public void setSettings(SokkerViewerSettings sokkerViewerSettings) {
-//		this.confProperties = confProperties;
 	}
 
 	public void setTreeItem(TreeItem treeItem) {
@@ -206,21 +197,17 @@ public class ViewExchange implements IPlugin {
 					e.doit = false;
 					return;
 				}
-				BigDecimal summary = BigDecimal.ZERO;
 				double value = Double.valueOf(string).doubleValue();
-				double tempSummary = 0;
-				tempSummary = value * Double.valueOf(currenciesMap.get(currency));
+				double tempSummary = value * Double.valueOf(currenciesMap.get(currency));
 
+				for(int i = 0; i < exchangeTable.getItemCount() ; i++) {
+					BigDecimal summary = new BigDecimal(tempSummary / exchanges.get(i).getExchange()).setScale(2, RoundingMode.HALF_UP);
 
+					exchanges.get(i).setValue(summary.doubleValue());
+					exchangeTable.getItem(i).setText(5,String.valueOf(summary));
+				}
 
-					for(int i = 0; i < exchangeTable.getItemCount() ; i++) {
-						summary = new BigDecimal(tempSummary / exchanges.get(i).getExchange()).setScale(2, RoundingMode.HALF_UP);
-
-						exchanges.get(i).setValue(summary.doubleValue());
-						exchangeTable.getItem(i).setText(5,String.valueOf(summary));
-					}
-
-				exchangeTable.getColumn(5).pack();
+				exchangeTable.layoutColumns();
 			}
 
 		};
@@ -264,7 +251,6 @@ public class ViewExchange implements IPlugin {
 	}
 
 	public void reload() {
-		// TODO Auto-generated method stub
 	}
 
 

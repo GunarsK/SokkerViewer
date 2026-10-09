@@ -59,12 +59,10 @@ public class PlayersArchiveTable extends SVTable<PlayerArchive> implements IView
 			column.setMoveable(false);
 
 			if (j == columns.length - 1) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
 			} else {
-				// column.setWidth(40);
 				column.pack();
 				column.addSelectionListener(new SortTableListener<PlayerArchive>(this, comparator));
 			}
@@ -107,9 +105,7 @@ public class PlayersArchiveTable extends SVTable<PlayerArchive> implements IView
 			}
 
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-		}
+		this.layoutColumns();
 
 		// Turn drawing back on
 		this.setRedraw(true);

@@ -51,16 +51,7 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 		
 		String[] title = {
 				Messages.getString("table.name"), 
-				Messages.getString("table.surname"), 
-				// langProperties.getProperty("table.form"),
-				// langProperties.getProperty("table.stamina"),
-				// langProperties.getProperty("table.pace"),
-				// langProperties.getProperty("table.technique"),
-				// langProperties.getProperty("table.passing"),
-				// langProperties.getProperty("table.keeper"),
-				// langProperties.getProperty("table.defender"),
-				// langProperties.getProperty("table.playmaker"),
-				// langProperties.getProperty("table.scorer"),
+				Messages.getString("table.surname"),
 				Messages.getString("assistant.position.short.1"), 
 				Messages.getString("assistant.position.short.2"), 
 				Messages.getString("assistant.position.short.3"), 
@@ -112,7 +103,6 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 	}
 	
 	public void fill(List<Player> players) {
-		// int maxSkill = 0;
 		// Turn off drawing to avoid flicker
 		this.setRedraw(false);
 		this.players = players;
@@ -122,7 +112,6 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 
 		Collections.sort(players, comparator);
 		for (Player player : players) {
-			// maxSkill = player.getSkills().length - 1;
 			TableItem item = new TableItem(this, SWT.NONE);
 
 			if (player.getPosition() == Player.POSITION_GK) {
@@ -152,24 +141,6 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 			item.setData("person", player); 
 			item.setText(idx++, player.getName());
 			item.setText(idx++, player.getSurname());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getForm()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getStamina()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getPace()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getTechnique()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getPassing()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getKeeper()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getDefender()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getPlaymaker()).toString());
-			// item.setText(c++,
-			// String.valueOf(player.getSkills()[maxSkill].getScorer()).toString());
 			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
 			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
 			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
@@ -181,23 +152,10 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
 			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
 			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
-			// item.setText(c++, String.valueOf(player.getPositionTable()[j++]));
 
-			item.setText(idx++, Messages.getString("assistant.position." + player.getPosition())); 
+			item.setText(idx++, Messages.getString("assistant.position." + player.getPosition()));
 
 			item.setFont(player.getPosition() + 1, Fonts.getBoldFont(item.getDisplay(), item.getFont().getFontData()));
-			// item.setForeground(player.getPosition() + 1,
-			// composite.getDisplay().getSystemColor(SWT.COLOR_BLUE));
 
 			if (player.getPlayerMatchStatistics() != null) {
 				int week = Cache.getDate().getSokkerDate().getWeek();
@@ -246,10 +204,8 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 				item.setText(MATCH_INDEX_4TH, "[4]"); 
 			}
         }
+		this.layoutColumns();
 		// Turn drawing back on
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-		}
 		this.setRedraw(true);
 
 	}

@@ -33,8 +33,6 @@ public class JuniorsFiredTable extends SVTable<Junior> implements IViewSort<Juni
 		comparator.setColumn(JuniorsComparator.SURNAME);
 		comparator.setDirection(JuniorsComparator.ASCENDING);
 
-		// tworzymy kolumny dla trenerow
-
 		String[] titles = { Messages.getString("table.name"), Messages.getString("table.surname"), Messages.getString("table.formation"),
 						   Messages.getString("table.skill"), "" };
 
@@ -91,9 +89,7 @@ public class JuniorsFiredTable extends SVTable<Junior> implements IViewSort<Juni
 			}
 			item.setText(c++, String.valueOf(junior.getSkills()[junior.getSkills().length - 1].getSkill()));
 		}
-		for (int i = 0; i < this.getColumnCount() - 1; i++) {
-			this.getColumn(i).pack();
-		}
+		this.layoutColumns();
 		// Turn drawing back on
 		this.setRedraw(true);
 	}

@@ -116,9 +116,7 @@ public class CoachFiredTable extends SVTable<Coach> implements IViewSort<Coach> 
 			item.setText(c++, String.valueOf(coach.getPlaymakers()));
 			item.setText(c++, String.valueOf(coach.getScorers()));
 		}
-		for(int i = 0 ; i < this.getColumnCount()-1; i++ ) {
-			this.getColumn(i).pack();
-		}
+		this.layoutColumns();
 		// Turn drawing back on
 		this.setRedraw(true);
 		
