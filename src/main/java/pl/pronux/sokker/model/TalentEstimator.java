@@ -6,26 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import pl.pronux.sokker.model.TalentFactors.Factor;
+
 /** a player's talent from the trainings sokker.org reported, after sokker asistente */
 public class TalentEstimator {
 
 	/** normalised points one level costs a player of talent 1 */
 	private static final double POINTS_PER_TALENT = 47;
 
-	/** yearly growth of a level's cost from age 16 */
-	private static final double AGE_FACTOR = 1.094;
-
-	/** yearly growth of a pace level's cost from age 16 */
-	private static final double PACE_AGE_FACTOR = 1.1;
-
-	/** growth of a level's cost per level */
-	private static final double LEVEL_FACTOR = 1.094;
-
-	/** share of a training every skill gets */
-	private static final double RESIDUAL = 0.15;
-
-	/** share of the direct training outside the advanced slots */
-	private static final double FORMATION = 0.14;
+	/** offset level for a skill factor of 1 */
+	private static final double SKILL_OFFSET = 6.8;
 
 	/** head coach level that trains at full strength */
 	private static final double FULL_HEAD_COACH = 16.5;
@@ -220,12 +210,13 @@ public class TalentEstimator {
 		double effectiveness = Math.min(100, row.getTrainingIntensity());
 		double headCoach = ((coaches == null ? DEFAULT_HEAD_COACH : coaches.getHeadCoachSkill(skill)) + 0.5) / FULL_HEAD_COACH;
 		double assistants = coaches == null ? FULL_ASSISTANTS : assistantsLevel(coaches.getAssistants());
-		double residual = effectiveness * RESIDUAL * (headCoach + assistants / FULL_ASSISTANTS) / 2;
-		if (row.getTraining().getEffectiveTypeForPosition(position) != skill || !trainsAt(skill, position)) {
-			return residual;
+		double general = TalentFactors.get(Factor.GENERAL);
+		double points = effectiveness * general * (headCoach + assistants / FULL_ASSISTANTS) / 2;
+		if (row.getTraining().getEffectiveTypeForPosition(position) == skill && trainsAt(skill, position)) {
+			double formation = row.getTrainingSlot() == Training.SLOT_ADVANCED ? 1 : TalentFactors.get(Factor.FORMATION);
+			points += effectiveness * headCoach * (1 - general) * formation;
 		}
-		double direct = effectiveness * headCoach * (1 - RESIDUAL) * (row.getTrainingSlot() == Training.SLOT_ADVANCED ? 1 : FORMATION);
-		return Math.min(100, direct + residual);
+		return Math.min(100, points);
 	}
 
 	/** false for defending, playmaking or striker trained outside its own formation */
@@ -255,22 +246,29 @@ public class TalentEstimator {
 
 	/** points in talent units, scaled to age 16 and the offset level */
 	private static double normalise(double points, int skill, int age, int level) {
-		double ageFactor = skill == Training.TYPE_PACE ? PACE_AGE_FACTOR : AGE_FACTOR;
-		return points * Math.pow(ageFactor, 16 - age) * Math.pow(LEVEL_FACTOR, offset(skill) - level) / POINTS_PER_TALENT;
+		double ageFactor = TalentFactors.get(skill == Training.TYPE_PACE ? Factor.PACE_AGE : Factor.AGE);
+		double offset = SKILL_OFFSET * TalentFactors.get(factor(skill));
+		return points * Math.pow(ageFactor, 16 - age) * Math.pow(TalentFactors.get(Factor.SKILL), offset - level)
+				/ (POINTS_PER_TALENT * TalentFactors.get(Factor.TALENT));
 	}
 
-	/** per skill, the level the talent scale is set at */
-	private static double offset(int skill) {
+	/** the factor that sets a skill's level offset */
+	private static Factor factor(int skill) {
 		switch (skill) {
 		case Training.TYPE_PACE:
-			return 4.5;
+			return Factor.PACE;
 		case Training.TYPE_TECHNIQUE:
-			return 6;
+			return Factor.TECHNIQUE;
+		case Training.TYPE_PASSING:
+			return Factor.PASSING;
+		case Training.TYPE_KEEPER:
+			return Factor.KEEPER;
 		case Training.TYPE_DEFENDING:
-		case Training.TYPE_STRIKER:
-			return 5.5;
+			return Factor.DEFENDER;
+		case Training.TYPE_PLAYMAKING:
+			return Factor.PLAYMAKER;
 		default:
-			return 6.8;
+			return Factor.STRIKER;
 		}
 	}
 

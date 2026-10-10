@@ -23,13 +23,6 @@ public class DatabaseConfigurationDao {
 		ps.executeUpdate();
 		ps.close();
 	}
-	
-	public void setDbRepairJuniorsAge(boolean b) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("UPDATE system SET repair_juniors_age = ?"); 
-		ps.setBoolean(1, b);
-		ps.executeUpdate();
-		ps.close();
-	}
 
 	public void setDbCountry(boolean b) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement("UPDATE system SET check_countries = ?"); 
@@ -57,13 +50,6 @@ public class DatabaseConfigurationDao {
 	public void setDbUpdate(boolean b) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement("UPDATE system SET check_update_db = ?"); 
 		ps.setBoolean(1, b);
-		ps.executeUpdate();
-		ps.close();
-	}
-
-	public void setDBVersion(int dbVersion) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("UPDATE system SET " + "version = ?");  
-		ps.setInt(1, dbVersion);
 		ps.executeUpdate();
 		ps.close();
 	}

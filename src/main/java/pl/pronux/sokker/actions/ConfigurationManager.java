@@ -11,6 +11,7 @@ import pl.pronux.sokker.data.sql.SQLSession;
 import pl.pronux.sokker.data.sql.dao.DatabaseConfigurationDao;
 import pl.pronux.sokker.data.sql.dao.JuniorsDao;
 import pl.pronux.sokker.data.sql.dao.PlayersDao;
+import pl.pronux.sokker.data.sql.dao.TalentFactorsDao;
 import pl.pronux.sokker.data.sql.dao.TeamsDao;
 import pl.pronux.sokker.model.ClubArenaName;
 import pl.pronux.sokker.model.ClubName;
@@ -19,6 +20,7 @@ import pl.pronux.sokker.model.DbProperties;
 import pl.pronux.sokker.model.JuniorSkills;
 import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.Rank;
+import pl.pronux.sokker.model.TalentFactors.Factor;
 import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
 
@@ -51,16 +53,6 @@ public final class ConfigurationManager {
 	public void updateDbUpdate(boolean b) throws SQLException {
 		DatabaseConfigurationDao dbConfDao = new DatabaseConfigurationDao(SQLSession.getConnection());
 		dbConfDao.setDbUpdate(b);
-	}
-
-	public void updateDbVersion(int version) throws SQLException {
-		DatabaseConfigurationDao dbConfDao = new DatabaseConfigurationDao(SQLSession.getConnection());
-		dbConfDao.setDBVersion(version);
-	}
-	
-	public void updateDbRepairJuniorsAge(boolean b) throws SQLException {
-		DatabaseConfigurationDao dbConfDao = new DatabaseConfigurationDao(SQLSession.getConnection());
-		dbConfDao.setDbRepairJuniorsAge(b);
 	}
 
 	public DbProperties getDbProperties() throws SQLException {
@@ -116,6 +108,28 @@ public final class ConfigurationManager {
 	public double getJuniorMinimumPop() throws SQLException {
 		DatabaseConfigurationDao dbConfDao = new DatabaseConfigurationDao(SQLSession.getConnection());
 		return dbConfDao.getJuniorMinimumPop();
+	}
+
+	public Map<Factor, Double> getTalentFactors() throws SQLException {
+		return new TalentFactorsDao(SQLSession.getConnection()).getFactors();
+	}
+
+	/** stores the factors that differ from their defaults */
+	public void setTalentFactors(Map<Factor, Double> factors) throws SQLException {
+		try {
+			SQLSession.connect();
+			SQLSession.beginTransaction();
+			TalentFactorsDao talentFactorsDao = new TalentFactorsDao(SQLSession.getConnection());
+			talentFactorsDao.deleteFactors();
+			for (Map.Entry<Factor, Double> factor : factors.entrySet()) {
+				if (factor.getValue().doubleValue() != factor.getKey().getDefault()) {
+					talentFactorsDao.addFactor(factor.getKey(), factor.getValue().doubleValue());
+				}
+			}
+			SQLSession.commit();
+		} finally {
+			SQLSession.close();
+		}
 	}
 
 	public void repairDatabase() throws SQLException {

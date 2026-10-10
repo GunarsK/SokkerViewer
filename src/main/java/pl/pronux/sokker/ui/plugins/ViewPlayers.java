@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,21 +18,26 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.TreeItem;
 
+import pl.pronux.sokker.actions.ConfigurationManager;
 import pl.pronux.sokker.actions.PlayersManager;
 import pl.pronux.sokker.bean.SvBean;
 import pl.pronux.sokker.comparators.PlayerComparator;
@@ -43,6 +49,9 @@ import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerInterface;
 import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.SokkerViewerSettings;
+import pl.pronux.sokker.model.TalentEstimator;
+import pl.pronux.sokker.model.TalentFactors;
+import pl.pronux.sokker.model.TalentFactors.Factor;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.events.TranslateEvent;
@@ -51,6 +60,7 @@ import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
 import pl.pronux.sokker.ui.resources.ColorResources;
+import pl.pronux.sokker.ui.resources.CursorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.ChartDateComposite;
@@ -73,6 +83,160 @@ import pl.pronux.sokker.utils.file.OperationOnFile;
 import pl.pronux.sokker.utils.pdf.PDFexport;
 
 public class ViewPlayers implements IPlugin, Sort {
+
+	private class Configure implements IViewConfigure {
+
+		/** spinner steps per factor unit */
+		private static final int SCALE = 1000;
+
+		private ConfigurationManager configurationManager = ConfigurationManager.getInstance();
+
+		private Composite composite;
+
+		private TreeItem treeItem;
+
+		private Map<Factor, Spinner> spinners = new EnumMap<Factor, Spinner>(Factor.class);
+
+		private Button defaultButton;
+
+		private boolean init;
+
+		public void applyChanges() {
+			if (!init) {
+				return;
+			}
+			Map<Factor, Double> factors = new EnumMap<Factor, Double>(Factor.class);
+			boolean changed = false;
+			for (Factor factor : Factor.values()) {
+				double value = spinners.get(factor).getSelection() / (double) SCALE;
+				factors.put(factor, value);
+				if (value != TalentFactors.get(factor)) {
+					changed = true;
+				}
+			}
+			if (changed) {
+				apply(factors);
+			}
+		}
+
+		/** stores the factors, re-estimates talents and refills the list */
+		private void apply(Map<Factor, Double> factors) {
+			ViewerHandler.getViewer().setCursor(CursorResources.getCursor(SWT.CURSOR_WAIT));
+			try {
+				configurationManager.setTalentFactors(factors);
+				TalentFactors.set(factors);
+				List<Player> all = new ArrayList<Player>(Cache.getPlayers());
+				all.addAll(Cache.getPlayersHistory());
+				all.addAll(Cache.getPlayersTrash());
+				TalentEstimator.estimate(all, Cache.getTrainingsMap().values());
+				refillPlayersTable();
+				showFactors();
+			} catch (SQLException e) {
+				new BugReporter(composite.getDisplay()).openErrorMessage("ViewPlayers", e);
+			} finally {
+				ViewerHandler.getViewer().setCursor(CursorResources.getCursor(SWT.CURSOR_ARROW));
+			}
+		}
+
+		/** puts the current factors into the spinners */
+		private void showFactors() {
+			for (Factor factor : Factor.values()) {
+				spinners.get(factor).setSelection((int) Math.round(TalentFactors.get(factor) * SCALE));
+			}
+		}
+
+		public void clear() {
+		}
+
+		public void dispose() {
+		}
+
+		public Composite getComposite() {
+			return composite;
+		}
+
+		public TreeItem getTreeItem() {
+			return treeItem;
+		}
+
+		public void init(final Composite composite) {
+			this.composite = composite;
+			this.composite.setLayout(new FormLayout());
+
+			FormData formData = new FormData(350, SWT.DEFAULT);
+			formData.top = new FormAttachment(0, 10);
+			formData.left = new FormAttachment(0, 10);
+
+			FormLayout groupLayout = new FormLayout();
+			groupLayout.marginBottom = 10;
+
+			Group group = new Group(composite, SWT.NONE);
+			group.setLayoutData(formData);
+			group.setLayout(groupLayout);
+			group.setText(Messages.getString("configure.talentSettings"));
+
+			Spinner previous = null;
+			for (Factor factor : Factor.values()) {
+				formData = new FormData(70, SWT.DEFAULT);
+				formData.top = previous == null ? new FormAttachment(0, 10) : new FormAttachment(previous, 8);
+				formData.left = new FormAttachment(0, 20);
+
+				Spinner spinner = new Spinner(group, SWT.BORDER);
+				spinner.setValues(1, 1, (int) Math.round(factor.getMax() * SCALE), 3, 1, 100);
+				spinner.setLayoutData(formData);
+				spinners.put(factor, spinner);
+
+				formData = new FormData();
+				formData.top = new FormAttachment(spinner, 0, SWT.CENTER);
+				formData.left = new FormAttachment(spinner, 10);
+
+				Label label = new Label(group, SWT.NONE);
+				label.setLayoutData(formData);
+				label.setText(Messages.getString("talent.factor." + factor.getKey()));
+				previous = spinner;
+			}
+			showFactors();
+
+			formData = new FormData();
+			formData.top = new FormAttachment(group, 10);
+			formData.left = new FormAttachment(group, 0, SWT.CENTER);
+
+			defaultButton = new Button(composite, SWT.NONE);
+			defaultButton.setLayoutData(formData);
+			defaultButton.setEnabled(false);
+			defaultButton.setText(Messages.getString("button.default.system"));
+			defaultButton.pack();
+			defaultButton.addListener(SWT.Selection, new Listener() {
+
+				public void handleEvent(Event event) {
+					MessageBox msg = new MessageBox(composite.getShell(), SWT.YES | SWT.NO | SWT.ICON_WARNING);
+					msg.setText(Messages.getString("message.WARNING"));
+					msg.setMessage(Messages.getString("message.setDefaults"));
+					if (msg.open() == SWT.YES) {
+						apply(new EnumMap<Factor, Double>(Factor.class));
+					}
+				}
+			});
+		}
+
+		public void restoreDefaultChanges() {
+			showFactors();
+		}
+
+		public void set() {
+			init = true;
+			defaultButton.setEnabled(true);
+			showFactors();
+		}
+
+		public void setSettings(SokkerViewerSettings sokkerViewerSettings) {
+		}
+
+		public void setTreeItem(TreeItem treeItem) {
+			this.treeItem = treeItem;
+			this.treeItem.setText(Messages.getString("tree.ViewPlayers"));
+		}
+	}
 
 	private PlayersManager playersManager = PlayersManager.getInstance();
 
@@ -144,8 +308,6 @@ public class ViewPlayers implements IPlugin, Sort {
 
 	private JuniorChartsComposite juniorGraphsComposite;
 
-//	private PlayerTrainingsComposite playerTrainingsComposite;
-
 	private void addJuniorTrainedView() {
 		juniorTrainedTable = new JuniorTrainedTable(vComposite, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
 		juniorTrainedTable.setLayoutData(viewFormData);
@@ -182,17 +344,7 @@ public class ViewPlayers implements IPlugin, Sort {
 		comboFilterListner = new Listener() {
 
 			public void handleEvent(Event event) {
-				String text = ((Combo) event.widget).getItem(((Combo) event.widget).getSelectionIndex());
-				if (text.equalsIgnoreCase(Messages.getString("view.all"))) {
-					playersTable.setRedraw(false);
-					playersTable.clearAll();
-					playersTable.fill(players);
-					playersTable.setRedraw(true);
-				} else if (text.equalsIgnoreCase(Messages.getString("view.jumps"))) {
-					playersTable.setRedraw(false);
-					playersTable.filterTable(comboFilter.getText());
-					playersTable.setRedraw(true);
-				}
+				refillPlayersTable();
 			}
 		};
 
@@ -211,7 +363,6 @@ public class ViewPlayers implements IPlugin, Sort {
 					tempIntTable[x] = Integer.valueOf(tempTable.getItem(x).getText(k).replaceAll("[^0-9]", "")).intValue();
 					tempDateTable[x] = tempTable.getItem(x).getText(0);
 				}
-				// graphComposite.setGraph(tempIntTable, 17);
 
 				graphComposite.setColumn(k);
 
@@ -282,12 +433,6 @@ public class ViewPlayers implements IPlugin, Sort {
 			statisticsItem.setText(Messages.getString("matches"));
 			statisticsItem.setData("playerStatistics", players.get(i));
 			statisticsItem.setImage(ImageResources.getImageResources("player_history.png"));
-
-//			TreeItem trainingHistoryItem = new TreeItem(item, SWT.NONE);
-//			trainingHistoryItem.setText(Messages.getString("trainings"));
-//			trainingHistoryItem.setData("playerTrainingsHistory", players.get(i));
-//			trainingHistoryItem.setImage(ImageResources.getImageResources("player_training_history.png"));
-
 		}
 
 		Listener listener = new Listener() {
@@ -310,8 +455,6 @@ public class ViewPlayers implements IPlugin, Sort {
 					if (item.getParentItem() != null && item.getParentItem().equals(_treeItem)) {
 						showMainView(vComposite);
 						comboFilter.setVisible(false);
-						// int id = ((PersonInterface)
-						// item.getData(Player.class.getName())).getId();
 						Player player = (Player) item.getData(Player.class.getName());
 
 						if (event.type == SWT.MouseDown && event.button == 3) {
@@ -365,14 +508,6 @@ public class ViewPlayers implements IPlugin, Sort {
 								showMainView(playerStatsComposite);
 							}
 						}
-//					} else if (item.getData("playerTrainingsHistory") != null) {
-//						if (item.getParentItem().getParentItem().equals(_treeItem)) {
-//							if (item.getData("playerTrainingsHistory") instanceof Player) {
-//								Player player = (Player) item.getData("playerTrainingsHistory");
-//								playerTrainingsComposite.fill(player);
-//								showMainView(playerTrainingsComposite);
-//							}
-//						}
 					} else if (item.getData("juniorCharts") != null) {
 
 						if (item.getParentItem().getData("juniorId") != null && item.getParentItem().getParentItem().getParentItem() != null
@@ -510,13 +645,6 @@ public class ViewPlayers implements IPlugin, Sort {
 						ViewerHandler.getViewer().notifyListeners(IEvents.TRANSLATE_PLAYER, new TranslateEvent(player));
 					}
 				}
-				// TextTransfer textTransfer = TextTransfer.getInstance();
-				// cb.setContents(new Object[] {
-				// cbData
-				// }, new Transfer[] {
-				// textTransfer
-				// });
-
 			}
 		});
 
@@ -534,10 +662,7 @@ public class ViewPlayers implements IPlugin, Sort {
 
 				fileDialog.setText(Messages.getString("confShell.chooser.title"));
 				fileDialog.setFilterExtensions(extensions);
-				// fileDialog.setFileName("sokker.propesrties");
 				fileDialog.setFilterPath(settings.getBaseDirectory());
-				// String[] temp = { fileDialog.open () };
-				// config_file = temp;
 				String tempPropsFile = fileDialog.open();
 
 				if (tempPropsFile != null) {
@@ -600,12 +725,6 @@ public class ViewPlayers implements IPlugin, Sort {
 				}
 			}
 		});
-
-		// menuItem = new MenuItem(menuPopUp, SWT.SEPARATOR);
-		//		
-		// menuItem = new MenuItem(menuPopUp, SWT.CASCADE);
-		// menuItem.setText(langResource.getString("popup.charts"));
-		// menuItem.setMenu(new ChartsMenu(menuItem, graphComposite));
 
 		menuClear = new Menu(vComposite.getShell(), SWT.POP_UP);
 	}
@@ -699,7 +818,6 @@ public class ViewPlayers implements IPlugin, Sort {
 
 			public void handleEvent(Event event) {
 				if (event != null) {
-					// showDescription((Player) event.item.getData(Player.class.getName()));
 					playerDescription.setStatsPlayerInfo((Player) event.item.getData(Player.class.getName()));
 					showDescription(playerDescription);
 				}
@@ -711,7 +829,6 @@ public class ViewPlayers implements IPlugin, Sort {
 
 			public void handleEvent(Event event) {
 				if (event.button == 3) {
-					// Rectangle clientArea = allCoachesTable.getClientArea();
 					Point pt = new Point(event.x, event.y);
 					TableItem item = playersTable.getItem(pt);
 					if (item != null) {
@@ -807,13 +924,18 @@ public class ViewPlayers implements IPlugin, Sort {
 					}
 
 					comparator.setColumn(column);
-					playersTable.setRedraw(false);
-					playersTable.fill(players);
-					playersTable.filterTable(comboFilter.getText());
-					playersTable.setRedraw(true);
+					refillPlayersTable();
 				}
 			});
 		}
+	}
+
+	/** refills the players list, keeping its filter */
+	private void refillPlayersTable() {
+		playersTable.setRedraw(false);
+		playersTable.fill(players);
+		playersTable.filterTable(comboFilter.getText());
+		playersTable.setRedraw(true);
 	}
 
 	public void clear() {
@@ -821,8 +943,6 @@ public class ViewPlayers implements IPlugin, Sort {
 		playersTable.removeAll();
 		_treeItem.removeAll();
 		players.clear();
-		// List the entries using entrySet()
-		// descMap.clear();
 		viewMap.clear();
 		itemMap.clear();
 	}
@@ -835,7 +955,7 @@ public class ViewPlayers implements IPlugin, Sort {
 	}
 
 	public IViewConfigure getConfigureComposite() {
-		return null;
+		return new Configure();
 	}
 
 	public String getInfo() {
@@ -879,16 +999,11 @@ public class ViewPlayers implements IPlugin, Sort {
 		playerStatsComposite.setLayoutData(formData);
 		playerStatsComposite.setVisible(false);
 
-//		playerTrainingsComposite = new PlayerTrainingsComposite(this.composite, SWT.BORDER);
-//		playerTrainingsComposite.setLayoutData(formData);
-//		playerTrainingsComposite.setVisible(false);
-
 		showMainView(vComposite);
 
 		clipboard = ViewerHandler.getClipboard();
 		players = new ArrayList<Player>();
 
-		// descMap = new HashMap<Integer, Composite>();
 		viewMap = new HashMap<Integer, Table>();
 		itemMap = new HashMap<Integer, TreeItem>();
 
@@ -954,10 +1069,6 @@ public class ViewPlayers implements IPlugin, Sort {
 		// FIXME: uzyc narzedzia do raportowania pilkarzy
 		cbData = String.format("%-20s%-15s\r\n", new Object[] { Messages.getString("club"),
 															   Cache.getClub().getClubName().get(Cache.getClub().getClubName().size() - 1).getName() });
-		// cbData += ((DescriptionDoubleComposite)
-		// descMap.get(player.getId())).getLeftText();
-		// cbData += ((DescriptionDoubleComposite)
-		// descMap.get(player.getId())).getRightText();
 		if (player.getJunior() != null) {
 
 			Junior junior = player.getJunior();

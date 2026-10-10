@@ -41,6 +41,7 @@ import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerArchive;
 import pl.pronux.sokker.model.SokkerViewerSettings;
+import pl.pronux.sokker.model.TalentFactors;
 import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.model.Transfer;
 import pl.pronux.sokker.resources.Messages;
@@ -53,8 +54,8 @@ public class CoreAction implements RunnableWithProgress {
 
 	private boolean update;
 
-	public static final boolean LOCK = false;
-	public static final boolean UNLOCK = true;
+	private static final boolean LOCK = false;
+	private static final boolean UNLOCK = true;
 	private static volatile boolean lock = UNLOCK;
 
 	private MatchesManager matchesManager = MatchesManager.getInstance();
@@ -76,10 +77,6 @@ public class CoreAction implements RunnableWithProgress {
 		return update;
 	}
 
-	public void setUpdate(boolean update) {
-		this.update = update;
-	}
-
 	public CoreAction(boolean update) {
 		this.update = update;
 	}
@@ -98,14 +95,6 @@ public class CoreAction implements RunnableWithProgress {
 
 		// FIXME: if some players will be removed from then there will be null
 		// pointer error
-
-		// try to use some method in viewer to point to main nodes
-
-		// TreeItem[] selectTreeItem = {
-		// Cache.getTree().getTopItem()
-		// };
-		// Cache.getTree().setSelection(selectTreeItem);
-		// Cache.getTree().setEnabled(false);
 
 		ViewerHandler.getViewer().clear();
 
@@ -192,10 +181,6 @@ public class CoreAction implements RunnableWithProgress {
 			} catch (IOException ioe) {
 				throw new SVException("Synchronizer -> post-autobackup failed", ioe);
 			}
-			// if (!value.equals("0")) { 
-			//				
-			// return;
-			// }
 			monitor.beginTask(Messages.getString("CoreAction.info"), 17);
 			
 			monitor.subTask(Messages.getString("progressBar.info.database.connection")); 
@@ -207,6 +192,7 @@ public class CoreAction implements RunnableWithProgress {
 			monitor.subTask(Messages.getString("statusBar.lastUpdateLabel.text") + " " + sokkerDate.toDateTimeString()); 
 
 			Junior.setMinimumPop(configurationManager.getJuniorMinimumPop());
+			TalentFactors.set(configurationManager.getTalentFactors());
 
 			monitor.worked(1);
 			monitor.subTask(Messages.getString("progressBar.info.getNotesData")); 
@@ -386,38 +372,20 @@ public class CoreAction implements RunnableWithProgress {
 			monitor.done();
 			SettingsHandler.setLogged(true);
 		} catch (final InvocationTargetException e) {
-			// if(e.getCause() instanceof SVSynchronizerCriticalException) {
-			// new SVLogger(Level.WARNING, "Downloader -> Synchronizer", e);
-			// 
-			// MessageDialog.openErrorMessage(ViewerHandler.getViewer(),
-			// e.getCause().getMessage());
-			// }
 			monitor.interrupt();
 			throw e;
 		} catch (final SQLException e) {
-			SettingsHandler.setLogged(false);
-			monitor.interrupt();
-			throw new InvocationTargetException(e, "CoreAction SQLException");
+			throw failed(monitor, e, "CoreAction SQLException");
 		} catch (final ConnectException e) {
-			SettingsHandler.setLogged(false);
-			monitor.interrupt();
-			throw new InvocationTargetException(e, Messages.getString("message.error.connection"));
+			throw failed(monitor, e, Messages.getString("message.error.connection"));
 		} catch (final IOException e) {
-			SettingsHandler.setLogged(false);
-			monitor.interrupt();
-			throw new InvocationTargetException(e, "IOException Bean");
+			throw failed(monitor, e, "IOException Bean");
 		} catch (ClassNotFoundException e) {
-			SettingsHandler.setLogged(false);
-			monitor.interrupt();
-			throw new InvocationTargetException(e, "ClassNotFound");
+			throw failed(monitor, e, "ClassNotFound");
 		} catch (NumberFormatException e) {
-			SettingsHandler.setLogged(false);
-			monitor.interrupt();
-			throw new InvocationTargetException(e, "NumberFormatExcetion");
+			throw failed(monitor, e, "NumberFormatExcetion");
 		} catch (Exception e) {
-			SettingsHandler.setLogged(false);
-			monitor.interrupt();
-			throw new InvocationTargetException(e, "CoreAction Undefined");
+			throw failed(monitor, e, "CoreAction Undefined");
 		} finally {
 			try {
 				SQLSession.close();
@@ -427,6 +395,13 @@ public class CoreAction implements RunnableWithProgress {
 			}
 			lock = UNLOCK;
 		}
+	}
+
+	/** logs out, stops the monitor and wraps the load's failure */
+	private static InvocationTargetException failed(ProgressMonitor monitor, Exception e, String message) {
+		SettingsHandler.setLogged(false);
+		monitor.interrupt();
+		return new InvocationTargetException(e, message);
 	}
 
 	public void onFinish() {
