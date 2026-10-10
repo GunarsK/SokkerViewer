@@ -16,14 +16,9 @@ public class ApplicationsPage extends Page {
 	public static final String PAGE_NAME = "APPLICATIONS_PAGE"; 
 	public static final String SOKKER_ORGANIZER = "SokkerOrganizer";
 	public static final String SOKKER_VIEWER = "SokkerViewer";
-	public static final String SOKKER_MANAGER = "SokkerManager";
-	public static final String APOLLO = "Apollo";
+	public static final String SOKKER_ASISTENTE = "Sokker Asistente";
 	private String application = SOKKER_VIEWER;
-	private Button svButton;
-	private Button soButton;
-	private Button smButton;
-	private Button apolloButton;
-	
+
 	public ApplicationsPage(Wizard parent) {
 		super(parent, Messages.getString("importer.page.applicationstitle"), PAGE_NAME); 
 	}
@@ -34,30 +29,25 @@ public class ApplicationsPage extends Page {
 		gridLayout.horizontalSpacing = 30;
 		container.setLayout(gridLayout);
 
-		svButton = new Button(container, SWT.RADIO);
-		svButton.setSelection(true);
-		svButton.setText(SOKKER_VIEWER); 
-		svButton.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event arg0) {
-				setApplication(SOKKER_VIEWER);
-			}
-		});
-		soButton = new Button(container, SWT.RADIO);
-		soButton.setEnabled(true);
-		soButton.setText(SOKKER_ORGANIZER); 
-		soButton.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event arg0) {
-				setApplication(SOKKER_ORGANIZER);
-			}
-		});
-		smButton = new Button(container, SWT.RADIO);
-		smButton.setEnabled(false);
-		smButton.setText(SOKKER_MANAGER); 
-		apolloButton = new Button(container, SWT.RADIO);
-		apolloButton.setEnabled(false);
-		apolloButton.setText(APOLLO + String.format(" " + Messages.getString("info.since"), "0.13"));  
+		addChoice(container, SOKKER_VIEWER);
+		addChoice(container, SOKKER_ORGANIZER);
+		addChoice(container, SOKKER_ASISTENTE);
 
 		setContainer(container);
+	}
+
+	/** a radio button choosing the application */
+	private void addChoice(Composite container, final String name) {
+		final Button button = new Button(container, SWT.RADIO);
+		button.setSelection(name.equals(application));
+		button.setText(name);
+		button.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event) {
+				if (button.getSelection()) {
+					setApplication(name);
+				}
+			}
+		});
 	}
 
 	public String getApplication() {

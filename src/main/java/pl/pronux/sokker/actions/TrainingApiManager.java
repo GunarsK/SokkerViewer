@@ -32,23 +32,16 @@ import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.utils.Log;
 
-/**
- * writes what sokker.org's json api says about training weeks into the training and
- * player_skills tables. The xml sync stays the source of everything else; this corrects the
- * types of weeks the xml sync recorded and adds weeks it missed.
- */
+/** writes sokker.org's json api training weeks into the database */
 public final class TrainingApiManager {
 
-	/** a sync skips the walk while these latest weeks are confirmed */
+	/** confirmed latest weeks that let a sync skip the walk */
 	private static final int RECENT_WEEKS = 5;
 
-	/** a player sold and bought back is absent for a few weeks; three empty weeks in a row end the history */
+	/** empty weeks in a row that end the history */
 	private static final int EMPTY_WEEKS_TO_STOP = 3;
 
-	/**
-	 * SokkerDate's calendar is anchored on CET (zone offset minus an hour), so a machine west
-	 * of it reads the week change that much later - up to 13 hours at the -12 zone
-	 */
+	/** a western machine's largest lag behind sokker's week change */
 	private static final long MAX_ZONE_LAG = 13 * DateConst.HOUR;
 
 	private static TrainingApiManager instance = new TrainingApiManager();
@@ -79,7 +72,7 @@ public final class TrainingApiManager {
 			return updated;
 		}
 
-		/** sokker refused an older week: the account has no plus, so the walk stopped there */
+		/** sokker refused an older week to an account without plus */
 		public boolean isForbidden() {
 			return forbidden;
 		}
@@ -94,21 +87,17 @@ public final class TrainingApiManager {
 		}
 	}
 
-	/** after a sync: every week sokker still answers for that is not confirmed */
+	/** after a sync: every unconfirmed week sokker still answers for */
 	public Result synchronizeWeeks(SokkerViewerSettings settings, ProgressMonitor monitor) throws IOException, SQLException {
 		return synchronize(settings, false, monitor);
 	}
 
-	/** the menu action: the same walk, always, and every junior again */
+	/** the menu action: the walk, always, and every junior again */
 	public Result importHistory(SokkerViewerSettings settings, ProgressMonitor monitor) throws IOException, SQLException {
 		return synchronize(settings, true, monitor);
 	}
 
-	/**
-	 * the weeks of each junior's graph the database has no row for. A junior is marked done once
-	 * his graph is read or sokker refuses it, so a sync asks each junior once; a timeout or a
-	 * server error leaves him for the next sync
-	 */
+	/** each junior's graph weeks the database has no row for */
 	private int importJuniorHistory(ApiDownloader api, List<Junior> juniors, ProgressMonitor monitor) throws IOException, SQLException {
 		JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
 		int added = 0;
@@ -156,7 +145,7 @@ public final class TrainingApiManager {
 		boolean newConnection = SQLQuery.connect();
 		try {
 			Set<Integer> confirmed = new TeamsDao(SQLSession.getConnection()).getApiConfirmedWeeks();
-			// the menu import asks every junior again, a sync only the ones not asked yet
+			// the menu asks every junior, a sync only unasked ones
 			JuniorsDao juniorsDao = new JuniorsDao(SQLSession.getConnection());
 			List<Junior> juniors = menuImport ? juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL) : juniorsDao.getJuniorsWithoutApiHistory();
 			boolean weeksConfirmed = !menuImport && recentConfirmed(confirmed);
@@ -166,7 +155,7 @@ public final class TrainingApiManager {
 			ApiDownloader api = openSession(settings);
 			Result result = weeksConfirmed ? new Result() : walk(api, confirmed, monitor);
 			if (result.created > 0) {
-				// a week the xml sync missed has no junior rows either
+				// created weeks lack junior rows
 				juniors = juniorsDao.getJuniors(Junior.STATUS_IN_SCHOOL);
 			}
 			result.juniorWeeks = importJuniorHistory(api, juniors, monitor);
@@ -176,14 +165,7 @@ public final class TrainingApiManager {
 		}
 	}
 
-	/**
-	 * true when the latest RECENT_WEEKS weeks are confirmed: a walk already ran since the last
-	 * training, so there is nothing to log in for. Worth checking before opening a session: the
-	 * login is a credential post, and a re-sync inside the same week is the common case. The
-	 * window is measured a zone's lag into the future on purpose - an estimate that lands one
-	 * week short of sokker's would confirm a window that does not contain the new week and skip
-	 * importing it, while one that lands a week long only costs the login this was meant to save.
-	 */
+	/** true when the latest RECENT_WEEKS weeks are confirmed */
 	private static boolean recentConfirmed(Set<Integer> confirmed) {
 		int latest = new SokkerDate(System.currentTimeMillis() + MAX_ZONE_LAG).getTrainingWeek();
 		for (int week = latest; week > 0 && week > latest - RECENT_WEEKS; week--) {
@@ -194,7 +176,7 @@ public final class TrainingApiManager {
 		return true;
 	}
 
-	/** the one place SokkerViewer hands the user's credentials to the json api */
+	/** logs in to the json api with the user's credentials */
 	private static ApiDownloader openSession(SokkerViewerSettings settings) throws IOException {
 		ApiDownloader api = new ApiDownloader();
 		api.setProxySettings(settings.getProxySettings());
@@ -202,12 +184,7 @@ public final class TrainingApiManager {
 		return api;
 	}
 
-	/**
-	 * from the latest completed week backwards. Stops at the first 403 (a non-plus account
-	 * asked for a week sokker does not give away), after EMPTY_WEEKS_TO_STOP weeks the team was
-	 * not playing in, or when cancelled. Weeks whose row is already confirmed are not requested
-	 * again: sokker's record of a week never changes.
-	 */
+	/** unconfirmed weeks backwards until a 403 or EMPTY_WEEKS_TO_STOP */
 	Result walk(ApiDownloader api, Set<Integer> confirmed, ProgressMonitor monitor) throws IOException, SQLException {
 		Result result = new Result();
 		Set<Integer> squad = new PlayersDao(SQLSession.getConnection()).getPlayerIds();
@@ -253,7 +230,7 @@ public final class TrainingApiManager {
 		return result;
 	}
 
-	/** apply one week's reports in its own transaction; idempotent. True when the row was created */
+	/** one week's reports in its own transaction; true when created */
 	boolean applyWeek(TrainingWeek week, Set<Integer> squad, double currencyRate) throws SQLException {
 		SQLSession.beginTransaction();
 		try {
@@ -278,18 +255,17 @@ public final class TrainingApiManager {
 				known.add(report);
 			}
 		}
-		// a week read before the squad was synced has nowhere to put its reports; leaving it
-		// unconfirmed lets a later walk redo it once the players are in the database
+		// a week with unknown players stays unconfirmed
 		boolean complete = known.size() == week.getPresentPlayers().size();
 		Training training = teamsDao.getTrainingForDay(date);
 		boolean created = training == null;
 		if (created) {
-			training = newTraining(week);
+			training = newTraining(date, positionTypes(week));
 			training.setApiConfirmed(complete);
 			teamsDao.addTraining(training);
 			training.setId(teamsDao.getTrainingId(training));
 		} else {
-			setPositionTypes(training, week);
+			setPositionTypes(training, positionTypes(week));
 			training.setApiConfirmed(complete);
 			teamsDao.updateTrainingTypes(training);
 		}
@@ -305,7 +281,7 @@ public final class TrainingApiManager {
 		return created;
 	}
 
-	/** the rate the club's country uses, the same one Money displays with; 1 when unknown */
+	/** the club country's currency rate; 1 when unknown */
 	static double currencyRate() throws SQLException {
 		Club club = new TeamsDao(SQLSession.getConnection()).getClub(ConfigurationManager.getInstance().getTeamId());
 		for (Country country : new CountriesDao(SQLSession.getConnection()).getCountries()) {
@@ -316,16 +292,16 @@ public final class TrainingApiManager {
 		return 1.0;
 	}
 
-	static Training newTraining(TrainingWeek week) {
+	static Training newTraining(Date date, int[] types) {
 		Training training = new Training();
-		training.setDate(week.getDate());
-		setPositionTypes(training, week);
+		training.setDate(date);
+		setPositionTypes(training, types);
 		training.setType(training.getEffectiveType());
 		training.setFormation(Training.FORMATION_ALL);
 		return training;
 	}
 
-	/** the report's training assignment, set on the row it updates or becomes */
+	/** the report's row with its training assignment set */
 	static PlayerSkills assignTraining(PlayerTrainingReport report) {
 		PlayerSkills skills = report.getSkills();
 		skills.setTrainingPosition(report.getFormation());
@@ -334,24 +310,20 @@ public final class TrainingApiManager {
 		return skills;
 	}
 
-	/**
-	 * a snapshot row for a week the xml sync missed: the report's own skills, its value once
-	 * converted, and the rest (wage, season stats, body) copied from the player's nearest
-	 * real snapshot
-	 */
+	/** a row for a week the xml sync missed */
 	static PlayerSkills buildPlayerSkills(PlayerTrainingReport report, PlayerSkills nearest, double currencyRate) {
 		PlayerSkills skills = report.getSkills();
 		skills.setValue(new Money((int) Money.convertPricesToBase(report.getValue(), currencyRate)));
-		if (nearest != null) {
-			copyUnreported(nearest, skills);
-		} else {
-			skills.setSalary(new Money(0));
-		}
+		copyUnreported(nearest, skills);
 		return skills;
 	}
 
-	/** copies what a report lacks: wage, season stats, body */
-	private static void copyUnreported(PlayerSkills from, PlayerSkills to) {
+	/** copies wage, season stats, body; wage 0 without a row */
+	static void copyUnreported(PlayerSkills from, PlayerSkills to) {
+		if (from == null) {
+			to.setSalary(new Money(0));
+			return;
+		}
 		to.setSalary(from.getSalary());
 		to.setMatches(from.getMatches());
 		to.setGoals(from.getGoals());
@@ -361,7 +333,7 @@ public final class TrainingApiManager {
 		to.setBmi(from.getBmi());
 	}
 
-	/** made-up row for the week before a player's first known training */
+	/** made-up row for the week before a player's first training */
 	private static void addStartingRow(PlayersDao playersDao, TrainingWeek week, PlayerTrainingReport report) throws SQLException {
 		int playerId = report.getPlayerId();
 		PlayerSkills before = report.getSkillsBefore();
@@ -379,11 +351,20 @@ public final class TrainingApiManager {
 		playersDao.addMadeUpPlayerSkills(playerId, before, date);
 	}
 
-	static void setPositionTypes(Training training, TrainingWeek week) {
-		training.setTypeGk(week.typeForFormation(Training.FORMATION_GK));
-		training.setTypeDef(week.typeForFormation(Training.FORMATION_DEF));
-		training.setTypeMid(week.typeForFormation(Training.FORMATION_MID));
-		training.setTypeAtt(week.typeForFormation(Training.FORMATION_ATT));
+	/** types per formation; null leaves them not set */
+	static void setPositionTypes(Training training, int[] types) {
+		if (types != null) {
+			training.setTypeGk(types[Training.FORMATION_GK]);
+			training.setTypeDef(types[Training.FORMATION_DEF]);
+			training.setTypeMid(types[Training.FORMATION_MID]);
+			training.setTypeAtt(types[Training.FORMATION_ATT]);
+		}
+	}
+
+	/** the week's type per formation */
+	static int[] positionTypes(TrainingWeek week) {
+		return new int[] { week.typeForFormation(Training.FORMATION_GK), week.typeForFormation(Training.FORMATION_DEF),
+				week.typeForFormation(Training.FORMATION_MID), week.typeForFormation(Training.FORMATION_ATT) };
 	}
 
 	static int slotOf(PlayerTrainingReport report) {

@@ -13,6 +13,7 @@ import java.util.Set;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import pl.pronux.sokker.actions.AsistenteManager;
 import pl.pronux.sokker.actions.ConfigurationManager;
 import pl.pronux.sokker.actions.JuniorsManager;
 import pl.pronux.sokker.actions.LeaguesManager;
@@ -34,6 +35,7 @@ import pl.pronux.sokker.downloader.managers.XmlManager;
 import pl.pronux.sokker.downloader.managers.XmlManagerUtils;
 import pl.pronux.sokker.downloader.xml.parsers.OldXmlParser;
 import pl.pronux.sokker.importer.model.IXMLpack;
+import pl.pronux.sokker.importer.model.SApack;
 import pl.pronux.sokker.importer.model.XMLpack;
 import pl.pronux.sokker.importer.model.XMLpackOld;
 import pl.pronux.sokker.interfaces.ProgressMonitor;
@@ -66,6 +68,8 @@ public class ImportXMLAction implements RunnableWithProgress {
 
 	private MatchesManager matchesManager = MatchesManager.getInstance();
 
+	private AsistenteManager asistenteManager = AsistenteManager.getInstance();
+
 	private List<IXMLpack> packages;
 
 	public ImportXMLAction(List<IXMLpack> packages) {
@@ -75,7 +79,7 @@ public class ImportXMLAction implements RunnableWithProgress {
 	public void run(ProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 		monitor.beginTask(Messages.getString("ImportXMLAction.start"), packages.size()); 
 		try {
-			// a copy File > Restore database lists, taken before anything changes
+			// the copy File > Restore database lists
 			Database.backup(SQLQuery.getSettings(), Database.IMPORT);
 			SQLSession.connect();
 			int teamID = configurationManager.getTeamId();
@@ -96,23 +100,12 @@ public class ImportXMLAction implements RunnableWithProgress {
 					if (pack.isComplete()) {
 						try {
 							SQLSession.beginTransaction();
-							// if (pack.getCountries() != null) {
-							// CountriesXmlManager countriesManager = new
-							// CountriesXmlManager(OperationOnFile.readFromFile(pack.getCountries(),
-							// "UTF-8"), pack.getDate(), pack.getTeamID());
-							// countriesManager.parseXML();
-							// countriesManager.importToSQL();
-							// }
 							TeamsXmlManager teamXmlManager = new TeamsXmlManager(
 								OperationOnFile.readFromFile(pack.getTeam(), "UTF-8"), pack.getDate(), pack.getTeamId()); 
 							PlayersXmlManager playersXmlManager = new PlayersXmlManager(
 								OperationOnFile.readFromFile(pack.getPlayers(), "UTF-8"), pack.getDate(), pack.getTeamId()); 
 							JuniorsXmlManager juniorsXmlManager = new JuniorsXmlManager(
-								OperationOnFile.readFromFile(pack.getJuniors(), "UTF-8"), pack.getDate(), pack.getTeamId()); 
-							TrainersXmlManager trainersXMLManager;
-							TransfersXmlManager transfersManager;
-							ReportsXmlManager reportsManager;
-							List<Coach> trainers;
+								OperationOnFile.readFromFile(pack.getJuniors(), "UTF-8"), pack.getDate(), pack.getTeamId());
 
 							Club club = teamXmlManager.parseXML(teamID);
 							List<Player> players = playersXmlManager.parseXML();
@@ -123,51 +116,32 @@ public class ImportXMLAction implements RunnableWithProgress {
 									teamManager.importerTeam(club, pack.getDate());
 								}
 
-								Training training = null;
-
-								if (club != null) {
-									training = club.getTraining();
-									if (pack.getTrainers() != null) {
-										trainersXMLManager = new TrainersXmlManager(
-											OperationOnFile.readFromFile(pack.getTrainers(), "UTF-8"), pack.getDate(), pack.getTeamId()); 
-										trainers = trainersXMLManager.parseXML();
-										trainersManager.importerTrainers(trainers);
-										trainersXMLManager.importCoachesAtTraining(training);
-									}
+								Training training = club.getTraining();
+								if (pack.getTrainers() != null) {
+									TrainersXmlManager trainersXMLManager = new TrainersXmlManager(
+										OperationOnFile.readFromFile(pack.getTrainers(), "UTF-8"), pack.getDate(), pack.getTeamId());
+									List<Coach> trainers = trainersXMLManager.parseXML();
+									trainersManager.importerTrainers(trainers);
+									trainersXMLManager.importCoachesAtTraining(training);
 								}
 								playersManager.importPlayers(players, training);
 								juniorsManager.importJuniors(juniors, training, juniorRows);
 
 								if (pack.getReports() != null) {
-									reportsManager = new ReportsXmlManager(
-										OperationOnFile.readFromFile(pack.getReports(), "UTF-8"), pack.getDate(), pack.getTeamId()); 
+									ReportsXmlManager reportsManager = new ReportsXmlManager(
+										OperationOnFile.readFromFile(pack.getReports(), "UTF-8"), pack.getDate(), pack.getTeamId());
 									List<Report> reports = reportsManager.parseXML();
 									teamManager.importerReports(reports);
 								}
 
-								// if(pack.getRegion() != null) {
-								// CountriesManager countriesManager = new
-								// CountriesManager();
-								// regionManager = new
-								// RegionXmlManager(OperationOnFile.readFromFile(pack.getRegion(),
-								// "UTF-8"), pack.getDate(), pack.getTeamID());
-								// List<Region> regions =
-								// regionManager.parseXML();
-								// if(regions.get(0) != null) {
-								// countriesManager.importRegion(regions.get(0));
-								// }
-								// }
-
 								if (pack.getTransfers() != null) {
-									transfersManager = new TransfersXmlManager(
-										OperationOnFile.readFromFile(pack.getTransfers(), "UTF-8"), pack.getDate(), pack.getTeamId()); 
+									TransfersXmlManager transfersManager = new TransfersXmlManager(
+										OperationOnFile.readFromFile(pack.getTransfers(), "UTF-8"), pack.getDate(), pack.getTeamId());
 									List<Transfer> transfers = transfersManager.parseXML();
 									teamManager.importerTransfers(transfers);
 								}
 
 								pack.setImported(true);
-							} else {
-								pack.setImported(false);
 							}
 
 							SQLSession.commit();
@@ -183,10 +157,6 @@ public class ImportXMLAction implements RunnableWithProgress {
 				} else if (child instanceof XMLpackOld) {
 					XMLpackOld pack = (XMLpackOld) child;
 					try {
-
-						// FIXME: data zmiany kodowania z ISO-8859-2 na utf 24.03.2006
-						// BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(importXMLTable.getItem(i).getText(0)), "ISO-8859-2")); 
-
 						SQLSession.beginTransaction();
 						OldXmlParser oldXMLParser = new OldXmlParser();
 						String xml = OperationOnFile.readFromFile(pack.getFile(), "UTF-8"); 
@@ -202,31 +172,39 @@ public class ImportXMLAction implements RunnableWithProgress {
 
 							trainersManager.importerTrainers(club.getCoaches());
 							teamManager.importerTeam(club, pack.getDate());
-							Training training = null;
-							if (club != null) {
-								training = club.getTraining();
-								if ((training.getStatus() & Training.NEW_TRAINING) != 0) {
-									trainersManager.importTrainersAtTraining(club.getCoaches(), training);
-								} else if ((training.getStatus() & Training.UPDATE_TRAINING) != 0) {
-									trainersManager.updateTrainersAtTraining(club.getCoaches(), training);
-								}
+							Training training = club.getTraining();
+							if ((training.getStatus() & Training.NEW_TRAINING) != 0) {
+								trainersManager.importTrainersAtTraining(club.getCoaches(), training);
+							} else if ((training.getStatus() & Training.UPDATE_TRAINING) != 0) {
+								trainersManager.updateTrainersAtTraining(club.getCoaches(), training);
 							}
 							playersManager.importPlayers(club.getPlayers(), training);
 							juniorsManager.importJuniors(club.getJuniors(), training, juniorRows);
 
 							pack.setImported(true);
-						} else {
-							pack.setImported(false);
 						}
 						SQLSession.commit();
 					} catch (Exception e) {
 						pack.setImported(false);
 						SQLSession.rollback();
-						Log.error("XML Importer ", e); 
+						Log.error("XML Importer ", e);
 					} finally {
 						SQLSession.endTransaction();
 					}
 
+				} else if (child instanceof SApack) {
+					SApack pack = (SApack) child;
+					try {
+						SQLSession.beginTransaction();
+						asistenteManager.importWeek(pack.getDate(), pack.getTypes(), pack.getPlayers());
+						SQLSession.commit();
+						pack.setImported(true);
+					} catch (Exception e) {
+						SQLSession.rollback();
+						Log.error("Sokker Asistente importer", e);
+					} finally {
+						SQLSession.endTransaction();
+					}
 				}
 				// matches only from the team's own, complete syncs
 				if (child instanceof XMLpack && child.isComplete()) {
@@ -234,14 +212,11 @@ public class ImportXMLAction implements RunnableWithProgress {
 				}
 				monitor.worked(1);
 			}
-			// juniors met only in the imported files have left the school
+			// juniors only in the imported files have left the school
 			SQLSession.beginTransaction();
 			juniorsManager.removeJuniorsNotIn(school, teamID);
 			SQLSession.commit();
 			SQLSession.endTransaction();
-			// new DatabaseConfiguration().updateDbCountry(true);
-			// new DatabaseConfiguration().updateDbUpdate(true);
-			// SQLSession.commit();
 			SQLSession.close();
 		} catch (IOException e) {
 			Log.error("XML Importer -> database backup, nothing imported", e);
@@ -258,7 +233,7 @@ public class ImportXMLAction implements RunnableWithProgress {
 		}
 	}
 
-	/** the pack's leagues first, then its finished matches, in their own transaction */
+	/** the pack's leagues, then its finished matches, in one transaction */
 	private void importMatches(XMLpack pack) throws SQLException {
 		try {
 			SQLSession.beginTransaction();
@@ -273,7 +248,7 @@ public class ImportXMLAction implements RunnableWithProgress {
 		}
 	}
 
-	/** every file the manager parses; one that does not parse is left out */
+	/** items of every file that parses */
 	private static <T> List<T> parse(XmlManager<T> manager, List<File> files) {
 		List<T> items = new ArrayList<T>();
 		for (File file : files) {
@@ -287,7 +262,5 @@ public class ImportXMLAction implements RunnableWithProgress {
 	}
 
 	public void onFinish() {
-		// TODO Auto-generated method stub
-
 	}
 }

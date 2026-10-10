@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.TableItem;
 import pl.pronux.sokker.data.cache.Cache;
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.importer.controller.PackagesManager;
+import pl.pronux.sokker.importer.controller.SAPackagesManager;
 import pl.pronux.sokker.importer.controller.SOPackagesManager;
 import pl.pronux.sokker.importer.controller.SVPackagesManager;
 import pl.pronux.sokker.importer.model.IXMLpack;
@@ -77,7 +78,6 @@ public class ChooseFilePage extends Page {
 				table.getColumn(i).pack();
 			}
 		}
-		// dialogChanged();
 		setContainer(container);
 	}
 
@@ -115,11 +115,13 @@ public class ChooseFilePage extends Page {
 		final String directory = ((DirectoryPage) getWizard().getPage(DirectoryPage.PAGE_NAME)).getDirectory();
 		ApplicationsPage applicationPage = ((ApplicationsPage) getWizard().getPage(ApplicationsPage.PAGE_NAME));
 		String application = applicationPage.getApplication();
-		
-		if(application.equals(ApplicationsPage.SOKKER_VIEWER)) {
-			packagesManager = new SVPackagesManager(directory, Cache.getClub().getId());
-		} else if(application.equals(ApplicationsPage.SOKKER_ORGANIZER)){
-			packagesManager = new SOPackagesManager(directory, Cache.getClub().getId());
+		int teamId = Cache.getClub().getId();
+		if (application.equals(ApplicationsPage.SOKKER_VIEWER)) {
+			packagesManager = new SVPackagesManager(directory, teamId);
+		} else if (application.equals(ApplicationsPage.SOKKER_ORGANIZER)) {
+			packagesManager = new SOPackagesManager(directory, teamId);
+		} else if (application.equals(ApplicationsPage.SOKKER_ASISTENTE)) {
+			packagesManager = new SAPackagesManager(directory, teamId);
 		}
 			
 		try {
@@ -141,9 +143,8 @@ public class ChooseFilePage extends Page {
 					getWizard().getDisplay().asyncExec(new Runnable() {
 						public void run() {
 							fillTable(packagesManager.getPackages());
-							// getProgressBar().setVisible(false);
 							ChooseFilePage.this.setPackages(packagesManager.getPackages());
-							getWizard().getNextButton().setEnabled(true);
+							getWizard().getNextButton().setEnabled(!packagesManager.getPackages().isEmpty());
 							getWizard().getNextButton().setText(Messages.getString("button.import")); 
 						}
 					});
