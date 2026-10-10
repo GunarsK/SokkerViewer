@@ -31,8 +31,8 @@ import pl.pronux.sokker.bean.SvBean;
 import pl.pronux.sokker.data.cache.Cache;
 import pl.pronux.sokker.data.sql.SQLSession;
 import pl.pronux.sokker.handlers.SettingsHandler;
-import pl.pronux.sokker.interfaces.Sort;
 import pl.pronux.sokker.model.Player;
+import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
@@ -46,7 +46,7 @@ import pl.pronux.sokker.ui.widgets.composites.DescriptionDoubleComposite;
 import pl.pronux.sokker.ui.widgets.shells.BugReporter;
 import pl.pronux.sokker.ui.widgets.tables.AssistantPlayersTable;
 
-public class ViewAssistant implements IPlugin, Sort {
+public class ViewAssistant implements IPlugin {
 
 	private class Configure implements IViewConfigure {
 
@@ -72,12 +72,9 @@ public class ViewAssistant implements IPlugin, Sort {
 			editor.grabHorizontal = true;
 			table.addListener(SWT.MouseDown, new Listener() {
 				public void handleEvent(Event event) {
-					Rectangle clientArea = table.getClientArea();
 					Point pt = new Point(event.x, event.y);
 					final TableItem item = table.getItem(pt);
 					if (item != null) {
-
-						boolean visible = false;
 						for (int i = 1; i < table.getColumnCount() - 1; i++) {
 							Rectangle rect = item.getBounds(i);
 							if (rect.contains(pt)) {
@@ -94,42 +91,18 @@ public class ViewAssistant implements IPlugin, Sort {
 									public void handleEvent(final Event e) {
 										switch (e.type) {
 										case SWT.FocusOut:
-											String temp = item.getText(column);
-											if(text.getText().isEmpty()) {
-												text.setText("0");
-											}
-											item.setText(column, text.getText());
-											if (checkSumItem(item) > 100) {
-												item.setText(column, temp);
-												checkSumItem(item);
-											}
-											if (!item.getText(column).equals(temp)) {
-												changed = true;
-											}
+											commitCell(text, item, column);
 											text.dispose();
 											break;
 										case SWT.Traverse:
 											switch (e.detail) {
 											case SWT.TRAVERSE_RETURN:
-
-												temp = item.getText(column);
-												if(text.getText().isEmpty()) {
-													text.setText("0");
-												}
-												item.setText(column, text.getText());
-												if (checkSumItem(item) > 100) {
-													item.setText(column, temp);
-													checkSumItem(item);
-												}
-												if (!item.getText(column).equals(temp)) {
-													changed = true;
-												}
-													break;
-												// FALL THROUGH
+												commitCell(text, item, column);
+												break;
 											case SWT.TRAVERSE_ESCAPE:
 												text.dispose();
 												e.doit = false;
-													break;
+												break;
 											}
 											break;
 										case SWT.Verify:
@@ -154,18 +127,28 @@ public class ViewAssistant implements IPlugin, Sort {
 								text.setFocus();
 								return;
 							}
-							if (!visible && rect.intersects(clientArea)) {
-								visible = true;
-							}
-						}
-						if (!visible) {
-							return;
 						}
 					}
 
 				}
 			});
 
+		}
+
+		/** Writes the edited cell back unless the row passes 100 */
+		private void commitCell(Text text, TableItem item, int column) {
+			String temp = item.getText(column);
+			if (text.getText().isEmpty()) {
+				text.setText("0");
+			}
+			item.setText(column, text.getText());
+			if (checkSumItem(item) > 100) {
+				item.setText(column, temp);
+				checkSumItem(item);
+			}
+			if (!item.getText(column).equals(temp)) {
+				changed = true;
+			}
 		}
 
 		public void applyChanges() {
@@ -177,7 +160,6 @@ public class ViewAssistant implements IPlugin, Sort {
 					playersManager.calculatePositionForAllPlayer(players, Cache.getAssistant());
 					playersManager.updatePlayersPositions(players);
 					playersTable.fill(players);
-//					composite.getShell().notifyListeners(IEvents.REFRESH_PLAYERS_DESCRIPTION, new Event());
 					ViewerHandler.getViewer().setCursor(CursorResources.getCursor(SWT.CURSOR_ARROW));
 				} catch (SQLException e) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewAssistant", e);
@@ -223,28 +205,16 @@ public class ViewAssistant implements IPlugin, Sort {
 			// Turn off drawing to avoid flicker
 			table.setRedraw(false);
 
-			// We remove all the table entries, sort our
-			// rows, then add the entries
 			table.removeAll();
 			for (int i = 0; i < data.length; i++) {
 				TableItem item = new TableItem(table, SWT.NONE);
-
-				int c = 0;
-				int j = 0;
-				item.setText(c++, Messages.getString("assistant.position." + data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
-				item.setText(c++, String.valueOf(data[i][j++]));
+				item.setText(0, Messages.getString("assistant.position." + data[i][0]));
+				for (int j = 1; j < data[i].length; j++) {
+					item.setText(j, String.valueOf(data[i][j]));
+				}
 			}
 
 			checkSum(table);
-			// Turn drawing back on
 			for (int i = 0; i < table.getColumnCount() - 1; i++) {
 				table.getColumn(i).pack();
 			}
@@ -259,18 +229,10 @@ public class ViewAssistant implements IPlugin, Sort {
 			int[][] data = new int[table.getItemCount()][table.getColumnCount() - 1];
 
 			for (int i = 0; i < data.length; i++) {
-				int c = 0;
-				int j = 1;
-				data[i][c++] = i + 1;
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
-				data[i][c++] = Integer.valueOf(table.getItem(i).getText(j++)).intValue();
+				data[i][0] = i + 1;
+				for (int j = 1; j < data[i].length; j++) {
+					data[i][j] = Integer.valueOf(table.getItem(i).getText(j)).intValue();
+				}
 			}
 			return data;
 		}
@@ -293,13 +255,10 @@ public class ViewAssistant implements IPlugin, Sort {
 			formData = new FormData();
 			formData.left = new FormAttachment(centerPoint, 0, SWT.CENTER);
 			formData.top = new FormAttachment(0, 20);
-			// formData.bottom = new FormAttachment(100,-20);
-			// formData.right = new FormAttachment(100, -20);
 
 			confTable = new Table(this.composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
 			confTable.setLinesVisible(true);
 			confTable.setHeaderVisible(true);
-			// configuration.setLayoutData(formData);
 			confTable.setLayoutData(formData);
 			confTable.setFont(ConfigBean.getFontTable());
 
@@ -321,15 +280,14 @@ public class ViewAssistant implements IPlugin, Sort {
 				TableColumn column = new TableColumn(confTable, SWT.NONE);
 				column.setText(titles[i]);
 				column.setResizable(false);
-				column.setResizable(false);
 				column.pack();
 			}
 
-			for (int i = 1; i < 12; i++) {
+			for (int i = 1; i <= Player.POSITION_COUNT; i++) {
 				TableItem item = new TableItem(confTable, SWT.NONE);
 				item.setText(0, Messages.getString("assistant.position." + i));
-				confTable.getColumn(0).pack();
 			}
+			confTable.getColumn(0).pack();
 			confTable.pack();
 
 
@@ -370,7 +328,6 @@ public class ViewAssistant implements IPlugin, Sort {
 
 							playersTable.fill(players);
 
-//							composite.getShell().notifyListeners(IEvents.REFRESH_PLAYERS_DESCRIPTION, new Event());
 							ViewerHandler.getViewer().setCursor(CursorResources.getCursor(SWT.CURSOR_ARROW));
 						} catch (SQLException e) {
 							new BugReporter(composite.getDisplay()).openErrorMessage("ViewAssistant", e);
@@ -391,7 +348,6 @@ public class ViewAssistant implements IPlugin, Sort {
 
 					ViewerHandler.getViewer().setCursor(CursorResources.getCursor(SWT.CURSOR_WAIT));
 
-					SQLSession.connect();
 					int[][] data = assistantManager.getAssistantData();
 
 					Cache.setAssistant(data);
@@ -401,7 +357,6 @@ public class ViewAssistant implements IPlugin, Sort {
 
 					playersTable.fill(players);
 
-//					this.composite.getShell().notifyListeners(IEvents.REFRESH_PLAYERS_DESCRIPTION, new Event());
 					ViewerHandler.getViewer().setCursor(CursorResources.getCursor(SWT.CURSOR_ARROW));
 
 					changed = false;
@@ -425,36 +380,13 @@ public class ViewAssistant implements IPlugin, Sort {
 		}
 
 		public void set() {
-
+			if (!init) {
+				addTableEditor(confTable);
+			}
 			init = true;
 
 			defaultButton.setEnabled(true);
-			// confTable.setMenu(menuClear);
 			fillConfigurationTable(confTable, data);
-			addTableEditor(confTable);
-//			confTableListener = new Listener() {
-//
-//				public void handleEvent(Event event) {
-//					switch (event.type) {
-//					case SWT.MouseDown:
-//						if (event.button == 3) {
-//							// // Rectangle clientArea = allCoachesTable.getClientArea();
-//							// Point pt = new Point(event.x, event.y);
-//							// TableItem item = confTable.getItem(pt);
-//							// if (item != null) {
-//							// confTable.setMenu(menuPopUp);
-//							// confTable.getMenu().setVisible(true);
-//							// } else {
-//							// confTable.setMenu(menuClear);
-//							// }
-//						}
-//						break;
-//					}
-//				}
-//			};
-//			confTable.addListener(SWT.MouseDown, confTableListener);
-//			confTable.addListener(SWT.Selection, confTableListener);
-
 		}
 
 	}
@@ -465,31 +397,18 @@ public class ViewAssistant implements IPlugin, Sort {
 
 	private DescriptionDoubleComposite descriptionComposite;
 
-	private FormData descriptionFormData;
-
 	private List<Player> players;
 
 	private AssistantPlayersTable playersTable;
-
-	private FormData sashFormData;
 
 	private Sash sashHorizontal;
 
 	private TreeItem treeItem;
 
-	private FormData viewFormData;
-
 	private void setPlayersView() {
-
-		FormData formData = new FormData();
-		formData.top = new FormAttachment(0, 0);
-		formData.left = new FormAttachment(0, 0);
-		formData.right = new FormAttachment(100, 0);
-		formData.bottom = new FormAttachment(100, 0);
-
 		sashHorizontal = new Sash(composite, SWT.HORIZONTAL | SWT.NONE);
 
-		sashFormData = new FormData();
+		FormData sashFormData = new FormData();
 		sashFormData.top = new FormAttachment(0, 200);
 		sashFormData.right = new FormAttachment(100, 0);
 		sashFormData.left = new FormAttachment(0, 0);
@@ -504,13 +423,13 @@ public class ViewAssistant implements IPlugin, Sort {
 			}
 		});
 
-		viewFormData = new FormData();
+		FormData viewFormData = new FormData();
 		viewFormData.top = new FormAttachment(sashHorizontal, 0);
 		viewFormData.right = new FormAttachment(100, 0);
 		viewFormData.left = new FormAttachment(0, 0);
 		viewFormData.bottom = new FormAttachment(100, 0);
 
-		descriptionFormData = new FormData();
+		FormData descriptionFormData = new FormData();
 		descriptionFormData.top = new FormAttachment(0, 0);
 		descriptionFormData.right = new FormAttachment(100, 0);
 		descriptionFormData.left = new FormAttachment(0, 0);
@@ -533,311 +452,33 @@ public class ViewAssistant implements IPlugin, Sort {
 		playersTable.setLayoutData(viewFormData);
 	}
 
-//	private void addPopupMenu() {
-		// added popup menu
-		// menuPopUp = new Menu(confTable.getShell(), SWT.POP_UP);
-		// MenuItem menuItem = new MenuItem(menuPopUp, SWT.PUSH);
-		// menuItem.setText(langProperties.getProperty("popup.setColor"));
-		// menuItem.addListener(SWT.Selection, new Listener() {
-		// public void handleEvent(Event e) {
-		// ColorDialog crDialog = new ColorDialog(confTable.getShell());
-		// crDialog.setRGB(currentItem.getBackground(0).getRGB());
-		// RGB rgb = crDialog.open();
-		// if (rgb != null) {
-		// currentItem.setBackground(0, new Color(confTable.getDisplay(), rgb));
-		// okButton.setEnabled(true);
-		// }
-		// }
-		// });
-
-//		menuClear = new Menu(composite.getShell(), SWT.POP_UP);
-//	}
-
 	public void clear() {
 
 	}
 
 	private void comparePlayers(DescriptionDoubleComposite description, Player p1, Player p2) {
 		description.clearAll();
-		String[][] valuesLeft = new String[13][2];
-		valuesLeft[0][0] = Messages.getString("player.name");
-		valuesLeft[1][0] = Messages.getString("player.surname");
-		valuesLeft[2][0] = Messages.getString("player.form");
-		valuesLeft[3][0] = Messages.getString("player.stamina");
-		valuesLeft[4][0] = Messages.getString("player.pace");
-		valuesLeft[5][0] = Messages.getString("player.technique");
-		valuesLeft[6][0] = Messages.getString("player.passing");
-		valuesLeft[7][0] = Messages.getString("player.keeper");
-		valuesLeft[8][0] = Messages.getString("player.defender");
-		valuesLeft[9][0] = Messages.getString("player.playmaker");
-		valuesLeft[10][0] = Messages.getString("player.scorer");
-		valuesLeft[11][0] = Messages.getString("player.general");
-		valuesLeft[12][0] = Messages.getString("player.position");
-
-		String[][] valuesRight = new String[13][2];
-		valuesRight[0][0] = Messages.getString("player.name");
-		valuesRight[1][0] = Messages.getString("player.surname");
-		valuesRight[2][0] = Messages.getString("player.form");
-		valuesRight[3][0] = Messages.getString("player.stamina");
-		valuesRight[4][0] = Messages.getString("player.pace");
-		valuesRight[5][0] = Messages.getString("player.technique");
-		valuesRight[6][0] = Messages.getString("player.passing");
-		valuesRight[7][0] = Messages.getString("player.keeper");
-		valuesRight[8][0] = Messages.getString("player.defender");
-		valuesRight[9][0] = Messages.getString("player.playmaker");
-		valuesRight[10][0] = Messages.getString("player.scorer");
-		valuesRight[11][0] = Messages.getString("player.general");
-		valuesRight[12][0] = Messages.getString("player.position");
-
-		int textLeftSize = 0;
-		int textRightSize = 0;
-		int maxSkill1 = p1.getSkills().length - 1;
-		int maxSkill2 = p2.getSkills().length - 1;
-		int c = 0;
-		int j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = p1.getName();
-		valuesRight[c][j] = p2.getName();
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = p1.getSurname();
-		valuesRight[c][j] = p2.getSurname();
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getForm());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getForm() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getForm() - p2.getSkills()[maxSkill2].getForm()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.b" + p2.getSkills()[maxSkill2].getForm());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getForm() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getForm() - p1.getSkills()[maxSkill1].getForm()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getForm() > p2.getSkills()[maxSkill2].getForm()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getForm() < p2.getSkills()[maxSkill2].getForm()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getStamina());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getStamina() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getStamina() - p2.getSkills()[maxSkill2].getStamina()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.b" + p2.getSkills()[maxSkill2].getStamina());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getStamina() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getStamina() - p1.getSkills()[maxSkill1].getStamina()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getStamina() > p2.getSkills()[maxSkill2].getStamina()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getStamina() < p2.getSkills()[maxSkill2].getStamina()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getPace());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getPace() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getPace() - p2.getSkills()[maxSkill2].getPace()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.b" + p2.getSkills()[maxSkill2].getPace());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getPace() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getPace() - p1.getSkills()[maxSkill1].getPace()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getPace() > p2.getSkills()[maxSkill2].getPace()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getPace() < p2.getSkills()[maxSkill2].getPace()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getTechnique());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getTechnique() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getTechnique() - p2.getSkills()[maxSkill2].getTechnique()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.b" + p2.getSkills()[maxSkill2].getTechnique());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getTechnique() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getTechnique() - p1.getSkills()[maxSkill1].getTechnique()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getTechnique() > p2.getSkills()[maxSkill2].getTechnique()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getTechnique() < p2.getSkills()[maxSkill2].getTechnique()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.c" + p1.getSkills()[maxSkill1].getPassing());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getPassing() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getPassing() - p2.getSkills()[maxSkill2].getPassing()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.c" + p2.getSkills()[maxSkill2].getPassing());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getPassing() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getPassing() - p1.getSkills()[maxSkill1].getPassing()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getPassing() > p2.getSkills()[maxSkill2].getPassing()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getPassing() < p2.getSkills()[maxSkill2].getPassing()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getKeeper());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getKeeper() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getKeeper() - p2.getSkills()[maxSkill2].getKeeper()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.a" + p2.getSkills()[maxSkill2].getKeeper());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getKeeper() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getKeeper() - p1.getSkills()[maxSkill1].getKeeper()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getKeeper() > p2.getSkills()[maxSkill2].getKeeper()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getKeeper() < p2.getSkills()[maxSkill2].getKeeper()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getDefender());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getDefender() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getDefender() - p2.getSkills()[maxSkill2].getDefender()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.a" + p2.getSkills()[maxSkill2].getDefender());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getDefender() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getDefender() - p1.getSkills()[maxSkill1].getDefender()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getDefender() > p2.getSkills()[maxSkill2].getDefender()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getDefender() < p2.getSkills()[maxSkill2].getDefender()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getPlaymaker());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getPlaymaker() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getPlaymaker() - p2.getSkills()[maxSkill2].getPlaymaker()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.a" + p2.getSkills()[maxSkill2].getPlaymaker());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getPlaymaker() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getPlaymaker() - p1.getSkills()[maxSkill1].getPlaymaker()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getPlaymaker() > p2.getSkills()[maxSkill2].getPlaymaker()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getPlaymaker() < p2.getSkills()[maxSkill2].getPlaymaker()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getScorer());
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getScorer() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getScorer() - p2.getSkills()[maxSkill2].getScorer()) + ")";
-
-		valuesRight[c][j] = Messages.getString("skill.a" + p2.getSkills()[maxSkill2].getScorer());
-		valuesRight[c][j] += " [" + p2.getSkills()[maxSkill2].getScorer() + "] " + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getScorer() - p1.getSkills()[maxSkill1].getScorer()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getScorer() > p2.getSkills()[maxSkill2].getScorer()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getScorer() < p2.getSkills()[maxSkill2].getScorer()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = "[" + p1.getSkills()[maxSkill1].getSummarySkill() + "]" + "(" + SVNumberFormat.formatIntegerWithSignZero(p1.getSkills()[maxSkill1].getSummarySkill() - p2.getSkills()[maxSkill2].getSummarySkill()) + ")";
-
-		valuesRight[c][j] = "[" + p2.getSkills()[maxSkill2].getSummarySkill() + "]" + "(" + SVNumberFormat.formatIntegerWithSignZero(p2.getSkills()[maxSkill2].getSummarySkill() - p1.getSkills()[maxSkill1].getSummarySkill()) + ")";
-
-		if (p1.getSkills()[maxSkill1].getSummarySkill() > p2.getSkills()[maxSkill2].getSummarySkill()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorIncreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorDecreaseDescription());
-		} else if (p1.getSkills()[maxSkill1].getSummarySkill() < p2.getSkills()[maxSkill2].getSummarySkill()) {
-			description.leftColorText(textLeftSize, valuesLeft[c][j].length(), ConfigBean.getColorDecreaseDescription());
-			description.rightColorText(textRightSize, valuesRight[c][j].length(), ConfigBean.getColorIncreaseDescription());
-		}
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightFirstTextSize(valuesRight[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("assistant.position." + p1.getPosition());
-
-		valuesRight[c][j] = Messages.getString("assistant.position." + p2.getPosition());
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c][j]);
-		textRightSize = textRightSize + description.checkRightSecondTextSize(valuesRight[c++][j]);
+		String[][] valuesLeft = descriptionLabels();
+		String[][] valuesRight = descriptionLabels();
+		PlayerSkills s1 = p1.getSkills()[p1.getSkills().length - 1];
+		PlayerSkills s2 = p2.getSkills()[p2.getSkills().length - 1];
+		int[] textSize = new int[2];
+
+		compareRow(description, valuesLeft[0], valuesRight[0], textSize, p1.getName(), p2.getName(), 0);
+		compareRow(description, valuesLeft[1], valuesRight[1], textSize, p1.getSurname(), p2.getSurname(), 0);
+		compareSkill(description, valuesLeft[2], valuesRight[2], textSize, "skill.b", s1.getForm(), s2.getForm());
+		compareSkill(description, valuesLeft[3], valuesRight[3], textSize, "skill.b", s1.getStamina(), s2.getStamina());
+		compareSkill(description, valuesLeft[4], valuesRight[4], textSize, "skill.b", s1.getPace(), s2.getPace());
+		compareSkill(description, valuesLeft[5], valuesRight[5], textSize, "skill.b", s1.getTechnique(), s2.getTechnique());
+		compareSkill(description, valuesLeft[6], valuesRight[6], textSize, "skill.c", s1.getPassing(), s2.getPassing());
+		compareSkill(description, valuesLeft[7], valuesRight[7], textSize, "skill.a", s1.getKeeper(), s2.getKeeper());
+		compareSkill(description, valuesLeft[8], valuesRight[8], textSize, "skill.a", s1.getDefender(), s2.getDefender());
+		compareSkill(description, valuesLeft[9], valuesRight[9], textSize, "skill.a", s1.getPlaymaker(), s2.getPlaymaker());
+		compareSkill(description, valuesLeft[10], valuesRight[10], textSize, "skill.a", s1.getScorer(), s2.getScorer());
+		int summary1 = s1.getSummarySkill();
+		int summary2 = s2.getSummarySkill();
+		compareRow(description, valuesLeft[11], valuesRight[11], textSize, "[" + summary1 + "]" + difference(summary1, summary2), "[" + summary2 + "]" + difference(summary2, summary1), summary1 - summary2);
+		compareRow(description, valuesLeft[12], valuesRight[12], textSize, Messages.getString("assistant.position." + p1.getPosition()), Messages.getString("assistant.position." + p2.getPosition()), 0);
 
 		for (int i = 0; i < valuesLeft.length; i++) {
 			description.addLeftText(valuesLeft[i]);
@@ -848,6 +489,62 @@ public class ViewAssistant implements IPlugin, Sort {
 
 		description.setLeftColor();
 		description.setRightColor();
+	}
+
+	/** Labels of the player description rows, values left empty */
+	private String[][] descriptionLabels() {
+		String[] labels = {
+				Messages.getString("player.name"),
+				Messages.getString("player.surname"),
+				Messages.getString("player.form"),
+				Messages.getString("player.stamina"),
+				Messages.getString("player.pace"),
+				Messages.getString("player.technique"),
+				Messages.getString("player.passing"),
+				Messages.getString("player.keeper"),
+				Messages.getString("player.defender"),
+				Messages.getString("player.playmaker"),
+				Messages.getString("player.scorer"),
+				Messages.getString("player.general"),
+				Messages.getString("player.position")
+		};
+		String[][] values = new String[labels.length][2];
+		for (int i = 0; i < labels.length; i++) {
+			values[i][0] = labels[i];
+		}
+		return values;
+	}
+
+	/** Skill level name followed by its number in brackets */
+	private String skillText(String prefix, int value) {
+		return Messages.getString(prefix + value) + " [" + value + "] ";
+	}
+
+	/** Signed difference in brackets, such as "(+2)" */
+	private String difference(int value, int other) {
+		return "(" + SVNumberFormat.formatIntegerWithSignZero(value - other) + ")";
+	}
+
+	/** Compares one skill of two players in one description row */
+	private void compareSkill(DescriptionDoubleComposite description, String[] left, String[] right, int[] textSize, String prefix, int value1, int value2) {
+		compareRow(description, left, right, textSize, skillText(prefix, value1) + difference(value1, value2), skillText(prefix, value2) + difference(value2, value1), value1 - value2);
+	}
+
+	/** Fills one description row of both players, colouring the difference */
+	private void compareRow(DescriptionDoubleComposite description, String[] left, String[] right, int[] textSize, String leftValue, String rightValue, int leftMinusRight) {
+		textSize[0] += description.checkLeftFirstTextSize(left[0]);
+		textSize[1] += description.checkRightFirstTextSize(right[0]);
+		left[1] = leftValue;
+		right[1] = rightValue;
+		if (leftMinusRight > 0) {
+			description.leftColorText(textSize[0], leftValue.length(), ConfigBean.getColorIncreaseDescription());
+			description.rightColorText(textSize[1], rightValue.length(), ConfigBean.getColorDecreaseDescription());
+		} else if (leftMinusRight < 0) {
+			description.leftColorText(textSize[0], leftValue.length(), ConfigBean.getColorDecreaseDescription());
+			description.rightColorText(textSize[1], rightValue.length(), ConfigBean.getColorIncreaseDescription());
+		}
+		textSize[0] += description.checkLeftSecondTextSize(leftValue);
+		textSize[1] += description.checkRightSecondTextSize(rightValue);
 	}
 
 	public void dispose() {
@@ -879,166 +576,38 @@ public class ViewAssistant implements IPlugin, Sort {
 		composite.setLayout(new FormLayout());
 
 		setPlayersView();
-//		addPopupMenu();
+		addPlayersTableListener();
 
 		composite.layout(true);
 	}
 
-//	private void resetPlayersPosition(ArrayList<Player> players2) {
-//		for (Iterator itr = players.iterator(); itr.hasNext();) {
-//			Player player = (Player) itr.next();
-//			player.setPositionTable(new double[] {
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0,
-//					0.0
-//			});
-//		}
-//	}
-
 	public void setSettings(SokkerViewerSettings sokkerViewerSettings) {
-		// this.confProperties = confProperties;
 	}
 
 	public void setLayoutView(FormData formData) {
 		this.composite.setLayoutData(formData);
 	}
 
-	private void setPlayerInfo(DescriptionDoubleComposite description, Player p1) {
+	private void setPlayerInfo(DescriptionDoubleComposite description, Player player) {
 		description.clearAll();
-		String[][] valuesLeft = new String[13][2];
-		valuesLeft[0][0] = Messages.getString("player.name");
-		valuesLeft[1][0] = Messages.getString("player.surname");
-		valuesLeft[2][0] = Messages.getString("player.form");
-		valuesLeft[3][0] = Messages.getString("player.stamina");
-		valuesLeft[4][0] = Messages.getString("player.pace");
-		valuesLeft[5][0] = Messages.getString("player.technique");
-		valuesLeft[6][0] = Messages.getString("player.passing");
-		valuesLeft[7][0] = Messages.getString("player.keeper");
-		valuesLeft[8][0] = Messages.getString("player.defender");
-		valuesLeft[9][0] = Messages.getString("player.playmaker");
-		valuesLeft[10][0] = Messages.getString("player.scorer");
-		valuesLeft[11][0] = Messages.getString("player.general");
-		valuesLeft[12][0] = Messages.getString("player.position");
+		String[][] values = descriptionLabels();
+		PlayerSkills skills = player.getSkills()[player.getSkills().length - 1];
+		values[0][1] = player.getName();
+		values[1][1] = player.getSurname();
+		values[2][1] = skillText("skill.b", skills.getForm());
+		values[3][1] = skillText("skill.b", skills.getStamina());
+		values[4][1] = skillText("skill.b", skills.getPace());
+		values[5][1] = skillText("skill.b", skills.getTechnique());
+		values[6][1] = skillText("skill.c", skills.getPassing());
+		values[7][1] = skillText("skill.a", skills.getKeeper());
+		values[8][1] = skillText("skill.a", skills.getDefender());
+		values[9][1] = skillText("skill.a", skills.getPlaymaker());
+		values[10][1] = skillText("skill.a", skills.getScorer());
+		values[11][1] = "[" + skills.getSummarySkill() + "]";
+		values[12][1] = Messages.getString("assistant.position." + player.getPosition());
 
-		int textLeftSize = 0;
-		int maxSkill1 = p1.getSkills().length - 1;
-		int c = 0;
-		int j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = p1.getName();
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = p1.getSurname();
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getForm()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getForm() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getStamina()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getStamina() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getPace()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getPace() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.b" + p1.getSkills()[maxSkill1].getTechnique()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getTechnique() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.c" + p1.getSkills()[maxSkill1].getPassing()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getPassing() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getKeeper()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getKeeper() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getDefender()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getDefender() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getPlaymaker()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getPlaymaker() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("skill.a" + p1.getSkills()[maxSkill1].getScorer()).toString();
-		valuesLeft[c][j] += " [" + p1.getSkills()[maxSkill1].getScorer() + "] ";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = "[" + p1.getSkills()[maxSkill1].getSummarySkill() + "]";
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		j = 0;
-
-		textLeftSize = textLeftSize + description.checkLeftFirstTextSize(valuesLeft[c][j++]);
-
-		valuesLeft[c][j] = Messages.getString("assistant.position." + p1.getPosition());
-
-		textLeftSize = textLeftSize + description.checkLeftSecondTextSize(valuesLeft[c++][j]);
-
-		for (int i = 0; i < valuesLeft.length; i++) {
-			description.addLeftText(valuesLeft[i]);
+		for (int i = 0; i < values.length; i++) {
+			description.addLeftText(values[i]);
 		}
 	}
 
@@ -1055,31 +624,17 @@ public class ViewAssistant implements IPlugin, Sort {
 	public void set() {
 		players = Cache.getPlayers();
 
-//		resetPlayersPosition(players);
-
 		data = Cache.getAssistant();
 
-//		Utils.calculatePositionForAllPlayer(players, data);
-		
 		playersTable.fill(players);
+	}
 
+	/** Describes one selected player or compares two */
+	private void addPlayersTableListener() {
 		Listener playersTableListener = new Listener() {
 
 			public void handleEvent(Event event) {
 				switch (event.type) {
-//				case SWT.MouseDown:
-//					if (event.button == 3) {
-//						// // Rectangle clientArea = allCoachesTable.getClientArea();
-//						// Point pt = new Point(event.x, event.y);
-//						// TableItem item = confTable.getItem(pt);
-//						// if (item != null) {
-//						// confTable.setMenu(menuPopUp);
-//						// confTable.getMenu().setVisible(true);
-//						// } else {
-//						// confTable.setMenu(menuClear);
-//						// }
-//					}
-//					break;
 				case SWT.Selection:
 					if (playersTable.getSelectionCount() == 1) {
 						TableItem[] items = playersTable.getSelection();
@@ -1108,7 +663,6 @@ public class ViewAssistant implements IPlugin, Sort {
 	}
 
 	public void reload() {
-		// TODO Auto-generated method stub
 	}
 
 }

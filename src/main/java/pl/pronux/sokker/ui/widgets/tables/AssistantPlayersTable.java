@@ -22,13 +22,12 @@ import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.listeners.SortTableListener;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 import pl.pronux.sokker.ui.widgets.interfaces.IViewSort;
 
 public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<Player> {
 
-	public static final int MATCH_INDEX_1ST = 14;
+	public static final int MATCH_INDEX_1ST = PlayerAssistantComparator.POSITION + 1;
 	public static final int MATCH_INDEX_2ND = MATCH_INDEX_1ST + 1;
 	public static final int MATCH_INDEX_3RD = MATCH_INDEX_2ND + 1;
 	public static final int MATCH_INDEX_4TH = MATCH_INDEX_3RD + 1;
@@ -49,40 +48,31 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 		comparator.setDirection(PlayerAssistantComparator.ASCENDING);
 
 		
-		String[] title = {
-				Messages.getString("table.name"), 
-				Messages.getString("table.surname"),
-				Messages.getString("assistant.position.short.1"), 
-				Messages.getString("assistant.position.short.2"), 
-				Messages.getString("assistant.position.short.3"), 
-				Messages.getString("assistant.position.short.4"), 
-				Messages.getString("assistant.position.short.5"), 
-				Messages.getString("assistant.position.short.6"), 
-				Messages.getString("assistant.position.short.7"), 
-				Messages.getString("assistant.position.short.8"), 
-				Messages.getString("assistant.position.short.9"), 
-				Messages.getString("assistant.position.short.10"), 
-				Messages.getString("assistant.position.short.11"), 
-				Messages.getString("table.position.best"), 
-				Messages.getString("table.1st"), //$NON-NLS-1$
-				Messages.getString("table.2nd"), //$NON-NLS-1$
-				Messages.getString("table.3rd"), //$NON-NLS-1$
-				Messages.getString("table.4th"), //$NON-NLS-1$
-				"" 
-		};
-		
-		for (int i = 0; i < title.length; i++) {
+		List<String> title = new ArrayList<String>();
+		title.add(Messages.getString("table.name"));
+		title.add(Messages.getString("table.surname"));
+		for (int position = 1; position <= Player.POSITION_COUNT; position++) {
+			title.add(Messages.getString("assistant.position.short." + position));
+		}
+		title.add(Messages.getString("table.position.best"));
+		title.add(Messages.getString("table.1st"));
+		title.add(Messages.getString("table.2nd"));
+		title.add(Messages.getString("table.3rd"));
+		title.add(Messages.getString("table.4th"));
+		title.add("");
+
+		for (int i = 0; i < title.size(); i++) {
 			TableColumn column = new TableColumn(this, SWT.NONE);
-			if (i < 2 || i == PlayerAssistantComparator.POSITION) {
+			if (i < PlayerAssistantComparator.RATING || i == PlayerAssistantComparator.POSITION) {
 				column.setAlignment(SWT.LEFT);
 			} else {
 				column.setAlignment(SWT.RIGHT);
 			}
-			column.setText(title[i]);
+			column.setText(title.get(i));
 			column.setMoveable(false);
 			column.setResizable(false);
 
-			if (title[i].isEmpty()) {
+			if (title.get(i).isEmpty()) {
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -106,56 +96,34 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 		// Turn off drawing to avoid flicker
 		this.setRedraw(false);
 		this.players = players;
-		// We remove all the this entries, sort our
-		// rows, then add the entries
-		this.remove(0, this.getItemCount() - 1);
+		this.removeAll();
 
 		Collections.sort(players, comparator);
 		for (Player player : players) {
 			TableItem item = new TableItem(this, SWT.NONE);
 
-			if (player.getPosition() == Player.POSITION_GK) {
-				item.setBackground(ColorResources.getColor(221, 255, 255));
-			} else if (player.getPosition() == Player.POSITION_DEF) {
-				item.setBackground(ColorResources.getColor(255, 230, 214));
-			} else if (player.getPosition() == Player.POSITION_WINGBACK) {
-				item.setBackground(ColorResources.getColor(255, 230, 214));
-			} else if (player.getPosition() == Player.POSITION_DEF_OFF) {
-				item.setBackground(ColorResources.getColor(255, 230, 214));
-			} else if (player.getPosition() == Player.POSITION_MID) {
-				item.setBackground(ColorResources.getColor(255, 255, 208));
-			} else if (player.getPosition() == Player.POSITION_DEF_MID) {
-				item.setBackground(ColorResources.getColor(255, 255, 208));
-			} else if (player.getPosition() == Player.POSITION_WINGER) {
-				item.setBackground(ColorResources.getColor(255, 255, 208));
-			} else if (player.getPosition() == Player.POSITION_OFF_MID) {
-				item.setBackground(ColorResources.getColor(255, 255, 208));
-			} else if (player.getPosition() == Player.POSITION_ATT) {
-				item.setBackground(ColorResources.getColor(226, 255, 208));
-			} else if (player.getPosition() == Player.POSITION_DEF_ATT) {
-				item.setBackground(ColorResources.getColor(226, 255, 208));
-			} 
-			
+			int position = player.getPosition();
+			if (position == Player.POSITION_GK) {
+				item.setBackground(Colors.getPositionGK());
+			} else if (position == Player.POSITION_DEF) {
+				item.setBackground(Colors.getPositionDEF());
+			} else if (position == Player.POSITION_DEF_MID || position == Player.POSITION_MID || position == Player.POSITION_WINGER || position == Player.POSITION_OFF_MID) {
+				item.setBackground(Colors.getPositionMID());
+			} else if (position == Player.POSITION_ATT) {
+				item.setBackground(Colors.getPositionATT());
+			}
+
 			int idx = 0;
-			int j = 0;
-			item.setData("person", player); 
+			item.setData("person", player);
 			item.setText(idx++, player.getName());
 			item.setText(idx++, player.getSurname());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
-			item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[j++]).setScale(2).toString());
+			for (int i = 0; i < Player.POSITION_COUNT; i++) {
+				item.setText(idx++, BigDecimal.valueOf(player.getPositionTable()[i]).setScale(2).toString());
+			}
 
-			item.setText(idx++, Messages.getString("assistant.position." + player.getPosition()));
+			item.setText(idx++, Messages.getString("assistant.position." + position));
 
-			item.setFont(player.getPosition() + 1, Fonts.getBoldFont(item.getDisplay(), item.getFont().getFontData()));
+			item.setFont(PlayerAssistantComparator.RATING + position - 1, Fonts.getBoldFont(item.getDisplay(), item.getFont().getFontData()));
 
 			if (player.getPlayerMatchStatistics() != null) {
 				int week = Cache.getDate().getSokkerDate().getWeek();
@@ -211,11 +179,9 @@ public class AssistantPlayersTable extends SVTable<Player> implements IViewSort<
 	}
 	
 	public void sort(SVComparator<Player> comparator) {
-		if(players != null) {
-			Collections.sort(players, comparator);
+		if (players != null) {
 			fill(players);
 		}
-		
 	}
 
 	public SVComparator<Player> getComparator() {

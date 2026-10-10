@@ -2,6 +2,6 @@ package pl.pronux.sokker.interfaces;
 
 public interface SV {
 
-	int DB_VERSION = 32;
+	int DB_VERSION = 33;
 	String SK_VERSION = "0.15.4";
 }

@@ -42,14 +42,11 @@ CREATE MEMORY TABLE TEAM_STATS( MATCH_ID INTEGER NOT NULL, TEAM_ID INTEGER NOT N
 CREATE MEMORY TABLE PLAYERS_STATS( MATCH_ID INTEGER, TEAM_ID INTEGER, PLAYER_ID INTEGER, NUMBER INTEGER, FORMATION INTEGER, TIME_IN INTEGER, TIME_OUT INTEGER, YELLOW_CARDS INTEGER, RED_CARDS INTEGER, IS_INJURED INTEGER, GOALS INTEGER, ASSISTS INTEGER, FOULS INTEGER, SHOOTS INTEGER, RATING INTEGER, TIME_PLAYING INTEGER, TIME_DEFENDING INTEGER,  injury_days INTEGER DEFAULT 0 NOT NULL, CONSTRAINT PLAYERS_STATS_MATCH_ID_FKEY FOREIGN KEY(MATCH_ID) REFERENCES MATCHES_TEAM(MATCH_ID) ON DELETE CASCADE ON UPDATE CASCADE)
 INSERT INTO system VALUES (0, 0, 0, 0, true, true, false, 0, 3, 0, false);
 SET WRITE_DELAY 0 MILLIS;
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (1, 10, 8, 8, 8, 6, 56, 2, 2, 0);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (2, 10, 10, 10, 10, 10, 0, 40, 10, 0);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (3, 10, 10, 15, 10, 10, 0, 35, 10, 0);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (4, 10, 10, 10, 15, 10, 0, 30, 15, 0);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (5, 10, 10, 8, 14, 12, 0, 8, 30, 8);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (6, 10, 10, 8, 12, 12, 0, 15, 25, 8);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (7, 10, 10, 8, 14, 14, 0, 8, 24, 12);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (8, 10, 10, 12, 14, 12, 0, 8, 26, 8);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (9, 10, 10, 10, 12, 13, 0, 7, 12, 26);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (10, 10, 10, 13, 8, 13, 0, 6, 7, 33);
-INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (11, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (1, 10, 10, 18, 0, 9, 53, 0, 0, 0);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (2, 10, 10, 25, 8, 8, 0, 30, 9, 0);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (3, 10, 10, 17, 14, 17, 0, 15, 17, 0);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (4, 10, 10, 17, 17, 17, 0, 12, 17, 0);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (5, 10, 10, 20, 20, 20, 0, 0, 20, 0);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (6, 10, 10, 17, 17, 17, 0, 0, 17, 12);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (7, 10, 10, 27, 27, 0, 0, 0, 0, 26);
+INSERT INTO assistant (id_position, form, stamina, pace, technique, passing, keeper, defender, playmaker, scorer) VALUES (8, 0, 0, 0, 0, 0, 0, 0, 0, 0);

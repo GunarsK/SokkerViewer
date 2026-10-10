@@ -20,8 +20,6 @@ public class Player extends Person implements Serializable, PlayerInterface {
 
 	public static final int STATUS_TRASH = 11;
 
-	public static final int STATUS_DELETED = 21;
-
 	public static final int EXISTS_IN_SOKKER_UNCHECKED = 0; 
 	
 	public static final int EXISTS_IN_SOKKER_TRUE = 1;
@@ -32,21 +30,14 @@ public class Player extends Person implements Serializable, PlayerInterface {
 	
 	public static final int POSITION_GK = 1;
 	public static final int POSITION_DEF = 2;
-	public static final int POSITION_WINGBACK = 3;
-	public static final int POSITION_DEF_OFF = 4;
-	public static final int POSITION_MID = 5;
-	public static final int POSITION_DEF_MID = 6;
-	public static final int POSITION_OFF_MID = 7;
-	public static final int POSITION_WINGER = 8;
-	public static final int POSITION_DEF_ATT = 9;
-	public static final int POSITION_ATT = 10;
-	public static final int POSITION_PERSONAL = 11;
-	
-	public static final int MATCH_GK = 0;
-	public static final int MATCH_DEF = 1;
-	public static final int MATCH_MID = 2;
-	public static final int MATCH_ATT = 3;
-	
+	public static final int POSITION_DEF_MID = 3;
+	public static final int POSITION_MID = 4;
+	public static final int POSITION_WINGER = 5;
+	public static final int POSITION_OFF_MID = 6;
+	public static final int POSITION_ATT = 7;
+	public static final int POSITION_PERSONAL = 8;
+	public static final int POSITION_COUNT = POSITION_PERSONAL;
+
 	private int preferredPosition;
 	
 	private int countryfrom;
@@ -154,16 +145,6 @@ public class Player extends Person implements Serializable, PlayerInterface {
 	public int getPosition() {
 		return position;
 	}
-
-	// na wszelki wypadek gdyby w przyszlosci trzeba by bylo inicjalizowac tablice
-	// skilli
-	// public Player(int numberOfTrainings) {
-	// skills = new Skills[numberOfTrainings];
-	// }
-	//
-	// public Player() {
-	// this(1);
-	// }
 
 	/*
 	 * (non-Javadoc)

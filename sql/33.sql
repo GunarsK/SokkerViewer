@@ -1,0 +1,16 @@
+DELETE FROM assistant WHERE id_position IN (3, 4, 9);
+UPDATE assistant SET id_position = 3 WHERE id_position = 6;
+UPDATE assistant SET id_position = 4 WHERE id_position = 5;
+UPDATE assistant SET id_position = 5 WHERE id_position = 8;
+UPDATE assistant SET id_position = 6 WHERE id_position = 7;
+UPDATE assistant SET id_position = 7 WHERE id_position = 10;
+UPDATE assistant SET id_position = 8 WHERE id_position = 11;
+UPDATE assistant SET form = 10, stamina = 10, pace = 18, technique = 0, passing = 9, keeper = 53, defender = 0, playmaker = 0, scorer = 0 WHERE id_position = 1 AND form = 10 AND stamina = 8 AND pace = 8 AND technique = 8 AND passing = 6 AND keeper = 56 AND defender = 2 AND playmaker = 2 AND scorer = 0;
+UPDATE assistant SET form = 10, stamina = 10, pace = 25, technique = 8, passing = 8, keeper = 0, defender = 30, playmaker = 9, scorer = 0 WHERE id_position = 2 AND form = 10 AND stamina = 10 AND pace = 10 AND technique = 10 AND passing = 10 AND keeper = 0 AND defender = 40 AND playmaker = 10 AND scorer = 0;
+UPDATE assistant SET form = 10, stamina = 10, pace = 17, technique = 14, passing = 17, keeper = 0, defender = 15, playmaker = 17, scorer = 0 WHERE id_position = 3 AND form = 10 AND stamina = 10 AND pace = 8 AND technique = 12 AND passing = 12 AND keeper = 0 AND defender = 15 AND playmaker = 25 AND scorer = 8;
+UPDATE assistant SET form = 10, stamina = 10, pace = 17, technique = 17, passing = 17, keeper = 0, defender = 12, playmaker = 17, scorer = 0 WHERE id_position = 4 AND form = 10 AND stamina = 10 AND pace = 8 AND technique = 14 AND passing = 12 AND keeper = 0 AND defender = 8 AND playmaker = 30 AND scorer = 8;
+UPDATE assistant SET form = 10, stamina = 10, pace = 20, technique = 20, passing = 20, keeper = 0, defender = 0, playmaker = 20, scorer = 0 WHERE id_position = 5 AND form = 10 AND stamina = 10 AND pace = 12 AND technique = 14 AND passing = 12 AND keeper = 0 AND defender = 8 AND playmaker = 26 AND scorer = 8;
+UPDATE assistant SET form = 10, stamina = 10, pace = 17, technique = 17, passing = 17, keeper = 0, defender = 0, playmaker = 17, scorer = 12 WHERE id_position = 6 AND form = 10 AND stamina = 10 AND pace = 8 AND technique = 14 AND passing = 14 AND keeper = 0 AND defender = 8 AND playmaker = 24 AND scorer = 12;
+UPDATE assistant SET form = 10, stamina = 10, pace = 27, technique = 27, passing = 0, keeper = 0, defender = 0, playmaker = 0, scorer = 26 WHERE id_position = 7 AND form = 10 AND stamina = 10 AND pace = 13 AND technique = 8 AND passing = 13 AND keeper = 0 AND defender = 6 AND playmaker = 7 AND scorer = 33;
+UPDATE player SET id_position = CASE id_position WHEN 3 THEN 2 WHEN 4 THEN 2 WHEN 5 THEN 4 WHEN 6 THEN 3 WHEN 7 THEN 6 WHEN 8 THEN 5 WHEN 9 THEN 7 WHEN 10 THEN 7 WHEN 11 THEN 8 ELSE id_position END;
+UPDATE SYSTEM SET VERSION = 33;
