@@ -1,6 +1,5 @@
 package pl.pronux.sokker.ui.configure;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Locale;
 
@@ -30,7 +29,6 @@ public class ViewGeneral implements IViewConfigure {
 
 	private Composite composite;
 
-	// private Group proxyGroup;
 	private SokkerViewerSettings settings;
 
 	private Button startupButton;
@@ -42,6 +40,8 @@ public class ViewGeneral implements IViewConfigure {
 	private Combo confShellLangTypeCombo;
 
 	private Button closeButton;
+
+	private Button updateCheckButton;
 
 	public void clear() {
 
@@ -93,34 +93,41 @@ public class ViewGeneral implements IViewConfigure {
 		closeButton.pack();
 
 		formData = new FormData();
-		formData.top = new FormAttachment(closeButton, 5);
-		formData.left = new FormAttachment(0, 20);
-		// formData.right = new FormAttachment(100, -20);
-		formData.height = 15;
+		formData.top = new FormAttachment(closeButton, 10);
+		formData.left = new FormAttachment(0, 10);
+
+		updateCheckButton = new Button(composite, SWT.CHECK);
+		updateCheckButton.setLayoutData(formData);
+
+		updateCheckButton.pack();
 
 		confShellLangTypeLabel = new Label(composite, SWT.VERTICAL | SWT.SHADOW_NONE);
-		confShellLangTypeLabel.setText(Messages.getString("confShell.langtype")); 
-		confShellLangTypeLabel.setLayoutData(formData);
-		confShellLangTypeLabel.pack();
+		confShellLangTypeLabel.setText(Messages.getString("confShell.langtype"));
 
 		formData = new FormData();
-		formData.top = new FormAttachment(confShellLangTypeLabel, 0, SWT.CENTER);
+		formData.top = new FormAttachment(updateCheckButton, 10);
 		formData.left = new FormAttachment(confShellLangTypeLabel, 20);
 		formData.right = new FormAttachment(100, -20);
-		// formData.height = 15;
 
 		confShellLangTypeCombo = new Combo(composite, SWT.BORDER | SWT.READ_ONLY);
 		confShellLangTypeCombo.setItems(Language.languageNames());
 		confShellLangTypeCombo.setLayoutData(formData);
 		confShellLangTypeCombo.pack();
 
-		setWidgets();
-		startupButton.setText(Messages.getString("configure.startup")); 
-		downloadButton.setText(Messages.getString("configure.startup.download")); 
-		closeButton.setText(Messages.getString("configure.info.close")); 
-		treeItem.setText(Messages.getString("configure.general")); 
-		confShellLangTypeLabel.setText(Messages.getString("confShell.langtype")); 
+		formData = new FormData();
+		formData.top = new FormAttachment(confShellLangTypeCombo, 0, SWT.CENTER);
+		formData.left = new FormAttachment(0, 20);
+		formData.height = 15;
+
+		confShellLangTypeLabel.setLayoutData(formData);
 		confShellLangTypeLabel.pack();
+
+		setWidgets();
+		startupButton.setText(Messages.getString("configure.startup"));
+		downloadButton.setText(Messages.getString("configure.startup.download"));
+		closeButton.setText(Messages.getString("configure.info.close"));
+		updateCheckButton.setText(Messages.getString("configure.info.update"));
+		treeItem.setText(Messages.getString("configure.general"));
 		composite.layout(true);
 	}
 
@@ -128,6 +135,7 @@ public class ViewGeneral implements IViewConfigure {
 		downloadButton.setSelection(settings.isUpdate());
 		startupButton.setSelection(settings.isStartup());
 		closeButton.setSelection(settings.isInfoClose());
+		updateCheckButton.setSelection(settings.isInfoUpdate());
 
 		String language = Language.getLanguageName(settings.getLangCode());
 		if (language != null) {
@@ -151,6 +159,7 @@ public class ViewGeneral implements IViewConfigure {
 	public void applyChanges() {
 		settings.setStartup(startupButton.getSelection());
 		settings.setInfoClose(closeButton.getSelection());
+		settings.setInfoUpdate(updateCheckButton.getSelection());
 		settings.setUpdate(downloadButton.getSelection());
 
 		String text = confShellLangTypeCombo.getItem(confShellLangTypeCombo.getSelectionIndex());
@@ -162,8 +171,6 @@ public class ViewGeneral implements IViewConfigure {
 		}
 		try {
 			settingsManager.updateSettings(settings);
-		} catch (FileNotFoundException e1) {
-			new BugReporter(composite.getDisplay()).openErrorMessage("Configurator", e1);
 		} catch (IOException e1) {
 			new BugReporter(composite.getDisplay()).openErrorMessage("Configurator", e1);
 		} catch (SVException e1) {
