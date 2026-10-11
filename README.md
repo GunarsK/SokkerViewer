@@ -27,8 +27,11 @@ SokkerViewer keeps all its data in its own folder, so unzip it somewhere you can
 ### macOS
 
 1. Unzip the file.
-2. Double-click `SokkerViewer.command` in the `SokkerViewer` folder. The first time, macOS blocks it, because the app is not signed.
-3. Open **System Settings > Privacy & Security** (on macOS 11 and 12: **System Preferences > Security & Privacy**, General tab), click **Open Anyway** next to the message about `SokkerViewer.command`, and confirm. After that, a double-click starts it.
+2. Double-click `SokkerViewer.command` in the `SokkerViewer` folder. The first time, macOS blocks it, because the app is not signed: close the message with **Done** or **OK**.
+3. Open **System Settings > Privacy & Security** (on macOS 11 and 12: **System Preferences > Security & Privacy**, General tab), scroll down if needed, click **Open Anyway** next to the message about `SokkerViewer.command`, and confirm.
+4. If macOS asks whether Terminal may access the folder, click **Allow**.
+
+SokkerViewer starts. A Terminal window opens next to it each time; you can close it. From then on, a double-click on `SokkerViewer.command` starts SokkerViewer.
 
 ## First start
 
@@ -52,4 +55,14 @@ Everything is in the `SokkerViewer` folder: `db` holds your database, `bak` its 
 
 ## Importing older data
 
-**File > Import XML files** reads history saved by other apps: the `xml` folder of an older SokkerViewer, Sokker Organizer's files, or Sokker Asistente's data folder. Weeks your database already has are left as they are.
+**File > Import XML files** reads history saved by other apps: the `xml` folder of an older SokkerViewer, Sokker Organizer's files, or Sokker Asistente's files. Weeks your database already has are left as they are.
+
+From Sokker Asistente, download these three files into one folder and pick that folder:
+
+| File | Holds |
+|---|---|
+| `<team id>.properties` | your current players' weeks |
+| `<team id>_historico.properties` | your former players' weeks |
+| `_<your login>.properties` | the training types; only its training lines are read |
+
+The junior files are not needed.
