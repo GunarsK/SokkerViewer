@@ -14,6 +14,8 @@ public class SokkerViewerSettings {
 	private boolean update;
 	private boolean infoClose;
 	private boolean infoUpdate;
+	/** the version that last ran, empty before the first */
+	private String lastVersion = "";
 	private ProxySettings proxySettings;
 
 	public boolean isSavePassword() {
@@ -102,6 +104,14 @@ public class SokkerViewerSettings {
 
 	public void setInfoUpdate(boolean infoUpdate) {
 		this.infoUpdate = infoUpdate;
+	}
+
+	public String getLastVersion() {
+		return lastVersion;
+	}
+
+	public void setLastVersion(String lastVersion) {
+		this.lastVersion = lastVersion;
 	}
 
 	public ProxySettings getProxySettings() {

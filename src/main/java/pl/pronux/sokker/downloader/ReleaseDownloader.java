@@ -22,7 +22,7 @@ import pl.pronux.sokker.model.Release;
 /** client for SokkerViewer's releases on github */
 public class ReleaseDownloader extends AbstractDownloader {
 
-	private static final String LATEST_URL = "https://api.github.com/repos/GunarsK/SokkerViewer/releases/latest";
+	private static final String RELEASES_URL = "https://api.github.com/repos/GunarsK/SokkerViewer/releases/";
 
 	private static final String SHA256_PREFIX = "sha256:";
 
@@ -32,7 +32,16 @@ public class ReleaseDownloader extends AbstractDownloader {
 
 	/** the newest published release; drafts and pre-releases never count */
 	public Release getLatestRelease() throws IOException {
-		HttpURLConnection connection = open(LATEST_URL);
+		return fetch(RELEASES_URL + "latest");
+	}
+
+	/** the release of a version, pre-releases included */
+	public Release getRelease(String version) throws IOException {
+		return fetch(RELEASES_URL + "tags/v" + version);
+	}
+
+	private Release fetch(String url) throws IOException {
+		HttpURLConnection connection = open(url);
 		connection.setRequestProperty("Accept", "application/vnd.github+json");
 		checkStatus(connection);
 		return parse(read(connection.getInputStream()), Bundle.current());
@@ -83,6 +92,7 @@ public class ReleaseDownloader extends AbstractDownloader {
 		if (tag == null || url == null) {
 			throw new IOException("github release without tag_name or html_url");
 		}
+		String notes = Json.getString(release, "body");
 		JsonArray assets = Json.getArray(release, "assets");
 		if (assets != null && bundle != null) {
 			for (JsonElement element : assets) {
@@ -91,11 +101,11 @@ public class ReleaseDownloader extends AbstractDownloader {
 				if (name != null && name.endsWith(bundle.getZipSuffix())) {
 					String digest = Json.getString(asset, "digest");
 					String sha256 = digest != null && digest.startsWith(SHA256_PREFIX) ? digest.substring(SHA256_PREFIX.length()) : null;
-					return new Release(tag, url, Json.getString(asset, "browser_download_url"), sha256);
+					return new Release(tag, url, Json.getString(asset, "browser_download_url"), sha256, notes);
 				}
 			}
 		}
-		return new Release(tag, url);
+		return new Release(tag, url, null, null, notes);
 	}
 
 	private HttpURLConnection open(String url) throws IOException {

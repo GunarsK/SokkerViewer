@@ -75,26 +75,21 @@ public class PropertiesChecker {
 	public boolean checkSokkerProperties() {
 
 		HashMap<String, String> hmValues = new HashMap<String, String>();
-		hmValues.put("db.login", "");
 		hmValues.put("sk.dir", "");
 		hmValues.put("sk.login", "");
-		hmValues.put("db.name", "");
 		hmValues.put("sk.password", "");
-		hmValues.put("db.server", "");
-		hmValues.put("db.password", "");
 		hmValues.put("proxy.turn", "0");
 		hmValues.put("proxy.host", "");
 		hmValues.put("proxy.port", "");
 		hmValues.put("proxy.user", "");
 		hmValues.put("proxy.password", "");
-		hmValues.put("db.list", "HSQLDB");
 		hmValues.put("backup.dir", "");
-		hmValues.put("db.type", "HSQLDB");
 		hmValues.put("conf.savepass", "1");
 		hmValues.put("conf.getXML", "0");
 		hmValues.put("lang.code", "en_EN");
 		hmValues.put("check.properties", "0");
 		hmValues.put("sv.startup", "0");
+		hmValues.put("sv.version", "");
 		hmValues.put("info.update", "1");
 		hmValues.put("info.close", "1");
 

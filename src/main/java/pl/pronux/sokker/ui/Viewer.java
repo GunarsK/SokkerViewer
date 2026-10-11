@@ -43,6 +43,7 @@ import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.resources.PropertiesResources;
 import pl.pronux.sokker.ui.actions.CheckUpdateAction;
 import pl.pronux.sokker.ui.actions.CoreAction;
+import pl.pronux.sokker.ui.actions.ReleaseNotesAction;
 import pl.pronux.sokker.ui.actions.SetUIAction;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.configure.Configurator;
@@ -306,8 +307,11 @@ public class Viewer extends Shell {
 		super.open();
 		if (page == null) {
 			UpdateManager.cleanUp();
+			ReleaseNotesAction notes = ReleaseNotesAction.due(display);
 			if (settings.isInfoUpdate()) {
-				CheckUpdateAction.start(this, true);
+				CheckUpdateAction.start(this, true, notes);
+			} else if (notes != null) {
+				notes.run();
 			}
 		}
 		while (!this.isDisposed()) {

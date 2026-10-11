@@ -18,68 +18,23 @@ public class SokkerViewerSettingsDto extends SokkerViewerSettings {
 			this.setPassword(new String(Crypto.decodeBase64(properties
 					.getProperty("sk.password")))); 
 		} catch (BadArgumentException e1) {
-			this.setPassword(""); 
+			this.setPassword("");
 		}
-		
-		try {
-			if(properties.getProperty("check.properties").equals("1")) {  
-				this.setCheckProperties(true);
-			} else {
-				this.setCheckProperties(false);
-			}
-		} catch (Exception e) {
-			this.setCheckProperties(true);
-		}
-		
-		try {
-			if(properties.getProperty("info.close").equals("1")) {  
-				this.setInfoClose(true);
-			} else {
-				this.setInfoClose(false);
-			}
-		} catch (Exception e) {
-			this.setInfoClose(false);
-		} 
-		
-		try {
-			if(properties.getProperty("info.update").equals("1")) {  
-				this.setInfoUpdate(true);
-			} else { 
-				this.setInfoUpdate(false);
-			}
-		} catch (Exception e) {
-			this.setInfoUpdate(false);
-		}
-		
-		try {
-			if(properties.getProperty("conf.savepass").equals("1")) {  
-				this.setSavePassword(true);
-			} else {
-				this.setSavePassword(false);
-			}
-		} catch (Exception e) {
-			this.setSavePassword(false);
-		} 
-		
-		try {
-			if(properties.getProperty("sv.startup").equals("1")) {  
-				this.setStartup(true);
-			} else {
-				this.setStartup(false);				
-			}
-		} catch (Exception e) {
-			
-		} 
-		
-		try {
-			if(properties.getProperty("conf.getXML").equals("1")) {  
-				this.setUpdate(true);
-			} else {
-				this.setUpdate(false);
-			}
-		} catch (Exception e) {
-			this.setUpdate(false);
-		} 
+
+		this.setCheckProperties(flag(properties, "check.properties", true));
+		this.setInfoClose(flag(properties, "info.close", false));
+		this.setInfoUpdate(flag(properties, "info.update", false));
+		this.setSavePassword(flag(properties, "conf.savepass", false));
+		this.setStartup(flag(properties, "sv.startup", false));
+		this.setUpdate(flag(properties, "conf.getXML", false));
+		String lastVersion = properties.getProperty("sv.version");
+		this.setLastVersion(lastVersion == null ? "" : lastVersion);
+	}
+
+	/** "1" as true; a missing key gives the default */
+	private static boolean flag(PropertiesSession properties, String key, boolean missing) {
+		String value = properties.getProperty(key);
+		return value == null ? missing : value.equals("1");
 	}
 
 }

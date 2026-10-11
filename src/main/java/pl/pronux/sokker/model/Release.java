@@ -13,16 +13,20 @@ public class Release {
 	/** the zip's sha-256 in hex, null when github gave none */
 	private final String sha256;
 
+	/** github's notes in markdown, null when the release has none */
+	private final String notes;
+
 	public Release(String tag, String url) {
-		this(tag, url, null, null);
+		this(tag, url, null, null, null);
 	}
 
 	/** tag like "v0.15.3"; the leading v is dropped */
-	public Release(String tag, String url, String downloadUrl, String sha256) {
+	public Release(String tag, String url, String downloadUrl, String sha256, String notes) {
 		this.version = tag.startsWith("v") ? tag.substring(1) : tag;
 		this.url = url;
 		this.downloadUrl = downloadUrl;
 		this.sha256 = sha256;
+		this.notes = notes;
 	}
 
 	public String getVersion() {
@@ -41,8 +45,16 @@ public class Release {
 		return sha256;
 	}
 
-	/** numbers compared part by part, a missing part counts as 0 */
+	public String getNotes() {
+		return notes;
+	}
+
 	public boolean isNewerThan(String current) {
+		return isNewer(version, current);
+	}
+
+	/** numbers compared part by part, a missing part counts as 0 */
+	public static boolean isNewer(String version, String current) {
 		String[] mine = version.split("\\.");
 		String[] theirs = current.split("\\.");
 		try {

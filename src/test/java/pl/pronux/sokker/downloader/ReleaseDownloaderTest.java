@@ -13,7 +13,7 @@ import pl.pronux.sokker.model.Release;
 public class ReleaseDownloaderTest {
 
 	/** a release with notes, every bundle and the windows 8.1 zip */
-	private static final String BUNDLES = "{'tag_name':'v0.15.4','html_url':'https://github.com/r/v0.15.4','assets':["
+	private static final String BUNDLES = "{'tag_name':'v0.15.4','html_url':'https://github.com/r/v0.15.4','body':'### New\\r\\n\\r\\n- **Talent** estimate','assets':["
 		+ "{'name':'notes.txt','browser_download_url':'https://github.com/r/notes.txt','digest':'sha256:00'},"
 		+ "{'name':'sokker-0.15.4-windows-8.1-with-java.zip','browser_download_url':'https://github.com/r/win81.zip','digest':'sha256:81'},"
 		+ "{'name':'sokker-0.15.4-macos-arm64-with-java.zip','browser_download_url':'https://github.com/r/mac.zip','digest':'sha256:def456'},"
@@ -28,6 +28,7 @@ public class ReleaseDownloaderTest {
 		assertEquals("https://github.com/r/v0.15.4", release.getUrl());
 		assertEquals("https://github.com/r/sokker.zip", release.getDownloadUrl());
 		assertEquals("abc123", release.getSha256());
+		assertEquals("### New\r\n\r\n- **Talent** estimate", release.getNotes());
 	}
 
 	@Test
@@ -52,6 +53,7 @@ public class ReleaseDownloaderTest {
 
 		assertEquals("0.15.4", release.getVersion());
 		assertNull(release.getDownloadUrl());
+		assertEquals("### New\r\n\r\n- **Talent** estimate", release.getNotes());
 	}
 
 	@Test
@@ -60,6 +62,7 @@ public class ReleaseDownloaderTest {
 
 		assertNull(release.getDownloadUrl());
 		assertNull(release.getSha256());
+		assertNull(release.getNotes());
 	}
 
 	@Test

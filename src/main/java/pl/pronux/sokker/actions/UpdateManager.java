@@ -34,6 +34,13 @@ public final class UpdateManager {
 			&& new File(base, "Launcher.jar").isFile() && new File(base, "runtime").isDirectory();
 	}
 
+	/** a github client through the user's proxy */
+	public static ReleaseDownloader downloader() {
+		ReleaseDownloader downloader = new ReleaseDownloader();
+		downloader.setProxySettings(settings().getProxySettings());
+		return downloader;
+	}
+
 	/** removes what the last update left in tmp/update */
 	public static void cleanUp() {
 		File dir = updateDirectory();
@@ -50,9 +57,7 @@ public final class UpdateManager {
 			throw new IOException("cannot create " + dir);
 		}
 		File zip = new File(dir, "release.zip");
-		ReleaseDownloader downloader = new ReleaseDownloader();
-		downloader.setProxySettings(settings().getProxySettings());
-		String sha256 = downloader.download(release.getDownloadUrl(), zip, monitor);
+		String sha256 = downloader().download(release.getDownloadUrl(), zip, monitor);
 		if (sha256 == null) {
 			return null;
 		}

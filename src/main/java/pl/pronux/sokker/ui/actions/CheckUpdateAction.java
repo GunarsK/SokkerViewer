@@ -9,8 +9,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import pl.pronux.sokker.actions.UpdateManager;
-import pl.pronux.sokker.downloader.ReleaseDownloader;
-import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.Release;
 import pl.pronux.sokker.resources.Messages;
@@ -27,15 +25,24 @@ public class CheckUpdateAction implements Runnable {
 	/** startup check: silent unless a newer release exists */
 	private final boolean quiet;
 
-	private CheckUpdateAction(Shell shell, boolean quiet) {
+	/** runs on the ui thread after the check, unless an update starts; may be null */
+	private final Runnable next;
+
+	private CheckUpdateAction(Shell shell, boolean quiet, Runnable next) {
 		this.shell = shell;
 		this.display = shell.getDisplay();
 		this.quiet = quiet;
+		this.next = next;
 	}
 
 	/** runs the check off the ui thread */
 	public static void start(Shell shell, boolean quiet) {
-		Thread thread = new Thread(new CheckUpdateAction(shell, quiet), "update check");
+		start(shell, quiet, null);
+	}
+
+	/** runs the check off the ui thread, then next unless an update starts */
+	public static void start(Shell shell, boolean quiet, Runnable next) {
+		Thread thread = new Thread(new CheckUpdateAction(shell, quiet, next), "update check");
 		thread.setDaemon(true);
 		thread.start();
 	}
@@ -47,12 +54,14 @@ public class CheckUpdateAction implements Runnable {
 		}
 		display.asyncExec(new Runnable() {
 			public void run() {
-				show(release);
+				if (!show(release) && next != null) {
+					next.run();
+				}
 			}
 		});
 	}
 
-	/** The main window to ask on: its replacement once a look change rebuilt it */
+	/** the main window, or its replacement after a look change */
 	private Shell owner() {
 		return shell.isDisposed() ? ViewerHandler.getViewer() : shell;
 	}
@@ -60,24 +69,24 @@ public class CheckUpdateAction implements Runnable {
 	/** null when github could not be read */
 	private static Release latestRelease() {
 		try {
-			ReleaseDownloader downloader = new ReleaseDownloader();
-			downloader.setProxySettings(SettingsHandler.getSokkerViewerSettings().getProxySettings());
-			return downloader.getLatestRelease();
+			return UpdateManager.downloader().getLatestRelease();
 		} catch (IOException e) {
 			Log.warning("github update check: " + e);
 			return null;
 		}
 	}
 
-	private void show(Release release) {
+	/** true when an update started */
+	private boolean show(Release release) {
 		Shell owner = owner();
 		if (owner.isDisposed()) {
-			return;
+			return false;
 		}
 		if (release != null && release.isNewerThan(SV.SK_VERSION)) {
 			if (UpdateManager.canUpdate(release)) {
 				if (open(owner, SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.install"), release.getVersion())) == SWT.YES) {
 					UpdateAction.start(owner, release);
+					return true;
 				}
 			} else if (open(owner, SWT.YES | SWT.NO | SWT.ICON_QUESTION, String.format(Messages.getString("message.update.info"), release.getVersion())) == SWT.YES) {
 				Program.launch(release.getUrl());
@@ -89,6 +98,7 @@ public class CheckUpdateAction implements Runnable {
 				open(owner, SWT.OK | SWT.ICON_INFORMATION, Messages.getString("updater.label.info.empty"));
 			}
 		}
+		return false;
 	}
 
 	private int open(Shell owner, int style, String message) {
