@@ -24,36 +24,19 @@ public class LeagueComposite extends Composite {
 		Label point = new Label(this, SWT.NONE);
 		point.setLayoutData(formData);
 
+		// no height: the group grows to fit every team of the league
 		formData = new FormData();
 		formData.left = new FormAttachment(0, 10);
 		formData.top = new FormAttachment(point, 10);
 		formData.width = 440;
-		formData.height = 180;
-//		formData.right = new FormAttachment(50, -10);
-//		formData.bottom = new FormAttachment(0, 300);
-		// formData.width = 300;
-		// formData.height = 200;
 
 		leagueTableGroup = new LeagueTableGroup(this, SWT.NONE);
 		leagueTableGroup.setLayoutData(formData);
 		leagueTableGroup.setFont(ConfigBean.getFontTable());
-		
-		formData = new FormData();
-		formData.left = new FormAttachment(0, 10);
-		formData.top = new FormAttachment(leagueTableGroup, 10);
-		formData.bottom = new FormAttachment(100, -10);
-		formData.right = new FormAttachment(100, -10);
-		
 	}
 
 	public void fillLeague(LeagueRound leagueRound) {
 		leagueTableGroup.fill(leagueRound);
-//		LeaguesManager leaguesManager = new LeaguesManager();
-//		LeagueStats leagueStats = new LeagueStats();
-//		try {
-//			leagueStats = leaguesManager.getLeagueStats(leagueRound);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
+		layout(true, true);
 	}
 }

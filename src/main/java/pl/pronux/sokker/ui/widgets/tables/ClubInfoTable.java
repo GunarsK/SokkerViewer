@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.model.Club;
+import pl.pronux.sokker.model.ClubSupporters;
 import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
@@ -23,7 +24,6 @@ public class ClubInfoTable extends SVTable<Club> {
 		this.setLinesVisible(false);
 		this.setHeaderVisible(false);
 		this.setBackground(parent.getBackground());
-//		this.setFont(ConfigBean.getFontTable());
 		this.setFont(ConfigBean.getFontMain());
 
 		String[] column = {
@@ -50,9 +50,7 @@ public class ClubInfoTable extends SVTable<Club> {
 				Messages.getString("club.credit.interest"), 
 				Messages.getString("club.fanclubcount"), 
 				Messages.getString("club.fanclubmood"), 
-				Messages.getString("club.end.seasons.fanclub") 
-//				Messages.getString("club.end.seasons.sponsors")
-				
+				Messages.getString("club.end.seasons.fanclub")
 		};
 
 		for (int i = 0; i < firstColumn.length; i++) {
@@ -60,10 +58,7 @@ public class ClubInfoTable extends SVTable<Club> {
 			item.setText(0, firstColumn[i]);
 		}
 
-		for (int i = 0; i < this.getColumnCount(); i++) {
-			this.getColumn(i).pack();
-			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 15);
-		}
+		packAllColumns();
 
 		for (int i = 0; i < this.getItemCount(); i++) {
 			if ((i % 2) == 0) {
@@ -87,7 +82,6 @@ public class ClubInfoTable extends SVTable<Club> {
 		
 		int maxSkillMoney = club.getClubBudget().size();
 		int maxSkillFanclub = club.getClubSupporters().size();
-//		int maxRank = club.getRank().size();
 
 		int c = 0;
 
@@ -171,54 +165,40 @@ public class ClubInfoTable extends SVTable<Club> {
 		item = this.getItem(c++);
 		item.setText(firstColumn, club.getCreditInterest().formatIntegerCurrencySymbol());
 		
-		item = this.getItem(c++);
-		item.setText(firstColumn, String.valueOf(club.getClubSupporters().get(maxSkillFanclub - 1).getFanclubcount()));
-
-		if (maxSkillFanclub > 1) {
-			diffrents = club.getClubSupporters().get(maxSkillFanclub - 1).getFanclubcount() - club.getClubSupporters().get(maxSkillFanclub - 2).getFanclubcount();
-
-			if (diffrents > 0) {
-				item.setText(secondColumn, SVNumberFormat.formatIntegerWithSignZero(diffrents));
-				item.setForeground(secondColumn, ConfigBean.getColorIncreaseDescription());
-			} else if (diffrents < 0) {
-				item.setText(secondColumn, SVNumberFormat.formatIntegerWithSignZero(diffrents));
-				item.setForeground(secondColumn, ConfigBean.getColorDecreaseDescription());
-			} else {
-				item.setText(secondColumn, ""); 
-				item.setForeground(secondColumn, this.getForeground());
-			}
-		} else {
-			item.setText(secondColumn, ""); 
-			item.setForeground(secondColumn, this.getForeground());
-		}
+		ClubSupporters fans = club.getClubSupporters().get(maxSkillFanclub - 1);
+		ClubSupporters previousFans = maxSkillFanclub > 1 ? club.getClubSupporters().get(maxSkillFanclub - 2) : null;
 
 		item = this.getItem(c++);
-		item.setText(firstColumn, String.format("%s [%d/6]", Messages.getString("fanclubmood." + club.getClubSupporters().get(maxSkillFanclub - 1).getFanclubmood()), club.getClubSupporters().get(maxSkillFanclub - 1).getFanclubmood()));  
+		item.setText(firstColumn, String.valueOf(fans.getFanclubcount()));
+		setChange(item, secondColumn, previousFans == null ? 0 : fans.getFanclubcount() - previousFans.getFanclubcount());
 
-		if (maxSkillFanclub > 1) {
-			diffrents = club.getClubSupporters().get(maxSkillFanclub - 1).getFanclubmood() - club.getClubSupporters().get(maxSkillFanclub - 2).getFanclubmood();
-			if (diffrents > 0) {
-				item.setText(secondColumn, SVNumberFormat.formatIntegerWithSignZero(diffrents));
-				item.setForeground(secondColumn, ConfigBean.getColorIncreaseDescription());
-			} else if (diffrents < 0) {
-				item.setText(secondColumn, SVNumberFormat.formatIntegerWithSignZero(diffrents));
-				item.setForeground(secondColumn, ConfigBean.getColorDecreaseDescription());
-			} else {
-				item.setText(secondColumn, ""); 
-				item.setForeground(secondColumn, this.getForeground());
-			}
-		} else {
-			item.setText(secondColumn, ""); 
-			item.setForeground(secondColumn, this.getForeground());
-		}
-		
+		item = this.getItem(c++);
+		// Sokker counts moods 1-7 and sends 0 at a 0% mood, which is still "furious"
+		item.setText(firstColumn, String.format("%s [%d/7]", Messages.getString("fanclubmood." + Math.max(1, fans.getFanclubmood())), fans.getFanclubmood()));
+		setChange(item, secondColumn, previousFans == null ? 0 : fans.getFanclubmood() - previousFans.getFanclubmood());
+
 		item = this.getItem(c++);
 		item.setText(firstColumn, club.getFanclubSupport().formatIntegerCurrencySymbol());
 
-//		item = this.getItem(c++);
-//		item.setText(firstColumn, club.getSponsorsBonus().formatIntegerCurrencySymbol() );
+		packAllColumns();
+	}
 
-		
+	/** Shows a signed change in the column, green when up, red when down, blank when unchanged */
+	private void setChange(TableItem item, int column, int change) {
+		if (change > 0) {
+			item.setText(column, SVNumberFormat.formatIntegerWithSignZero(change));
+			item.setForeground(column, ConfigBean.getColorIncreaseDescription());
+		} else if (change < 0) {
+			item.setText(column, SVNumberFormat.formatIntegerWithSignZero(change));
+			item.setForeground(column, ConfigBean.getColorDecreaseDescription());
+		} else {
+			item.setText(column, "");
+			item.setForeground(column, this.getForeground());
+		}
+	}
+
+	/** Unlike SVTable.packColumns, packs the last column too: it holds the changes */
+	private void packAllColumns() {
 		for (int i = 0; i < this.getColumnCount(); i++) {
 			this.getColumn(i).pack();
 			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 15);
