@@ -20,6 +20,7 @@ public enum Language {
 	pt_PT("Portugu\u00EAs"),
 	ro_RO("Rom\u00E2n\u00E3"),
 	ru_RU("\u0420\u0443\u0441\u0441\u043a\u0438\u0439"),
+	sk_SK("Sloven\u010Dina"),
 	tr_TR("T\u00FCrk\u00E7e"),
 	zh_CN("\u4e2d\u6587");
 

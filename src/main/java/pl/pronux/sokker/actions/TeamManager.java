@@ -493,19 +493,11 @@ public final class TeamManager {
 			if ((report.getType() < 200 && report.getType() != 1 && report.getType() != 101) || report.getType() == 212) {
 				params.add(new Money(report.getValue()).formatIntegerCurrencySymbol());
 				if (report.getPersonId() > 0) {
-					if (report.getPerson() != null) {
-						params.add(report.getPerson().getName() + " " + report.getPerson().getSurname()); 
-					} else {
-						params.add(String.valueOf(report.getPersonId()));
-					}
+					params.add(personName(report));
 				}
 			} else {
 				if (report.getPersonId() > 0) {
-					if (report.getPerson() != null) {
-						params.add(report.getPerson().getName() + " " + report.getPerson().getSurname()); 
-					} else {
-						params.add(String.valueOf(report.getPersonId()));
-					}
+					params.add(personName(report));
 					params.add(new Money(report.getValue()).formatIntegerCurrencySymbol());
 				} else {
 					params.add(String.valueOf(report.getValue()));
@@ -527,6 +519,14 @@ public final class TeamManager {
 		reportsDao.checkReports();
 		SQLSession.close(newConnection);
 		return reports;
+	}
+
+	/** The report person's full name, or the bare id when the archive doesn't know them */
+	private static String personName(Report report) {
+		if (report.getPerson() != null) {
+			return report.getPerson().getName() + " " + report.getPerson().getSurname();
+		}
+		return String.valueOf(report.getPersonId());
 	}
 
 	public void updateReportedTrainings(Training training) throws SQLException {
