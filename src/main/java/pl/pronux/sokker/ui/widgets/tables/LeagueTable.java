@@ -7,7 +7,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import pl.pronux.sokker.comparators.LeagueComparator;
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.model.Club;
 import pl.pronux.sokker.model.LeagueRound;
@@ -18,8 +17,6 @@ import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class LeagueTable extends SVTable<LeagueRound> {
-
-	private LeagueComparator leagueComparator;
 
 	public LeagueTable(Composite parent, int style) {
 		super(parent, style);
@@ -38,9 +35,6 @@ public class LeagueTable extends SVTable<LeagueRound> {
 				Messages.getString("league.draws"), 
 				Messages.getString("league.looses"), 
 				Messages.getString("league.goals"), 
-				// Messages.getString("league.goals.gained"),
-				// Messages.getString("league.goals.lost"),
-				// Messages.getString("league.ranktotal"),
 				"" 
 		};
 
@@ -51,24 +45,10 @@ public class LeagueTable extends SVTable<LeagueRound> {
 			} else {
 				column = new TableColumn(this, SWT.RIGHT);
 			}
-			// column.setText(titles[j]);
 			column.setResizable(false);
 			column.setMoveable(false);
-
-			if (titles[i].isEmpty()) {
-				if (SettingsHandler.IS_LINUX) {
-					column.pack();
-				}
-			} else {
+			if (titles[i].isEmpty() && SettingsHandler.IS_LINUX) {
 				column.pack();
-			}
-			if (i == 0) {
-				// wide enough for a two digit place - leagues have more than nine teams
-				column.setWidth(30);
-			} else if (i == 1) {
-				column.setWidth(150);
-			} else if (i > 1 && i < titles.length-1) {
-				column.setWidth(40);
 			}
 		}
 
@@ -77,10 +57,6 @@ public class LeagueTable extends SVTable<LeagueRound> {
 			item.setText(i, titles[i]);
 			item.setForeground(Colors.getBlueDescription());
 		}
-
-		leagueComparator = new LeagueComparator();
-		leagueComparator.setColumn(LeagueComparator.POINTS);
-		leagueComparator.setDirection(LeagueComparator.DESCENDING);
 	}
 
 	public void fill(LeagueRound leagueRound) {
@@ -93,7 +69,6 @@ public class LeagueTable extends SVTable<LeagueRound> {
 
 		List<LeagueTeam> alLeagueTeams = leagueRound.getLeagueTeams();
 
-		// Collections.sort(alLeagueTeams, leagueComparator);
 		for (LeagueTeam leagueTeam : alLeagueTeams) {
 			TableItem item = new TableItem(this, SWT.NONE);
 			int i = 0;
@@ -113,9 +88,6 @@ public class LeagueTable extends SVTable<LeagueRound> {
 			item.setText(i++, String.valueOf(leagueTeam.getDraws()));
 			item.setText(i++, String.valueOf(leagueTeam.getLosses()));
 			item.setText(i++, String.valueOf(leagueTeam.getGoalsScored() + "-" + leagueTeam.getGoalsLost())); 
-			// item.setText(i++, String.valueOf(leagueTeam.getGoalsLost()));
-			// item.setText(i++, String.valueOf(leagueTeam.getRankTotal()));
-
 		}
 
 		for (int i = 0; i < this.getItemCount(); i++) {
@@ -123,9 +95,12 @@ public class LeagueTable extends SVTable<LeagueRound> {
 				this.getItem(i).setBackground(ColorResources.getGray());
 			}
 		}
+		this.layoutColumns();
 		this.setRedraw(true);
-		// table.pack();
-		// table.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+	}
 
+	@Override
+	protected void packColumns() {
+		packColumns(5);
 	}
 }

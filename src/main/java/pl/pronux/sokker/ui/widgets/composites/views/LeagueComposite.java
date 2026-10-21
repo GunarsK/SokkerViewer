@@ -24,11 +24,10 @@ public class LeagueComposite extends Composite {
 		Label point = new Label(this, SWT.NONE);
 		point.setLayoutData(formData);
 
-		// no height: the group grows to fit every team of the league
+		// no size: the group grows to fit the whole table
 		formData = new FormData();
 		formData.left = new FormAttachment(0, 10);
 		formData.top = new FormAttachment(point, 10);
-		formData.width = 440;
 
 		leagueTableGroup = new LeagueTableGroup(this, SWT.NONE);
 		leagueTableGroup.setLayoutData(formData);
