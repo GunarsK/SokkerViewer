@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Before;
@@ -79,7 +80,10 @@ public class DatabaseTest {
 	public void autoBackupFromYesterdayDoesNotStopTodays() throws Exception {
 		createDatabase();
 		assertTrue(backups.mkdirs());
-		long yesterday = System.currentTimeMillis() - 24L * 60 * 60 * 1000;
+		// a calendar day back: 24 hours back is still today in the last hour of a 25-hour day
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_MONTH, -1);
+		long yesterday = calendar.getTimeInMillis();
 		File old = Database.newBackupFile(backups, "team", Database.AUTO, new Date(yesterday));
 		assertTrue(old.createNewFile());
 		assertTrue(old.setLastModified(yesterday));

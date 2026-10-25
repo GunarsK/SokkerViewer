@@ -15,24 +15,16 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import pl.pronux.sokker.handlers.SettingsHandler;
-import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
-import pl.pronux.sokker.ui.widgets.dialogs.MessageDialog;
 import pl.pronux.sokker.utils.Log;
-import pl.pronux.sokker.utils.net.BugReportAction;
 
 public class BugReporter extends Shell {
-
-	private SokkerViewerSettings settings;
 
 	private Label imageLabel;
 
 	private Label messageLabel;
 
 	private Button detailButton;
-
-	private Button reportButton;
 
 	private Text detailText;
 
@@ -41,8 +33,7 @@ public class BugReporter extends Shell {
 	private void init() {
 		Display display = BugReporter.this.getDisplay();
 		Monitor monitor = display.getPrimaryMonitor();
-		settings = SettingsHandler.getSokkerViewerSettings();
-		this.setText("Error"); 
+		this.setText("Error");
 		this.setSize(450, 150);
 		this.setLayout(new FormLayout());
 
@@ -107,36 +98,6 @@ public class BugReporter extends Shell {
 					BugReporter.this.setSize(450, 400);
 					detailText.setVisible(true);
 				}
-			}
-		});
-
-		formData = new FormData();
-		formData.bottom = new FormAttachment(100, -5);
-		formData.right = new FormAttachment(detailButton, -5);
-
-		reportButton = new Button(this, SWT.NONE);
-		reportButton.setText(Messages.getString("button.report.bug"));
-		reportButton.setLayoutData(formData);
-		reportButton.pack();
-		reportButton.addListener(SWT.Selection, new Listener() {
-
-			public void handleEvent(Event arg0) {
-				String value = "";
-				String message = "";
-				try {
-					message += messageLabel.getText() + "##" + detailText.getText();
-					value = new BugReportAction().sendBug(message, settings);
-					if (value != null && value.equals("1")) {
-						MessageDialog.openInformationMessage(BugReporter.this, Messages.getString("BugReporter.thankyou"));
-					} else {
-						MessageDialog.openErrorMessage(BugReporter.this, Messages.getString("BugReporter.error"));
-					}
-
-				} catch (Exception e) {
-					e.printStackTrace();
-					MessageDialog.openErrorMessage(BugReporter.this, Messages.getString("error.send"));
-				}
-				BugReporter.this.close();
 			}
 		});
 

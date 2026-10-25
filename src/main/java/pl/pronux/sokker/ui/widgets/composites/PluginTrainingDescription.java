@@ -66,6 +66,14 @@ public class PluginTrainingDescription extends Composite {
 		currentComposite.setVisible(true);
 	}
 
+	/** height the shown description needs, borders included; 0 when none is shown */
+	public int getPreferredHeight() {
+		if (currentComposite == null) {
+			return 0;
+		}
+		return currentComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 2 * getBorderWidth();
+	}
+
 	public void clear() {
 		if(currentComposite != null) {
 			currentComposite.setVisible(false);	

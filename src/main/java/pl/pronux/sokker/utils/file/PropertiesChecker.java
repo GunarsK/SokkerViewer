@@ -145,7 +145,6 @@ public class PropertiesChecker {
 						"pl.pronux.sokker.ui.plugins.ViewAssistant",
 						"pl.pronux.sokker.ui.plugins.ViewNotepad",
 						"pl.pronux.sokker.ui.plugins.ViewTranslator",
-						"pl.pronux.sokker.ui.plugins.ViewNT",
 						"pl.pronux.sokker.ui.plugins.ViewTrash",
 						"pl.pronux.sokker.ui.plugins.ViewBBCode",
 						"pl.pronux.sokker.ui.plugins.ViewCalendar",

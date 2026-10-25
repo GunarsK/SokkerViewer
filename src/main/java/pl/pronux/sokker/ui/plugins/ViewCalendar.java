@@ -257,71 +257,71 @@ public class ViewCalendar implements IPlugin {
 	public void reload() {
 	}
 
+	/** sokker.org's week (rules, chapter 13) with match days from the match data: cup on Monday, International Cup on Friday, no Champions Cup */
 	private List<String> getEvents(int day, Season season) {
 		List<String> events = new ArrayList<String>();
+		int week = season.getSeasonWeek();
+		boolean first = week == 0;
+		boolean last = season.isLastWeek();
 
 		switch (day) {
 		case Calendar.SATURDAY:
-			events.add(Messages.getString("calendar.day.event.29"));
-			events.add(Messages.getString("calendar.day.event.7"));
-			events.add(Messages.getString("calendar.day.event.28"));
-			events.add(Messages.getString("calendar.day.event.8"));
-			events.add(Messages.getString("calendar.day.event.9"));
+			addEvents(events, 10, 7, 28, 8, 9, 29, 34, 15, 16);
+			if (first) {
+				addEvents(events, 35, 36);
+			} else if (week == 1) {
+				addEvents(events, 37);
+			} else if (last) {
+				addEvents(events, 38);
+			}
 			break;
 		case Calendar.SUNDAY:
-			if (season.getSeasonWeek() == 0) {
-				events.add(Messages.getString("calendar.day.event.20"));
-			} else if (season.isLastWeek()) {
-				events.add(Messages.getString("calendar.day.event.21"));
+			if (first) {
+				addEvents(events, 39);
+			} else if (last) {
+				addEvents(events, 21, 39);
 			} else {
-				events.add(Messages.getString("calendar.day.event.23"));
+				addEvents(events, 23);
 			}
-			events.add(Messages.getString("calendar.day.event.5"));
-			events.add(Messages.getString("calendar.day.event.25"));
+			addEvents(events, 25);
 			break;
 		case Calendar.MONDAY:
-			if (season.getSeasonWeek() == 0) {
-				events.add(Messages.getString("calendar.day.event.24"));
+			addEvents(events, 11, 12, 13);
+			if (first) {
+				addEvents(events, 24);
 			}
-			events.add(Messages.getString("calendar.day.event.10"));
-			events.add(Messages.getString("calendar.day.event.11"));
-			events.add(Messages.getString("calendar.day.event.12"));
-			events.add(Messages.getString("calendar.day.event.13"));
+			addEvents(events, 41, 40);
 			break;
 		case Calendar.TUESDAY:
-			events.add(Messages.getString("calendar.day.event.26"));
-			if (season.getSeasonWeek() > 0 && !season.isLastWeek()) {
-				events.add(Messages.getString("calendar.day.event.30"));
+			if (!first) {
+				addEvents(events, 30);
 			}
 			break;
 		case Calendar.WEDNESDAY:
-			events.add(Messages.getString("calendar.day.event.14"));
-			events.add(Messages.getString("calendar.day.event.22"));
-			events.add(Messages.getString("calendar.day.event.31"));
+			addEvents(events, 31, first || last ? 39 : 23);
 			break;
 		case Calendar.THURSDAY:
-			events.add(Messages.getString("calendar.day.event.12"));
-			events.add(Messages.getString("calendar.day.event.15"));
-			events.add(Messages.getString("calendar.day.event.16"));
-			events.add(Messages.getString("calendar.day.event.17"));
-			events.add(Messages.getString("calendar.day.event.18"));
-			events.add(Messages.getString("calendar.day.event.32"));
+			addEvents(events, 5, 13, 17, 18);
 			break;
 		case Calendar.FRIDAY:
-			if (season.isLastWeek()) {
-				events.add(Messages.getString("calendar.day.event.19"));
+			addEvents(events, 42);
+			if (week == 11) {
+				addEvents(events, 43);
+			} else if (last) {
+				addEvents(events, 44);
 			}
-			events.add(Messages.getString("calendar.day.event.33"));
-			events.add(Messages.getString("calendar.day.event.34"));
 			break;
 		case EVERY_DAY:
-			events.add(Messages.getString("calendar.day.event.1"));
-			events.add(Messages.getString("calendar.day.event.2"));
-			events.add(Messages.getString("calendar.day.event.3"));
-			events.add(Messages.getString("calendar.day.event.4"));
+			addEvents(events, 1, 2, 3, 4);
 			break;
 		}
 		return events;
+	}
+
+	private void addEvents(List<String> events, int... numbers) {
+		for (int number : numbers) {
+			events.add(Messages.getString("calendar.day.event." + number));
+		}
 	}
 
 	private Calendar getCalendarDay(Calendar calendar, int day) {

@@ -170,63 +170,23 @@ public class ViewTrainings implements IPlugin {
 				TreeItem item = treeItem.getParent().getItem(pt);
 				if(treeItem.equals(item)) {
 					descriptionComposite.setInfo(trainings);
+					fitDescription();
 				}
 			}
 		});
-		
+
 		trainingTree.addListener(SWT.MouseDown, new Listener() {
 
 			public void handleEvent(Event event) {
-				Point pt = new Point(event.x, event.y);
-				TreeItem item = trainingTree.getItem(pt);
-
-				if (item != null) {
-					if (item.getData(Coach.class.getName()) != null) {
-						descriptionComposite.setInfo((Coach) item.getData(Coach.class.getName()));
-					} else if (item.getData(Training.class.getName()) != null) {
-						descriptionComposite.setInfo((Training) item.getData(Training.class.getName()));
-						if (event.button == 3) {
-							treeItem.getParent().setMenu(menuPopUp);
-							treeItem.getParent().getMenu().setData(Training.class.getName(), (Training) item.getData(Training.class.getName()));
-							treeItem.getParent().getMenu().setVisible(true);
-						} else {
-							treeItem.getParent().setMenu(menuClear);
-							treeItem.getParent().getMenu().setData(Training.class.getName(), null);
-							treeItem.getParent().getMenu().setVisible(true);
-						}
-					} else {
-						descriptionComposite.setInfo(trainings);
-					}
-				}
+				describe(trainingTree.getItem(new Point(event.x, event.y)), event.button);
 			}
 		});
-		
+
 		trainingTree.addListener(SWT.KeyUp, new Listener() {
 
 			public void handleEvent(Event event) {
-				TreeItem item = null;
-				for (int i = 0; i < ViewTrainings.this.trainingTree.getSelection().length; i++) {
-					item = ViewTrainings.this.trainingTree.getSelection()[i];
-				}
-
-				if (item != null) {
-					if (item.getData(Coach.class.getName()) != null) {
-						descriptionComposite.setInfo((Coach) item.getData(Coach.class.getName()));
-					} else if (item.getData(Training.class.getName()) != null) {
-						descriptionComposite.setInfo((Training) item.getData(Training.class.getName()));
-						if (event.button == 3) {
-							treeItem.getParent().setMenu(menuPopUp);
-							treeItem.getParent().getMenu().setData(Training.class.getName(), (Training) item.getData(Training.class.getName()));
-							treeItem.getParent().getMenu().setVisible(true);
-						} else {
-							treeItem.getParent().setMenu(menuClear);
-							treeItem.getParent().getMenu().setData(Training.class.getName(), null);
-							treeItem.getParent().getMenu().setVisible(true);
-						}
-					} else {
-						descriptionComposite.setInfo(trainings);
-					}
-				}
+				TreeItem[] selection = trainingTree.getSelection();
+				describe(selection.length > 0 ? selection[selection.length - 1] : null, event.button);
 			}
 		});
 		
@@ -242,6 +202,35 @@ public class ViewTrainings implements IPlugin {
 				}
 			}
 		});
+	}
+
+	/** shows the description of a tree row; a training row also sets the right-click menu */
+	private void describe(TreeItem item, int button) {
+		if (item == null) {
+			return;
+		}
+		Training training = (Training) item.getData(Training.class.getName());
+		if (item.getData(Coach.class.getName()) != null) {
+			descriptionComposite.setInfo((Coach) item.getData(Coach.class.getName()));
+		} else if (training != null) {
+			descriptionComposite.setInfo(training);
+			treeItem.getParent().setMenu(button == 3 ? menuPopUp : menuClear);
+			treeItem.getParent().getMenu().setData(Training.class.getName(), button == 3 ? training : null);
+			treeItem.getParent().getMenu().setVisible(true);
+		} else {
+			descriptionComposite.setInfo(trainings);
+		}
+		fitDescription();
+	}
+
+	/** moves the sash down until the description fits, at most to half the view; never up, so a size the user dragged stays */
+	private void fitDescription() {
+		FormData data = (FormData) sashHorizontal.getLayoutData();
+		int height = Math.min(descriptionComposite.getPreferredHeight(), composite.getClientArea().height / 2);
+		if (height > data.top.offset) {
+			data.top = new FormAttachment(0, height);
+			composite.layout();
+		}
 	}
 
 	public void dispose() {

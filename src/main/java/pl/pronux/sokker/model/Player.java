@@ -56,8 +56,6 @@ public class Player extends Person implements Serializable, PlayerInterface {
 
 	private double[] positionTable;
 
-	private boolean nt;
-
 	private int youthTeamId;
 
 	private PlayerSkills[] skills;
@@ -242,14 +240,6 @@ public class Player extends Person implements Serializable, PlayerInterface {
 		} else {
 			this.buyPrice.setDoubleValue(buyPrice);
 		}
-	}
-
-	public boolean isNt() {
-		return nt;
-	}
-
-	public void setNt(boolean nt) {
-		this.nt = nt;
 	}
 
 	public int getYouthTeamId() {

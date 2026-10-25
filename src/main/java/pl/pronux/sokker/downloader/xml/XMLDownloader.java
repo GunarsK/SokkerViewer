@@ -19,10 +19,6 @@ public class XMLDownloader extends SokkerAuthentication {
 		return getXML(SOKKER_URL + "countries.xml"); 
 	}
 
-	public String getCountry(String countryID) throws IOException  {
-		return getXML(SOKKER_URL + "country-" + countryID + ".xml");  
-	}
-
 	public String getJuniors() throws IOException  {
 		return getXML(SOKKER_URL + "juniors.xml"); 
 	}

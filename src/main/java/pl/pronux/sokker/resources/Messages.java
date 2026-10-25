@@ -40,10 +40,6 @@ public class Messages {
 //		return new Messages();
 //	}
 
-	public static LangResources getDefaultLangResources() {
-		return getLangResources(resourceBundle.getLocale());
-	}
-	
 	public static LangResources getLangResources(Locale locale) {
 		if (cache.get(locale) != null) {
 			return cache.get(locale);
