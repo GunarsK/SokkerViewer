@@ -4,7 +4,7 @@
 	<groupId>SokkerViewer</groupId>
 	<artifactId>SokkerViewer</artifactId>
 	<name>SokkerViewer</name>
-	<version>0.15.7</version>
+	<version>0.15.8</version>
 	<properties>
 		<!-- newest SWT that still starts on Windows 8.1 -->
 		<swt.version>3.129.0</swt.version>

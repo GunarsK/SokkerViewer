@@ -35,7 +35,7 @@ public class Log {
 		log(Level.SEVERE, msg, t);
 	}
 
-	private static void log(Level level, String msg, Throwable t) {
+	private static synchronized void log(Level level, String msg, Throwable t) {
 		if (!initialize) {
 			init();
 			initialize = true;
@@ -52,20 +52,22 @@ public class Log {
 		Logger logger = Logger.getLogger("");
 		// create a new handler to write to a named file
 		try {
-			fileHandler = new FileHandler("sokker.log", true); 
+			fileHandler = new FileHandler("sokker.log", true);
 			fileHandler.setFormatter(new SimpleFormatter());
+			// add the handlers to the logger
+			logger.addHandler(fileHandler);
 		} catch (IOException ioe) {
-			logger.warning("Could not create a file..."); 
+			logger.log(Level.WARNING, "Cannot open sokker.log", ioe);
 		}
-
-		// add the handlers to the logger
-		logger.addHandler(fileHandler);
 	}
 
-	public static void close() {
+	/** Closes sokker.log; a later log call opens it again */
+	public static synchronized void close() {
 		if (fileHandler != null) {
 			Logger.getLogger("").removeHandler(fileHandler);
 			fileHandler.close();
+			fileHandler = null;
 		}
+		initialize = false;
 	}
 }

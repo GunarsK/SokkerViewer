@@ -24,6 +24,15 @@ public class SQLSession {
 		}
 	}
 
+	/** Closes the connection, logging a failure instead of throwing it */
+	public static void closeOrLog() {
+		try {
+			close();
+		} catch (SQLException e) {
+			Log.warning("Cannot close the database", e);
+		}
+	}
+
 	public static void commit() throws SQLException {
 		SQLSession.getConnection().commit();
 	}

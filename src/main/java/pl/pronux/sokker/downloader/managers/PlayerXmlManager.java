@@ -18,11 +18,12 @@ import pl.pronux.sokker.downloader.xml.parsers.PlayerXmlParser;
 import pl.pronux.sokker.model.Date;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerArchive;
+import pl.pronux.sokker.utils.Log;
 
 public class PlayerXmlManager extends XmlManager<Player> {
 
 	public void completePlayersArchive(int limit) throws SQLException {
-		String value = "-3"; 
+		String value;
 		PlayersArchiveDao playersArchiveDao = new PlayersArchiveDao(SQLSession.getConnection());
 		TransfersDao transfersDao = new TransfersDao(SQLSession.getConnection());
 		Set<Integer> playersToDownload = new HashSet<Integer>();
@@ -47,12 +48,7 @@ public class PlayerXmlManager extends XmlManager<Player> {
 				try {
 					String xml = getDownloader().getPlayer(String.valueOf(playerId));
 					PlayerXmlParser parser = new PlayerXmlParser();
-					InputSource input = new InputSource(new StringReader(xml));
-					try {
-						parser.parseXmlSax(input, null);
-					} catch (SAXException sex) {
-						continue;
-					}
+					parser.parseXmlSax(new InputSource(new StringReader(xml)), null);
 					Player player = parser.getPlayer();
 					if (player != null) {
 						playersArchiveDao.addPlayer(new PlayerArchive(player));
@@ -60,16 +56,13 @@ public class PlayerXmlManager extends XmlManager<Player> {
 					} else {
 						playersArchiveDao.addNotExists(playerId);
 					}
+				} catch (SAXException sex) {
+					Log.warning("Cannot read player " + playerId, sex);
 				} catch (IOException ioex) {
-					// value = "-1";
-					// FIXME: added expeption catch
+					Log.warning("Cannot download or save player " + playerId, ioex);
 				}
 			}
 		}
-	}
-
-	public PlayerXmlManager(String name, String destination, XMLDownloader downloader, Date currentDay) {
-		super(name, destination, downloader, currentDay);
 	}
 
 	public PlayerXmlManager(String destination, XMLDownloader downloader, Date currentDay) {
@@ -79,10 +72,6 @@ public class PlayerXmlManager extends XmlManager<Player> {
 	@Override
 	public void download() throws IOException {
 //		setContent(downloader.getPlayers(downloader.getTeamID()));
-	}
-
-	public void importToSQL(Player player) throws SQLException {
-//		new PlayersManager().addPlayers(alPlayers, training);
 	}
 
 	public List<Player> parseXML() throws SAXException {

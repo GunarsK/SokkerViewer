@@ -247,10 +247,7 @@ public class ViewJuniorsFired implements IPlugin, Sort {
 					}
 
 				} catch (SQLException e) {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewJuniorsFired", e);
 				}
 			}

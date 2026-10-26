@@ -254,10 +254,7 @@ public class ViewJuniorsTrained implements IPlugin, Sort {
 					}
 
 				} catch (SQLException e) {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewJuniorsTrained", e);
 				}
 			}

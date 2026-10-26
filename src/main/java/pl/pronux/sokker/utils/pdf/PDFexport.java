@@ -32,6 +32,7 @@ import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.model.SokkerDate;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.utils.Log;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -543,10 +544,8 @@ public class PDFexport {
 
 			g2.dispose();
 			document.close();
-		} catch (DocumentException de) {
-			System.err.println(de.getMessage());
-		} catch (IOException ioe) {
-			System.err.println(ioe.getMessage());
+		} catch (DocumentException | IOException e) {
+			Log.error("PDF export " + file, e);
 		}
 
 

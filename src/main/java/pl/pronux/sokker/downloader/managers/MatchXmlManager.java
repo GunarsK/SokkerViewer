@@ -38,8 +38,7 @@ public class MatchXmlManager extends XmlManager<Match> {
 	}
 	
 	public void completeMatches(int teamId, int limit) throws SQLException {
-		String value = "-3"; 
-		List<Match> matches = new ArrayList<Match>();
+		String value;
 		LeagueDao leagueDao = new LeagueDao(SQLSession.getConnection());
 		
 		List<Match> uncompletedMatches = leagueDao.getUncompletedLeague(teamId);
@@ -61,18 +60,20 @@ public class MatchXmlManager extends XmlManager<Match> {
 				int matchId = match.getMatchId() - 1;
 				while (limit > 0) {
 					if (!matchesMap.containsKey(String.valueOf(matchId))) {
+						List<Match> parsed;
 						try {
 							download(matchId);
-							matches = parseXML(matchesMap.get(String.valueOf(matchId)));
+							parsed = parseXML(matchesMap.get(String.valueOf(matchId)));
 						} catch (Exception e) {
-							Log.warning(this.toString(), e);
+							Log.warning("Cannot download or read match " + matchId, e);
 							break;
 						}
-						if (matches.size() > 0 && matches.get(0).getLeagueId() == match.getLeagueId() && matches.get(0).getSeason() == match.getSeason()) {
-							matchesManager.importMatches(matches);
+						if (parsed.size() > 0 && parsed.get(0).getLeagueId() == match.getLeagueId() && parsed.get(0).getSeason() == match.getSeason()) {
+							matchesManager.importMatches(parsed);
 							try {
 								write(matchesMap.get(String.valueOf(matchId)), String.valueOf(matchId));
 							} catch (IOException e) {
+								Log.warning("Cannot save match " + matchId, e);
 							}
 						} else {
 							if (matchId > match.getMatchId()) {
@@ -155,9 +156,7 @@ public class MatchXmlManager extends XmlManager<Match> {
 		Set<String> matchSet = matchesMap.keySet();
 
 		for (String key : matchSet) {
-			if (!write(matchesMap.get(key), key)) {
-				// return false;
-			}
+			write(matchesMap.get(key), key);
 		}
 		return true;
 	}

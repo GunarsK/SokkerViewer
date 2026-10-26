@@ -79,6 +79,7 @@ import pl.pronux.sokker.ui.widgets.tables.JuniorTrainedTable;
 import pl.pronux.sokker.ui.widgets.tables.PlayerTable;
 import pl.pronux.sokker.ui.widgets.tables.PlayersTable;
 import pl.pronux.sokker.ui.widgets.tables.SVTable;
+import pl.pronux.sokker.utils.Log;
 import pl.pronux.sokker.utils.file.OperationOnFile;
 import pl.pronux.sokker.utils.pdf.PDFexport;
 
@@ -670,6 +671,7 @@ public class ViewPlayers implements IPlugin, Sort {
 					try {
 						player = OperationOnFile.serializePlayer(tempPropsFile);
 					} catch (Exception e2) {
+						Log.warning("Cannot read " + tempPropsFile, e2);
 					}
 					if (player != null) {
 						if (menuPopUp.getData("item") != null) {

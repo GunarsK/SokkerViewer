@@ -42,6 +42,7 @@ import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.ArenaDescriptionComposite;
 import pl.pronux.sokker.ui.widgets.composites.ViewComposite;
 import pl.pronux.sokker.ui.widgets.groups.ArenaStandGroup;
+import pl.pronux.sokker.utils.Log;
 
 public class ViewArena implements IPlugin {
 
@@ -490,6 +491,7 @@ public class ViewArena implements IPlugin {
 					 * widget. Platform requirements for the SWT Browser widget
 					 * are available from the SWT FAQ website.
 					 */
+					Log.warning("ViewArena browser", e);
 				}
 				if (browser != null) {
 					/* The Browser widget can be used */

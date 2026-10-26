@@ -781,10 +781,7 @@ public class ViewPlayersHistory implements IPlugin, Sort {
 					}
 
 				} catch (SQLException e) {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 					new BugReporter(vComposite.getDisplay()).openErrorMessage("ViewPlayersHistory->moveAllToTrash", e);
 				}
 			}

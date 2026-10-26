@@ -3,7 +3,6 @@ package pl.pronux.sokker.downloader.managers;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,7 @@ import pl.pronux.sokker.downloader.xml.parsers.PlayersXmlParser;
 import pl.pronux.sokker.model.Date;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.Training;
+import pl.pronux.sokker.utils.Log;
 
 public class PlayersXmlManager extends XmlManager<Player> {
 
@@ -30,11 +30,9 @@ public class PlayersXmlManager extends XmlManager<Player> {
 	private List<Player> players;
 	
 	public String completeUncompletedPlayers() throws SQLException {
-		String value = "-3"; 
-		List<Integer> playersId = new ArrayList<Integer>();
-
+		String value;
 		PlayersDao playersDao = new PlayersDao(SQLSession.getConnection());
-		playersId = playersDao.getUncompletePlayers();
+		List<Integer> playersId = playersDao.getUncompletePlayers();
 		if (getDownloader().getStatus().equals("OK")) { 
 			value = "0"; 
 		} else {
@@ -46,19 +44,17 @@ public class PlayersXmlManager extends XmlManager<Player> {
 				try {
 					String xml = getDownloader().getPlayer(String.valueOf(playersId.get(i)));
 					PlayerXmlParser parser = new PlayerXmlParser();
-					InputSource input = new InputSource(new StringReader(xml));
-					try {
-						parser.parseXmlSax(input, null);
-					} catch (SAXException sex) {
-						continue;
-					}
+					parser.parseXmlSax(new InputSource(new StringReader(xml)), null);
 					Player player = parser.getPlayer();
 					if (player != null) {
 						playersDao.updateUncompletedPlayer(player);
 					} else {
 						playersDao.updateNotExists(playersId.get(i));
 					}
+				} catch (SAXException sex) {
+					Log.warning("Cannot read player " + playersId.get(i), sex);
 				} catch (IOException ioex) {
+					Log.warning("Cannot download player " + playersId.get(i), ioex);
 				}
 			}
 		}

@@ -1,10 +1,5 @@
 package pl.pronux.sokker.launcher;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 
@@ -15,7 +10,6 @@ import pl.pronux.sokker.data.properties.PropertiesDatabase;
 import pl.pronux.sokker.data.sql.SQLQuery;
 import pl.pronux.sokker.data.sql.SQLSession;
 import pl.pronux.sokker.downloader.Synchronizer;
-import pl.pronux.sokker.exceptions.SVException;
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.ProxySettings;
@@ -31,13 +25,12 @@ public class Launcher {
 
 	private static SettingsManager settingsManager = SettingsManager.getInstance();
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 * @throws FileNotFoundException
-	 */
 	public static void main(String[] args) {
-
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			public void uncaughtException(Thread thread, Throwable e) {
+				Log.error("Thread " + thread.getName(), e);
+			}
+		});
 		try {
 			Log.info("SokkerViewer " + SV.SK_VERSION + ", Java " + System.getProperty("java.version"));
 			SokkerViewerSettings settings = settingsManager.getSettings();
@@ -86,26 +79,11 @@ public class Launcher {
 				System.out.println(showHelp());
 			}
 
-		} catch (FileNotFoundException e) {
-			Log.error("Error Viewer", e); 
-		} catch (IOException e) {
-			Log.error("Error Viewer", e); 
-		} catch (InvocationTargetException e) {
-			Log.error("Error Viewer", e); 
-		} catch (InterruptedException e) {
-			Log.error("Error Viewer", e); 
-		} catch (SVException e) {
-			Log.error("Error Viewer", e); 
-		} catch (SQLException e) {
-			Log.error("Error Viewer", e);
-		} catch (ClassNotFoundException e) {
+		} catch (Throwable e) {
 			Log.error("Error Viewer", e);
 		} finally {
+			SQLSession.closeOrLog();
 			Log.close();
-			try {
-				SQLSession.close();
-			} catch (SQLException e) {
-			}
 		}
 	}
 

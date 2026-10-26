@@ -66,6 +66,7 @@ public class PropertiesChecker {
 				bakFile.delete();
 			}
 		} catch (IOException e) {
+			Log.warning("Properties Checker", e);
 			return false;
 		}
 

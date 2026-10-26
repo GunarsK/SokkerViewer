@@ -361,10 +361,7 @@ public class ViewAssistant implements IPlugin {
 
 					changed = false;
 				} catch (SQLException e) {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewAssitant", e);
 				}
 			}

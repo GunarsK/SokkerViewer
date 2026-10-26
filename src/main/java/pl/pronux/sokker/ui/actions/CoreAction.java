@@ -3,7 +3,6 @@ package pl.pronux.sokker.ui.actions;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -47,7 +46,6 @@ import pl.pronux.sokker.model.Transfer;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
-import pl.pronux.sokker.utils.Log;
 import pl.pronux.sokker.utils.file.Database;
 
 public class CoreAction implements RunnableWithProgress {
@@ -123,11 +121,7 @@ public class CoreAction implements RunnableWithProgress {
 					SQLSession.commit();
 					SQLSession.endTransaction();
 				} catch (SQLException e) {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-						Log.error("Problem during closing database after bad initialization");
-					}
+					SQLSession.closeOrLog();
 					new File(dbFile).delete();
 					new File(dbPropertiesFile).delete();
 					new File(dbLogFile).delete();
@@ -374,40 +368,17 @@ public class CoreAction implements RunnableWithProgress {
 		} catch (final InvocationTargetException e) {
 			monitor.interrupt();
 			throw e;
-		} catch (final SQLException e) {
-			throw failed(monitor, e, "CoreAction SQLException");
-		} catch (final ConnectException e) {
-			throw failed(monitor, e, Messages.getString("message.error.connection"));
-		} catch (final IOException e) {
-			throw failed(monitor, e, "IOException Bean");
-		} catch (ClassNotFoundException e) {
-			throw failed(monitor, e, "ClassNotFound");
-		} catch (NumberFormatException e) {
-			throw failed(monitor, e, "NumberFormatExcetion");
 		} catch (Exception e) {
-			throw failed(monitor, e, "CoreAction Undefined");
+			SettingsHandler.setLogged(false);
+			monitor.interrupt();
+			throw new InvocationTargetException(e);
 		} finally {
-			try {
-				SQLSession.close();
-			} catch (Exception e) {
-				SettingsHandler.setLogged(false);
-				throw new InvocationTargetException(e, "CoreAction Finally");
-			}
+			SQLSession.closeOrLog();
 			lock = UNLOCK;
 		}
 	}
 
-	/** logs out, stops the monitor and wraps the load's failure */
-	private static InvocationTargetException failed(ProgressMonitor monitor, Exception e, String message) {
-		SettingsHandler.setLogged(false);
-		monitor.interrupt();
-		return new InvocationTargetException(e, message);
-	}
-
 	public void onFinish() {
-		try {
-			SQLSession.close();
-		} catch (SQLException e) {
-		}
+		SQLSession.closeOrLog();
 	}
 }

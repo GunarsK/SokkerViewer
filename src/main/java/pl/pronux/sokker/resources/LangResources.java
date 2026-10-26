@@ -4,7 +4,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.jfree.util.Log;
+import pl.pronux.sokker.utils.Log;
 
 public class LangResources {
 
@@ -18,7 +18,7 @@ public class LangResources {
 		try {
 			return resourceBundle.getString(key);
 		} catch (MissingResourceException e) {
-			Log.warn("Missing translation key: " + key);
+			Log.warning("Missing translation key: " + key);
 			return '!' + key + '!';
 		}
 	}

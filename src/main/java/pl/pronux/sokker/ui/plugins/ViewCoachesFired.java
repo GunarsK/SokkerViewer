@@ -356,10 +356,7 @@ public class ViewCoachesFired implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewCoachesFired", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 			}
 		});

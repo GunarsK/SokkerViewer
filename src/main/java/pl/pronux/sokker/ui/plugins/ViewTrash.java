@@ -734,15 +734,10 @@ public class ViewTrash implements IPlugin, Sort {
 								fillJuniorsTable(juniorsTable);
 								((TabComposite) cTabItemJuniors.getControl()).getDescriptionComposite().clearAll();
 							}
-
-							SQLSession.close();
-
 						} catch (SQLException e1) {
-							try {
-								SQLSession.close();
-							} catch (SQLException e2) {
-							}
 							new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->juniorDelete", e1);
+						} finally {
+							SQLSession.closeOrLog();
 						}
 					}
 
@@ -792,10 +787,7 @@ public class ViewTrash implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->restoreAllJuniors", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 				fillJuniorsTable(juniorsTable);
 				((TabComposite) cTabItemJuniors.getControl()).getDescriptionComposite().clearAll();
@@ -822,10 +814,7 @@ public class ViewTrash implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->removeAllTrainers", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 				fillJuniorsTable(juniorsTable);
 				((TabComposite) cTabItemJuniors.getControl()).getDescriptionComposite().clearAll();
@@ -855,10 +844,7 @@ public class ViewTrash implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->restoreJuniors", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 
 				fillJuniorsTable(juniorsTable);
@@ -898,10 +884,7 @@ public class ViewTrash implements IPlugin, Sort {
 					} catch (SQLException e1) {
 						new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->removeAllJuniors", e1);
 					} finally {
-						try {
-							SQLSession.close();
-						} catch (SQLException e1) {
-						}
+						SQLSession.closeOrLog();
 					}
 					fillJuniorsTable(juniorsTable);
 					((TabComposite) cTabItemJuniors.getControl()).getDescriptionComposite().clearAll();
@@ -943,10 +926,7 @@ public class ViewTrash implements IPlugin, Sort {
 					} catch (SQLException e1) {
 						new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->removeAllJuniorsTrained", e1);
 					} finally {
-						try {
-							SQLSession.close();
-						} catch (SQLException e1) {
-						}
+						SQLSession.closeOrLog();
 					}
 
 					fillJuniorsTable(juniorsTable);
@@ -993,10 +973,7 @@ public class ViewTrash implements IPlugin, Sort {
 					} catch (SQLException e1) {
 						new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->removeAllFiredJuniors", e1);
 					} finally {
-						try {
-							SQLSession.close();
-						} catch (SQLException e1) {
-						}
+						SQLSession.closeOrLog();
 					}
 
 					fillJuniorsTable(juniorsTable);
@@ -1026,10 +1003,7 @@ public class ViewTrash implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->restoreAllTrainers", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 
 				fillCoachesTable(coachesTable);
@@ -1060,10 +1034,7 @@ public class ViewTrash implements IPlugin, Sort {
 					} catch (SQLException e1) {
 						new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->removeAllTrainers", e1);
 					} finally {
-						try {
-							SQLSession.close();
-						} catch (SQLException e1) {
-						}
+						SQLSession.closeOrLog();
 					}
 					fillCoachesTable(coachesTable);
 					((TabComposite) cTabItemCoaches.getControl()).getDescriptionComposite().clearAll();
@@ -1090,10 +1061,7 @@ public class ViewTrash implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->restoreAllPlayers", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 				fillPlayersTable(playersTable);
 				((TabComposite) cTabItemPlayers.getControl()).getDescriptionComposite().clearAll();
@@ -1123,10 +1091,7 @@ public class ViewTrash implements IPlugin, Sort {
 					} catch (SQLException e1) {
 						new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->deleteAllPlayers", e1);
 					} finally {
-						try {
-							SQLSession.close();
-						} catch (SQLException e1) {
-						}
+						SQLSession.closeOrLog();
 					}
 					fillPlayersTable(playersTable);
 					((TabComposite) cTabItemPlayers.getControl()).getDescriptionComposite().clearAll();
@@ -1176,10 +1141,7 @@ public class ViewTrash implements IPlugin, Sort {
 				} catch (SQLException e1) {
 					new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->restoreAll", e1);
 				} finally {
-					try {
-						SQLSession.close();
-					} catch (SQLException e1) {
-					}
+					SQLSession.closeOrLog();
 				}
 				fillJuniorsTable(juniorsTable);
 				((TabComposite) cTabItemJuniors.getControl()).getDescriptionComposite().clearAll();
@@ -1236,10 +1198,7 @@ public class ViewTrash implements IPlugin, Sort {
 					} catch (SQLException e1) {
 						new BugReporter(composite.getDisplay()).openErrorMessage("ViewTrash->removeAll", e1);
 					} finally {
-						try {
-							SQLSession.close();
-						} catch (SQLException e1) {
-						}
+						SQLSession.closeOrLog();
 					}
 
 				}
