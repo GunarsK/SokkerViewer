@@ -53,6 +53,7 @@ import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.resources.ImageResources;
+import pl.pronux.sokker.ui.resources.Theme;
 import pl.pronux.sokker.ui.widgets.composites.StatusBar;
 import pl.pronux.sokker.ui.widgets.dialogs.ProgressBarDialog;
 import pl.pronux.sokker.ui.widgets.groups.TreeGroup;
@@ -133,7 +134,6 @@ public class Viewer extends Shell {
 		}
 
 		String[] table = settings.getLangCode().split("_"); 
-		// Messages = Messages.getLangResources(new Locale(table[0], table[1]));
 		Messages.setDefault(new Locale(table[0], table[1]));
 
 		/*
@@ -367,6 +367,7 @@ public class Viewer extends Shell {
 		Rectangle bounds = getBounds();
 		boolean maximized = getMaximized();
 		dispose();
+		Theme.init(display, settings.getTheme());
 		try {
 			rebuilt = new Viewer(display, SWT.SHELL_TRIM, shown);
 			((FormData) rebuilt.mainShellSashVertical.getLayoutData()).left = sash;

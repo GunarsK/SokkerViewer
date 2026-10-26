@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.TableItem;
 import pl.pronux.sokker.model.Match;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class MatchInfoTable extends SVTable<Match> {
 
@@ -45,11 +44,7 @@ public class MatchInfoTable extends SVTable<Match> {
 		item = new TableItem(this, SWT.NONE);
 		item.setText(1,Messages.getString("match.supporters")); 
 		
-		for (int i = 0; i < this.getItemCount(); i++) {
-			if ((i % 2) == 1) {
-				this.getItem(i).setBackground(ColorResources.getSystemColor(SWT.COLOR_GRAY));
-			}
-		}
+		stripeRows(this, 1);
 
 		parent.addControlListener(new ControlAdapter() {
 			public void controlResized(ControlEvent e) {

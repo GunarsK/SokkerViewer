@@ -24,6 +24,7 @@ import pl.pronux.sokker.model.Note;
 import pl.pronux.sokker.model.Season;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
@@ -107,7 +108,7 @@ public class ViewCalendar implements IPlugin {
 		compositeView.setLayoutData(formData);
 		compositeView.setLayout(new FormLayout());
 
-		compositeView.setBackground(composite.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		compositeView.setBackground(Colors.getListBackground());
 
 		formData = new FormData();
 		formData.width = 250;
@@ -127,7 +128,7 @@ public class ViewCalendar implements IPlugin {
 		calendar = new DateTime(groupCalendar, SWT.CALENDAR);
 		calendar.setLayoutData(formData);
 		calendar.setFont(ConfigBean.getFontMain());
-		calendar.setBackground(composite.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		calendar.setBackground(Colors.getListBackground());
 
 		calendar.addListener(SWT.Selection, new Listener() {
 
@@ -148,7 +149,7 @@ public class ViewCalendar implements IPlugin {
 		group = new Group(compositeView, SWT.NONE);
 		group.setLayout(new FormLayout());
 		group.setLayoutData(formData);
-		group.setBackground(composite.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		group.setBackground(Colors.getListBackground());
 
 		formData = new FormData();
 		formData.left = new FormAttachment(0, 5);

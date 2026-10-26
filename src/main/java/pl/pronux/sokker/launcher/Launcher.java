@@ -21,6 +21,7 @@ import pl.pronux.sokker.interfaces.SV;
 import pl.pronux.sokker.model.ProxySettings;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.ui.Viewer;
+import pl.pronux.sokker.ui.resources.Theme;
 import pl.pronux.sokker.ui.widgets.custom.Monitor;
 import pl.pronux.sokker.ui.widgets.shells.BugReporter;
 import pl.pronux.sokker.utils.Log;
@@ -68,6 +69,7 @@ public class Launcher {
 				}
 			} else if (args.length == 0) {
 				Display display = new Display();
+				Theme.init(display, settings.getTheme());
 				try {
 					Viewer viewer = new Viewer(display, SWT.SHELL_TRIM, null);
 					while (viewer != null) {

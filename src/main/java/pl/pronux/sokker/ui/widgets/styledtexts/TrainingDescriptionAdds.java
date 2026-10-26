@@ -12,7 +12,6 @@ import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class TrainingDescriptionAdds extends StyledText implements IDescription {
 
@@ -30,34 +29,24 @@ public class TrainingDescriptionAdds extends StyledText implements IDescription 
 	public void setInfo(Training training) {
 		this.setRedraw(false);
 		this.setText("");
-		String text;
-		text = String.format("%-25s%-15s", Messages.getString("training.date"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).toDateString());  
-		this.append(text);
-		this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
+		addColored(String.format("%-25s%-15s", Messages.getString("training.date"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).toDateString()), Colors.getMutedText());
 		this.append(NEW_LINE);
 
-		text = String.format("%-25s%-15s", Messages.getString("training.date.insert"), training.getDate().toDateString());  
-		this.append(text);
-		this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
+		addColored(String.format("%-25s%-15s", Messages.getString("training.date.insert"), training.getDate().toDateString()), Colors.getMutedText());
 		this.append(NEW_LINE);
 
-		text = String.format("%-25s%-15d", Messages.getString("training.week"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getSeasonWeek() + 1);  
-		this.append(text);
-		this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
+		addColored(String.format("%-25s%-15d", Messages.getString("training.week"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getSeasonWeek() + 1), Colors.getMutedText());
 		this.append(NEW_LINE);
 
 		this.append(NEW_LINE);
 
 		if (training.getJuniorCoach() != null) {
 			String skill = getSkill(training.getJuniorCoach().getGeneralskill());
-			text = String.format("%-25s %s", Messages.getString("coach.job.juniors"), skill);  
-			this.append(text);
-			this.addStyle(this.getText().length() - skill.length(), 4, Colors.getGray(), this.getBackground(), SWT.NORMAL);
+			this.append(String.format("%-25s %s", Messages.getString("coach.job.juniors"), skill));
+			this.addStyle(this.getText().length() - skill.length(), 4, Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
 			this.addStyle(this.getText().length() - skill.length() + 4, skill.length() - 4, Colors.getTrainerGeneralSkill(), this.getBackground(), SWT.BOLD);
 		} else {
-			text = String.format("%-25s %s", Messages.getString("coach.job.juniors"), "-");   
-			this.append(text);
-			this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
+			addColored(String.format("%-25s %s", Messages.getString("coach.job.juniors"), "-"), Colors.getMutedText());
 		}
 		this.append(NEW_LINE);
 		this.append(NEW_LINE);
@@ -71,105 +60,38 @@ public class TrainingDescriptionAdds extends StyledText implements IDescription 
 		this.append(NEW_LINE);
 
 		TrainingSummary trainedSkillSummary = training.getTrainingSummary();
-		
-		if (trainedSkillSummary.getStaminaPops() > 0 || trainedSkillSummary.getStaminaFalls() > 0) {
-			text = String.format("%-25s", Messages.getString("training.skill.stamina"));  
-			this.append(text);
-			if (trainedSkillSummary.getStaminaPops() > 0) {
-				text = String.format("+%d", trainedSkillSummary.getStaminaPops());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getDarkGreen(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-			this.append("/");
-			if (trainedSkillSummary.getStaminaFalls() > 0) {
-				text = String.format("-%d", trainedSkillSummary.getStaminaFalls());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getRed(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-		} else {
-			text = String.format("%-25s -/-", Messages.getString("training.skill.stamina"));  
-			this.append(text);
-		}
-		this.append(NEW_LINE);
-		
-		if (trainedSkillSummary.getTrainedSkillsPops() > 0 || trainedSkillSummary.getTrainedSkillsFalls() > 0) {
-			text = String.format("%-25s", Messages.getString("training.skill.trained"));  
-			this.append(text);
-			if (trainedSkillSummary.getTrainedSkillsPops() > 0) {
-				text = String.format("+%d", trainedSkillSummary.getTrainedSkillsPops());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getDarkGreen(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-			this.append("/");
-			if (trainedSkillSummary.getTrainedSkillsFalls() > 0) {
-				text = String.format("-%d", trainedSkillSummary.getTrainedSkillsFalls());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getRed(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-		} else {
-			text = String.format("%-25s -/-", Messages.getString("training.skill.trained"));  
-			this.append(text);
-		}
-		this.append(NEW_LINE);
-
-		if (trainedSkillSummary.getOthersSkillsPops() > 0 || trainedSkillSummary.getOthersSkillsFalls() > 0) {
-			text = String.format("%-25s", Messages.getString("training.skill.others"));  
-			this.append(text);
-			if (trainedSkillSummary.getOthersSkillsPops() > 0) {
-				text = String.format("+%d", trainedSkillSummary.getOthersSkillsPops());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getDarkGreen(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-			this.append("/");
-			if (trainedSkillSummary.getOthersSkillsFalls() > 0) {
-				text = String.format("-%d", trainedSkillSummary.getOthersSkillsFalls());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getRed(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-		} else {
-			text = String.format("%-25s -/-", Messages.getString("training.skill.others"));  
-			this.append(text);
-		}
-		this.append(NEW_LINE);
-
-		if (trainedSkillSummary.getJuniorsPops() > 0 || trainedSkillSummary.getJuniorsFalls() > 0) {
-			text = String.format("%-25s", Messages.getString("training.skill.juniors"));  
-			this.append(text);
-			if (trainedSkillSummary.getJuniorsPops() > 0) {
-				text = String.format("+%d", trainedSkillSummary.getJuniorsPops());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getDarkGreen(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-			this.append("/");
-			if (trainedSkillSummary.getJuniorsFalls() > 0) {
-				text = String.format("-%d", trainedSkillSummary.getJuniorsFalls());
-				this.append(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getRed(), this.getBackground(), SWT.NORMAL);
-			} else {
-				this.append("-");
-			}
-		} else {
-			text = String.format("%-25s -/-", Messages.getString("training.skill.juniors"));  
-			this.append(text);
-		}
-		
-		this.append(NEW_LINE);
+		addSummaryRow("training.skill.stamina", trainedSkillSummary.getStaminaPops(), trainedSkillSummary.getStaminaFalls());
+		addSummaryRow("training.skill.trained", trainedSkillSummary.getTrainedSkillsPops(), trainedSkillSummary.getTrainedSkillsFalls());
+		addSummaryRow("training.skill.others", trainedSkillSummary.getOthersSkillsPops(), trainedSkillSummary.getOthersSkillsFalls());
+		addSummaryRow("training.skill.juniors", trainedSkillSummary.getJuniorsPops(), trainedSkillSummary.getJuniorsFalls());
 
 		this.setRedraw(true);
+	}
+
+	/** One summary line: the label, then pops in green and falls in red, "-" for none */
+	private void addSummaryRow(String key, int pops, int falls) {
+		if (pops > 0 || falls > 0) {
+			this.append(String.format("%-25s", Messages.getString(key)));
+			if (pops > 0) {
+				addColored(String.format("+%d", pops), Colors.getGreenText());
+			} else {
+				this.append("-");
+			}
+			this.append("/");
+			if (falls > 0) {
+				addColored(String.format("-%d", falls), Colors.getRedText());
+			} else {
+				this.append("-");
+			}
+		} else {
+			this.append(String.format("%-25s -/-", Messages.getString(key)));
+		}
+		this.append(NEW_LINE);
+	}
+
+	private void addColored(String text, Color foreground) {
+		this.append(text);
+		this.addStyle(this.getText().length() - text.length(), text.length(), foreground, this.getBackground(), SWT.NORMAL);
 	}
 
 	private String getSkill(int skill) {

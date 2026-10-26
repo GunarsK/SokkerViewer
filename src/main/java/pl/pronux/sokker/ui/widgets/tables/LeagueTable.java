@@ -14,7 +14,6 @@ import pl.pronux.sokker.model.LeagueTeam;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class LeagueTable extends SVTable<LeagueRound> {
 
@@ -90,11 +89,7 @@ public class LeagueTable extends SVTable<LeagueRound> {
 			item.setText(i++, String.valueOf(leagueTeam.getGoalsScored() + "-" + leagueTeam.getGoalsLost())); 
 		}
 
-		for (int i = 0; i < this.getItemCount(); i++) {
-			if ((i % 2) == 1) {
-				this.getItem(i).setBackground(ColorResources.getGray());
-			}
-		}
+		stripeRows(this, 1);
 		this.layoutColumns();
 		this.setRedraw(true);
 	}

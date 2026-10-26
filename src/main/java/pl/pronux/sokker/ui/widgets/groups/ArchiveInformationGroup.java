@@ -3,7 +3,6 @@ package pl.pronux.sokker.ui.widgets.groups;
 import java.sql.SQLException;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -20,7 +19,6 @@ import pl.pronux.sokker.model.PlayerArchive;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.widgets.composites.CountryChooser;
 import pl.pronux.sokker.ui.widgets.dialogs.MessageDialog;
@@ -30,12 +28,6 @@ public class ArchiveInformationGroup extends Group {
 
 	private PlayersManager playersManager = PlayersManager.getInstance();
 
-	private FormData formData;
-	private Label idLabel;
-	private Label nameLabel;
-	private Label surnameLabel;
-	private Label youthTeamIdLabel;
-	private Label countryLabel;
 	private Text idText;
 	private Text nameText;
 	private Text surnameText;
@@ -44,41 +36,13 @@ public class ArchiveInformationGroup extends Group {
 	private PlayerArchive playerArchive;
 	private Label countryImageLabel;
 	private Listener countryListener;
-	private Label idWarningLabel;
 	private Label nameWarningLabel;
 	private Label surnameWarningLabel;
-	private Label youthTeamIdWarningLabel;
 	private Label countryWarningLabel;
 
 	@Override
 	protected void checkSubclass() {
 		// super.checkSubclass();
-	}
-
-	public String getPlayerName() {
-		return nameText.getText();
-	}
-
-	public String getPlayerSurname() {
-		return surnameText.getText();
-	}
-
-	public Integer getPlayerID() {
-		if (idText == null || !idText.getText().matches("[0-9]+")) {
-			return -1;
-		}
-		return Integer.valueOf(idText.getText());
-	}
-
-	public Integer getPlayerYouthTeamId() {
-		if (youthTeamIdText == null || !youthTeamIdText.getText().matches("[0-9]+")) {
-			return -1;
-		}
-		return Integer.valueOf(youthTeamIdText.getText());
-	}
-
-	public Button getSaveButton() {
-		return saveButton;
 	}
 
 	public ArchiveInformationGroup(Composite parent, int style) {
@@ -99,78 +63,23 @@ public class ArchiveInformationGroup extends Group {
 		gridData.grabExcessHorizontalSpace = true;
 		gridData.horizontalAlignment = GridData.FILL;
 
-		idLabel = new Label(this, SWT.LEFT);
-		idLabel.setLayoutData(formData);
-		idLabel.setText(Messages.getString("player.id"));
-		idLabel.setFont(this.getFont());
+		addLabel("player.id");
+		idText = addField(gridData);
+		addWarning(warningGD);
 
-		idText = new Text(this, SWT.BORDER);
-		idText.setEditable(false);
-		idText.setBackground(ColorResources.getColor(240, 240, 240));
-		idText.setFont(this.getFont());
-		idText.setLayoutData(gridData);
+		addLabel("player.name");
+		nameText = addField(gridData);
+		nameWarningLabel = addWarning(warningGD);
 
-		idWarningLabel = new Label(this, SWT.NONE);
-		idWarningLabel.setForeground(ColorResources.getRed());
-		idWarningLabel.setText("*");
-		idWarningLabel.setVisible(false);
-		idWarningLabel.setLayoutData(warningGD);
+		addLabel("player.surname");
+		surnameText = addField(gridData);
+		surnameWarningLabel = addWarning(warningGD);
 
-		nameLabel = new Label(this, SWT.LEFT);
-		nameLabel.setLayoutData(formData);
-		nameLabel.setText(Messages.getString("player.name"));
-		nameLabel.setFont(this.getFont());
+		addLabel("player.youth.team.id");
+		youthTeamIdText = addField(gridData);
+		addWarning(warningGD);
 
-		nameText = new Text(this, SWT.BORDER);
-		nameText.setLayoutData(gridData);
-		nameText.setEditable(false);
-		nameText.setBackground(ColorResources.getColor(240, 240, 240));
-		nameText.setFont(this.getFont());
-
-		nameWarningLabel = new Label(this, SWT.NONE);
-		nameWarningLabel.setForeground(ColorResources.getRed());
-		nameWarningLabel.setText("*");
-		nameWarningLabel.setVisible(false);
-		nameWarningLabel.setLayoutData(warningGD);
-
-		surnameLabel = new Label(this, SWT.LEFT);
-		surnameLabel.setLayoutData(formData);
-		surnameLabel.setText(Messages.getString("player.surname"));
-		surnameLabel.setFont(this.getFont());
-
-		surnameText = new Text(this, SWT.BORDER);
-		surnameText.setLayoutData(gridData);
-		surnameText.setEditable(false);
-		surnameText.setBackground(ColorResources.getColor(240, 240, 240));
-		surnameText.setFont(this.getFont());
-
-		surnameWarningLabel = new Label(this, SWT.NONE);
-		surnameWarningLabel.setForeground(ColorResources.getRed());
-		surnameWarningLabel.setText("*");
-		surnameWarningLabel.setVisible(false);
-		surnameWarningLabel.setLayoutData(warningGD);
-
-		youthTeamIdLabel = new Label(this, SWT.LEFT);
-		youthTeamIdLabel.setLayoutData(formData);
-		youthTeamIdLabel.setText(Messages.getString("player.youth.team.id"));
-		youthTeamIdLabel.setFont(this.getFont());
-
-		youthTeamIdText = new Text(this, SWT.BORDER);
-		youthTeamIdText.setLayoutData(gridData);
-		youthTeamIdText.setEditable(false);
-		youthTeamIdText.setBackground(ColorResources.getColor(240, 240, 240));
-		youthTeamIdText.setFont(this.getFont());
-
-		youthTeamIdWarningLabel = new Label(this, SWT.NONE);
-		youthTeamIdWarningLabel.setForeground(ColorResources.getRed());
-		youthTeamIdWarningLabel.setText("*");
-		youthTeamIdWarningLabel.setVisible(false);
-		youthTeamIdWarningLabel.setLayoutData(warningGD);
-
-		countryLabel = new Label(this, SWT.LEFT);
-		countryLabel.setLayoutData(formData);
-		countryLabel.setText(Messages.getString("player.country"));
-		countryLabel.setFont(this.getFont());
+		addLabel("player.country");
 
 		gridData = new GridData();
 		gridData.horizontalAlignment = GridData.CENTER;
@@ -179,11 +88,7 @@ public class ArchiveInformationGroup extends Group {
 		countryImageLabel = new Label(this, SWT.NONE);
 		countryImageLabel.setLayoutData(gridData);
 
-		countryWarningLabel = new Label(this, SWT.NONE);
-		countryWarningLabel.setForeground(ColorResources.getRed());
-		countryWarningLabel.setText("*");
-		countryWarningLabel.setVisible(false);
-		countryWarningLabel.setLayoutData(warningGD);
+		countryWarningLabel = addWarning(warningGD);
 
 		gridData = new GridData();
 		gridData.widthHint = 80;
@@ -202,23 +107,9 @@ public class ArchiveInformationGroup extends Group {
 				if (playerArchive != null) {
 					int countryID = (Integer) countryImageLabel.getData("id");
 					if (nameText.getText().isEmpty() || surnameText.getText().isEmpty() || countryID == FlagsResources.EMPTY_FLAG) {
-						if (nameText.getText().isEmpty()) {
-							nameWarningLabel.setVisible(true);
-						} else {
-							nameWarningLabel.setVisible(false);
-						}
-
-						if (surnameText.getText().isEmpty()) {
-							surnameWarningLabel.setVisible(true);
-						} else {
-							surnameWarningLabel.setVisible(false);
-						}
-
-						if (countryID == FlagsResources.EMPTY_FLAG) {
-							countryWarningLabel.setVisible(true);
-						} else {
-							countryWarningLabel.setVisible(false);
-						}
+						nameWarningLabel.setVisible(nameText.getText().isEmpty());
+						surnameWarningLabel.setVisible(surnameText.getText().isEmpty());
+						countryWarningLabel.setVisible(countryID == FlagsResources.EMPTY_FLAG);
 					} else {
 						countryWarningLabel.setVisible(false);
 						surnameWarningLabel.setVisible(false);
@@ -250,10 +141,8 @@ public class ArchiveInformationGroup extends Group {
 					CountryChooser countryChooser = new CountryChooser(ArchiveInformationGroup.this.getShell(), SWT.TOOL | SWT.PRIMARY_MODAL);
 					countryChooser.open(Cache.getCountries());
 					int id = countryChooser.getId();
-					// if (id >= 0 && id < FlagsResources.EMPTY_FLAG) {
 					countryImageLabel.setImage(FlagsResources.getFlag(id));
 					countryImageLabel.setData("id", id);
-					// }
 					break;
 				default:
 					break;
@@ -279,27 +168,41 @@ public class ArchiveInformationGroup extends Group {
 			countryImageLabel.setData("id", playerArchive.getCountryId());
 		}
 
-		if (playerArchive.getExistsInSokker() == PlayerArchive.EXISTS_IN_SOKKER_FALSE
-				|| playerArchive.getExistsInSokker() == PlayerArchive.EXISTS_IN_SOKKER_COMPLETED) {
-			saveButton.setEnabled(true);
-			surnameText.setEditable(true);
-			nameText.setEditable(true);
-			youthTeamIdText.setEditable(true);
-			surnameText.setBackground(ColorResources.getWhite());
-			nameText.setBackground(ColorResources.getWhite());
-			youthTeamIdText.setBackground(ColorResources.getWhite());
-			countryImageLabel.addListener(SWT.MouseDown, countryListener);
-			saveButton.setEnabled(true);
-		} else {
-			saveButton.setEnabled(true);
-			surnameText.setEditable(false);
-			surnameText.setBackground(ColorResources.getColor(240, 240, 240));
-			nameText.setEditable(false);
-			youthTeamIdText.setEditable(false);
-			nameText.setBackground(ColorResources.getColor(240, 240, 240));
-			youthTeamIdText.setBackground(ColorResources.getColor(240, 240, 240));
-			countryImageLabel.removeListener(SWT.MouseDown, countryListener);
-			saveButton.setEnabled(false);
+		boolean editable = playerArchive.getExistsInSokker() == PlayerArchive.EXISTS_IN_SOKKER_FALSE
+				|| playerArchive.getExistsInSokker() == PlayerArchive.EXISTS_IN_SOKKER_COMPLETED;
+		for (Text text : new Text[] {nameText, surnameText, youthTeamIdText}) {
+			text.setEditable(editable);
+			text.setBackground(editable ? Colors.getListBackground() : Colors.getPanelBackground());
 		}
-	};
+		if (editable) {
+			countryImageLabel.addListener(SWT.MouseDown, countryListener);
+		}
+		saveButton.setEnabled(editable);
+	}
+
+	private void addLabel(String key) {
+		Label label = new Label(this, SWT.LEFT);
+		label.setText(Messages.getString(key));
+		label.setFont(this.getFont());
+	}
+
+	/** A read-only field, editable once fill allows it */
+	private Text addField(GridData gridData) {
+		Text text = new Text(this, SWT.BORDER);
+		text.setLayoutData(gridData);
+		text.setEditable(false);
+		text.setBackground(Colors.getPanelBackground());
+		text.setFont(this.getFont());
+		return text;
+	}
+
+	/** The red mark shown next to a field that must be filled */
+	private Label addWarning(GridData warningGD) {
+		Label label = new Label(this, SWT.NONE);
+		label.setForeground(Colors.getRedText());
+		label.setText("*");
+		label.setVisible(false);
+		label.setLayoutData(warningGD);
+		return label;
+	}
 }

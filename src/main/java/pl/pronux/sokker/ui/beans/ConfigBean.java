@@ -18,6 +18,7 @@ import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
+import pl.pronux.sokker.ui.resources.Theme;
 
 public class ConfigBean {
 
@@ -31,9 +32,14 @@ public class ConfigBean {
 
 	private static final String INCREASE_DESCRIPTION = "color.increaseDescription";
 
-	private static final String INJURY_BG = "color.injuryBg";
+	private static final String INJURY_TEXT = "color.injuryText";
 
-	private static final String INJURY_FG = "color.injuryFg";
+	private static final String INJURY_BACKGROUND = "color.injuryBackground";
+
+	/** Old injury keys: injuryBg held the text colour, injuryFg the background */
+	private static final String LEGACY_INJURY_TEXT = "color.injuryBg";
+
+	private static final String LEGACY_INJURY_BACKGROUND = "color.injuryFg";
 
 	private static final String NEW_TABLE_ITEM = "color.newTableItem";
 
@@ -53,7 +59,7 @@ public class ConfigBean {
 
 	/** Look page colour keys, in its order */
 	public static final String[] COLORS = {
-		DECREASE_TABLE, DECREASE_DESCRIPTION, ERROR, INCREASE_TABLE, INCREASE_DESCRIPTION, INJURY_BG, INJURY_FG,
+		DECREASE_TABLE, DECREASE_DESCRIPTION, ERROR, INCREASE_TABLE, INCREASE_DESCRIPTION, INJURY_TEXT, INJURY_BACKGROUND,
 		NEW_TABLE_ITEM, NEW_TREE_ITEM, TRAINED_JUNIOR, UNTRAINED_FG, UNTRAINED_BG
 	};
 
@@ -64,9 +70,40 @@ public class ConfigBean {
 
 	private static final Map<String, Font> fonts = new HashMap<String, Font>();
 
-	/** Reads the look from user.properties, default.properties for missing keys */
+	/** Reads the running theme's look from user.properties, default.properties for missing keys */
 	public static void load() throws IOException {
 		Properties properties = new Properties(SettingsHandler.getDefaultProperties());
+		properties.putAll(readUser());
+		for (String key : COLORS) {
+			String[] rgb = properties.getProperty(name(key)).split(",");
+			colors.put(key, ColorResources.getColor(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2])));
+		}
+		for (String key : FONTS) {
+			fonts.put(key, Fonts.getFont(DisplayHandler.getDisplay(), new FontData[] {new FontData(properties.getProperty(key))}));
+		}
+	}
+
+	/** Replaces the running theme's colours and the fonts in user.properties with look's and loads them */
+	public static void save(Properties look) throws IOException {
+		Properties properties = readUser();
+		for (String key : COLORS) {
+			replace(properties, name(key), look.getProperty(key));
+		}
+		for (String key : FONTS) {
+			replace(properties, key, look.getProperty(key));
+		}
+		OutputStream out = new FileOutputStream(userFile());
+		try {
+			properties.store(out, "");
+		} finally {
+			out.close();
+		}
+		load();
+	}
+
+	/** user.properties, with the old injury keys under their new light names */
+	private static Properties readUser() throws IOException {
+		Properties properties = new Properties();
 		File file = userFile();
 		if (file.exists()) {
 			InputStream in = new FileInputStream(file);
@@ -76,24 +113,30 @@ public class ConfigBean {
 				in.close();
 			}
 		}
-		for (String key : COLORS) {
-			String[] rgb = properties.getProperty(key).split(",");
-			colors.put(key, ColorResources.getColor(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2])));
-		}
-		for (String key : FONTS) {
-			fonts.put(key, Fonts.getFont(DisplayHandler.getDisplay(), new FontData[] {new FontData(properties.getProperty(key))}));
+		renameLegacy(properties, LEGACY_INJURY_TEXT, INJURY_TEXT);
+		renameLegacy(properties, LEGACY_INJURY_BACKGROUND, INJURY_BACKGROUND);
+		return properties;
+	}
+
+	private static void renameLegacy(Properties properties, String legacy, String key) {
+		Object value = properties.remove(legacy);
+		if (value != null && !properties.containsKey(key)) {
+			properties.put(key, value);
 		}
 	}
 
-	/** Writes the look to user.properties and loads it */
-	public static void save(Properties properties) throws IOException {
-		OutputStream out = new FileOutputStream(userFile());
-		try {
-			properties.store(out, "");
-		} finally {
-			out.close();
+	/** Sets key to value, or removes it when value is null */
+	private static void replace(Properties properties, String key, String value) {
+		if (value == null) {
+			properties.remove(key);
+		} else {
+			properties.setProperty(key, value);
 		}
-		load();
+	}
+
+	/** The colour key of the running theme */
+	private static String name(String key) {
+		return Theme.isDark() ? key + ".dark" : key;
 	}
 
 	private static File userFile() {
@@ -128,12 +171,12 @@ public class ConfigBean {
 		return colors.get(INCREASE_DESCRIPTION);
 	}
 
-	public static Color getColorInjuryBg() {
-		return colors.get(INJURY_BG);
+	public static Color getColorInjuryText() {
+		return colors.get(INJURY_TEXT);
 	}
 
-	public static Color getColorInjuryFg() {
-		return colors.get(INJURY_FG);
+	public static Color getColorInjuryBackground() {
+		return colors.get(INJURY_BACKGROUND);
 	}
 
 	public static Color getColorNewTableObject() {
@@ -154,11 +197,6 @@ public class ConfigBean {
 
 	public static Color getColorUntrainedBg() {
 		return colors.get(UNTRAINED_BG);
-	}
-
-	/** Name background of a player on the transfer list */
-	public static Color getColorTransferList() {
-		return ColorResources.getColor(221, 255, 255);
 	}
 
 	public static Font getFontTable() {

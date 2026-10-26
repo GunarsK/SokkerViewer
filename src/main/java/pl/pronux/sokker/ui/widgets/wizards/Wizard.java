@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
 import pl.pronux.sokker.resources.Messages;
-import pl.pronux.sokker.ui.resources.ColorResources;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.resources.Fonts;
 import pl.pronux.sokker.ui.widgets.wizards.pages.Page;
 
@@ -61,7 +61,6 @@ public class Wizard extends Shell {
 		formData.top = new FormAttachment(100, -40);
 		formData.left = new FormAttachment(0, 1);
 		formData.right = new FormAttachment(100, -1);
-		// formData.height = 0;
 
 		footerLine = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
 		footerLine.setLayoutData(formData);
@@ -210,9 +209,6 @@ public class Wizard extends Shell {
 		addButtons();
 		addPage();
 		this.layout();
-		// this.setSize((this.getDisplay().getPrimaryMonitor().getClientArea().width
-		// / 2), 2 *
-		// (this.getDisplay().getPrimaryMonitor().getClientArea().height /3) );
 		this.setSize(650, 450);
 		Rectangle thisRect = this.getBounds();
 		Rectangle displayRect = this.getDisplay().getPrimaryMonitor().getClientArea();
@@ -231,7 +227,7 @@ public class Wizard extends Shell {
 		header = new CLabel(this, SWT.NONE);
 		header.setLayoutData(formData);
 		header.setAlignment(SWT.CENTER);
-		header.setBackground(ColorResources.getColor(248, 247, 243));
+		header.setBackground(Colors.getDialogHeader());
 		header.setFont(Fonts.getFont(this.getDisplay(), "Arial", 13, SWT.BOLD)); 
 
 		formData = new FormData();
@@ -261,11 +257,6 @@ public class Wizard extends Shell {
 		pageFormData.left = new FormAttachment(0, 0);
 		pageFormData.right = new FormAttachment(100, 0);
 		pageFormData.bottom = new FormAttachment(100, 0);
-		// if (alView.get(0).getComposite() != null) {
-		// currentComposite = alView.get(0);
-		// showView(currentComposite);
-		// header.setText(alView.get(0).getTreeItem().getText());
-		// }
 	}
 
 	protected void addPage(Page page) {

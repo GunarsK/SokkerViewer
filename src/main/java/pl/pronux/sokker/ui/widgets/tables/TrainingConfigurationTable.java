@@ -14,9 +14,9 @@ import org.eclipse.swt.widgets.Text;
 
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.listeners.VerifyDigitsListener;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class TrainingConfigurationTable extends Table {
 
@@ -35,57 +35,31 @@ public class TrainingConfigurationTable extends Table {
 		this.setFont(ConfigBean.getFontTable());
 		this.setHeaderVisible(false);
 		this.setLinesVisible(true);
-//		this.setBackground(parent.getBackground());
 
-		String[] columns = {
-				Messages.getString(""), 
-				Messages.getString(""), 
-				Messages.getString(""), 
-				Messages.getString(""), 
-				Messages.getString(""), 
-				"" 
-		};
-
-		for (int i = 0; i < columns.length; i++) {
+		// the row labels, the four formations and an empty last column
+		for (int i = 0; i < 6; i++) {
 			TableColumn column = new TableColumn(this, SWT.NONE);
-			column.setText(columns[i]);
 			column.setMoveable(false);
 			column.setResizable(false);
-			if (i > 0) {
-				column.setAlignment(SWT.RIGHT);
-			} else {
-				column.setAlignment(SWT.LEFT);
-			}
-
-			if (columns[i].isEmpty()) {
-				// column.setWidth(70);
-				if (SettingsHandler.IS_LINUX) {
-					column.pack();
-				}
-			} else {
+			column.setAlignment(i > 0 ? SWT.RIGHT : SWT.LEFT);
+			if (i < 5) {
 				column.setWidth(35);
+			} else if (SettingsHandler.IS_LINUX) {
+				column.pack();
 			}
 		}
 
 		TableItem item = new TableItem(this, SWT.NONE);
-		item.setText(1, Messages.getString("formation.0"));
-		item.setText(2, Messages.getString("formation.1"));
-		item.setText(3, Messages.getString("formation.2"));
-		item.setText(4, Messages.getString("formation.3"));
-		item.setForeground(ColorResources.getColor(0, 128, 128));
+		for (int i = 0; i < 4; i++) {
+			item.setText(i + 1, Messages.getString("formation." + i));
+		}
+		item.setForeground(Colors.getConfigHeader());
 
-		item = new TableItem(this, SWT.NONE);
-		item.setText(0, Messages.getString("formation.0"));
-		item.setForeground(0, ColorResources.getColor(8, 61, 132));
-		item = new TableItem(this, SWT.NONE);
-		item.setText(0, Messages.getString("formation.1"));
-		item.setForeground(0, ColorResources.getColor(8, 61, 132));
-		item = new TableItem(this, SWT.NONE);
-		item.setText(0, Messages.getString("formation.2"));
-		item.setForeground(0, ColorResources.getColor(8, 61, 132));
-		item = new TableItem(this, SWT.NONE);
-		item.setText(0, Messages.getString("formation.3"));
-		item.setForeground(0, ColorResources.getColor(8, 61, 132));
+		for (int i = 0; i < 4; i++) {
+			item = new TableItem(this, SWT.NONE);
+			item.setText(0, Messages.getString("formation." + i));
+			item.setForeground(0, Colors.getConfigRowLabel());
+		}
 
 		this.addEditor();
 	}

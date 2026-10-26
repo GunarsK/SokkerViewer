@@ -27,12 +27,12 @@ import pl.pronux.sokker.model.Match;
 import pl.pronux.sokker.model.SokkerDate;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
 import pl.pronux.sokker.ui.managers.MatchUIManager;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.MatchesComposite;
 import pl.pronux.sokker.ui.widgets.menus.MatchesMenu;
@@ -144,12 +144,6 @@ public class ViewMatches implements IPlugin {
 		final Club team = Cache.getClub();
 		matches = Cache.getMatches();
 		fillTree(this.treeItem, matches);
-		// for (int i = alMatches.size() - 1; i >= 0; i--) {
-		// if (alMatches.get(i).getIsFinished() == Match.FINISHED) {
-		// matchComposite.fill(alMatches.get(i));
-		// break;
-		// }
-		// }
 
 		matchesComposite.fill(team.getId(), matches);
 
@@ -261,8 +255,6 @@ public class ViewMatches implements IPlugin {
 						}
 					} else if (item.equals(treeItem)) {
 						show(matchesComposite);
-						// showDescription(playersDescription);
-						// showView(playersTable);
 
 					}
 				}
@@ -346,16 +338,11 @@ public class ViewMatches implements IPlugin {
 						treeItemMatch.setText(match.getHomeTeamName() + " - " + match.getAwayTeamName()); 
 					} else {
 						treeItemMatch.setText(match.getHomeTeamId() + " - " + match.getAwayTeamId()); 
-						treeItemMatch.setForeground(ColorResources.getGray());
+						treeItemMatch.setForeground(Colors.getDisabledText());
 					}
 				}
 			}
 		}
-
-		// for (int i = treeItem.getItems().length - 1; i >= 0; i--) {
-		// treeItem.getItem(i).setText(Messages.getString("league.season") + " "
-		// + (treeItem.getItems().length - i));
-		// }
 
 	}
 

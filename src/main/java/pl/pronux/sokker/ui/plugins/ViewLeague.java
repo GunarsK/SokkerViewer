@@ -22,9 +22,9 @@ import pl.pronux.sokker.model.LeagueSeason;
 import pl.pronux.sokker.model.Match;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.views.LeagueComposite;
 import pl.pronux.sokker.ui.widgets.tabs.MatchTabComposite;
@@ -48,6 +48,9 @@ public class ViewLeague implements IPlugin {
 	private Composite current;
 
 	private LeagueRound shownRound;
+
+	/** True once the user picked a round or season; until then each load shows the newest standings */
+	private boolean picked;
 
 	private Match shownMatch;
 
@@ -135,8 +138,13 @@ public class ViewLeague implements IPlugin {
 		if (item == null || !isUnderLeague(item)) {
 			return;
 		}
-		if (item.getData(LeagueRound.class.getName()) != null) {
-			shownRound = (LeagueRound) item.getData(LeagueRound.class.getName());
+		LeagueRound round = (LeagueRound) item.getData(LeagueRound.class.getName());
+		if (item.getData(LeagueSeason.class.getName()) != null) {
+			round = latestPlayedRound((LeagueSeason) item.getData(LeagueSeason.class.getName()));
+		}
+		if (round != null) {
+			picked = true;
+			shownRound = round;
 			leagueComposite.fillLeague(shownRound);
 			show(leagueComposite);
 		}
@@ -145,6 +153,23 @@ public class ViewLeague implements IPlugin {
 			matchComposite.fill(shownMatch);
 			show(matchComposite);
 		}
+	}
+
+	/** The season's last round with a finished match and a table: the latest standings, the final ones once it ended */
+	private LeagueRound latestPlayedRound(LeagueSeason season) {
+		LeagueRound latest = null;
+		for (LeagueRound round : season.getRounds()) {
+			if (round.getLeagueTeams().isEmpty() || (latest != null && round.getRoundNumber() < latest.getRoundNumber())) {
+				continue;
+			}
+			for (Match match : round.getMatches()) {
+				if (match.getIsFinished() == Match.FINISHED) {
+					latest = round;
+					break;
+				}
+			}
+		}
+		return latest;
 	}
 
 	private boolean isUnderLeague(TreeItem item) {
@@ -160,6 +185,13 @@ public class ViewLeague implements IPlugin {
 		leagueSeasons = Cache.getLeagueSeasons();
 		clubMap = Cache.getClubMap();
 		fillTree(this.treeItem, leagueSeasons);
+		if (!picked && treeItem.getItemCount() > 0) {
+			// the newest season's standings until a round or season is picked
+			LeagueRound latest = latestPlayedRound((LeagueSeason) treeItem.getItem(0).getData(LeagueSeason.class.getName()));
+			if (latest != null) {
+				shownRound = latest;
+			}
+		}
 		refreshShown();
 	}
 
@@ -214,8 +246,8 @@ public class ViewLeague implements IPlugin {
 						treeItemMatch.setText(teamName(match.getHomeTeamName(), match.getHomeTeamId()) + " - " + teamName(match.getAwayTeamName(), match.getAwayTeamId()));
 						treeItemMatch.setData(Match.class.getName(), match);
 						if (match.getIsFinished() == Match.NOT_FINISHED) {
-							treeItemMatch.setForeground(ColorResources.getGray());
-							treeItemRound.setForeground(ColorResources.getGray());
+							treeItemMatch.setForeground(Colors.getDisabledText());
+							treeItemRound.setForeground(Colors.getDisabledText());
 						}
 					}
 				}

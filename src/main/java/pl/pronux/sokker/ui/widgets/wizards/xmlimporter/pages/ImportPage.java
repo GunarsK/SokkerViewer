@@ -19,10 +19,10 @@ import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.importer.controller.ImportXMLAction;
 import pl.pronux.sokker.importer.model.IXMLpack;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.events.UpdateEvent;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.widgets.custom.Monitor;
 import pl.pronux.sokker.ui.widgets.custom.ProgressBarCustom;
 import pl.pronux.sokker.ui.widgets.wizards.Wizard;
@@ -178,13 +178,13 @@ public class ImportPage extends Page {
 			
 			if(pack.isImported()) {
 				item.setText(1, Messages.getString("importer.page.import.ok")); 
-				item.setForeground(1, ColorResources.getDarkGreen());	
+				item.setForeground(1, Colors.getGreenText());
 			} else if (pack.isSkipped()) {
 				item.setText(1, Messages.getString("importer.page.import.skipped"));
-				item.setForeground(1, ColorResources.getDarkGray());
+				item.setForeground(1, Colors.getMutedText());
 			} else {
-				item.setText(1, Messages.getString("importer.page.import.failed")); 
-				item.setForeground(1, ColorResources.getRed());
+				item.setText(1, Messages.getString("importer.page.import.failed"));
+				item.setForeground(1, Colors.getRedText());
 			}
 		}
 

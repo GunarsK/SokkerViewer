@@ -28,7 +28,6 @@ import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.listeners.PaintStarListener;
 import pl.pronux.sokker.ui.listeners.SortTableListener;
 import pl.pronux.sokker.ui.managers.MatchUIManager;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.interfaces.IViewSort;
 import pl.pronux.sokker.ui.widgets.shells.BugReporter;
@@ -202,10 +201,7 @@ public class PlayerStatsTable extends SVTable<PlayerStats> implements IViewSort<
 					item.setText(i++, ""); 
 				}
 
-				if (playerStats.getTimePlayed() == 0) {
-					item.setForeground(ColorResources.getDarkGray());
-				}
-				item.setText(i++, playerStats.getTimePlayed() + "'"); 
+				item.setText(i++, playerStats.getTimePlayed() + "'");
 
 				item.setText(i++, playerStats.getRating() + "%"); 
 				i++;

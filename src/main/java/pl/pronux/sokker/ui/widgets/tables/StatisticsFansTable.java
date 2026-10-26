@@ -10,8 +10,8 @@ import pl.pronux.sokker.model.Club;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.model.SokkerDate;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class StatisticsFansTable extends SVTable<Club> {
 
@@ -67,17 +67,13 @@ public class StatisticsFansTable extends SVTable<Club> {
 				int diff = club.getClubSupporters().get(i).getFanclubcount() - club.getClubSupporters().get(i - 1).getFanclubcount();
 				item.setText(3, String.valueOf(diff));
 				if (diff > 0) {
-					item.setForeground(3, ColorResources.getDarkGreen());
+					item.setForeground(3, Colors.getGreenText());
 				} else if (diff < 0) {
-					item.setForeground(3, ColorResources.getRed());
+					item.setForeground(3, Colors.getRedText());
 				}
 
 			}
-			if (club.getClubSupporters().get(i).getDate().getSokkerDate().getSeason() % 2 == 0) {
-				item.setBackground(0, ColorResources.getColor(240, 240, 240));
-			} else {
-				item.setBackground(0, ColorResources.getWhite());
-			}
+			markSeason(item, club.getClubSupporters().get(i).getDate().getSokkerDate().getSeason());
 		}
 
 		int[] columns = { 1, 2, };

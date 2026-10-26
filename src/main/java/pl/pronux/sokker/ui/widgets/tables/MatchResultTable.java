@@ -17,7 +17,6 @@ import pl.pronux.sokker.model.Match;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerStats;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 
 public class MatchResultTable extends SVTable<Match> {
@@ -39,11 +38,6 @@ public class MatchResultTable extends SVTable<Match> {
 		new TableColumn(this, SWT.CENTER);
 		new TableColumn(this, SWT.CENTER);
 		new TableColumn(this, SWT.CENTER);
-
-		// this.getColumn(0).setWidth(0);
-		// this.getColumn(1).setWidth((width - 20)/2);
-		// this.getColumn(2).setWidth(20);
-		// this.getColumn(3).setWidth((width - 20)/2);
 
 		TableItem item = new TableItem(this, SWT.NONE);
 		item.setText(2, "-"); 
@@ -110,13 +104,6 @@ public class MatchResultTable extends SVTable<Match> {
 				} else {
 					sPlayer = playerStats.getPlayerId() + " (n/d)"; 
 				}
-//				if (player != null) {
-//					if (player.getName() != null && player.getSurname() != null) {
-//						if (player.getName().length() > 0) {
-//							sPlayer = player.getSurname() + " " + player.getName().substring(0, 1) + ".";
-//						}
-//					}
-//				}
 
 				if (this.getItemCount() > startItem) {
 					this.getItem(startItem++).setText(column, String.format("%s (%d)", sPlayer, playerStats.getGoals() )); 
@@ -173,11 +160,7 @@ public class MatchResultTable extends SVTable<Match> {
 		playersStats = match.getAwayTeamStats().getPlayersStats();
 		fillColumn(playersStats, 3, 2);
 
-		for (int i = 0; i < this.getItemCount(); i++) {
-			if ((i % 2) == 1) {
-				this.getItem(i).setBackground(ColorResources.getSystemColor(SWT.COLOR_GRAY));
-			}
-		}
+		stripeRows(this, 1);
 		this.setRedraw(true);
 	}
 

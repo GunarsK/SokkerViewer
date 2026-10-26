@@ -15,7 +15,6 @@ import pl.pronux.sokker.model.Rank;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class StatisticsRankTable extends SVTable<Club> {
 
@@ -62,11 +61,7 @@ public class StatisticsRankTable extends SVTable<Club> {
 			item.setText(0, date.getTrainingDate(date.getSokkerDate().getDay()).toDateString());
 			item.setText(1, SVNumberFormat.formatDouble(rank.getRank()));
 			alDouble.add(rank.getRank());
-			if (rank.getDate().getSokkerDate().getSeason() % 2 == 0) {
-				item.setBackground(0, ColorResources.getColor(240, 240, 240));
-			} else {
-				item.setBackground(0, ColorResources.getWhite());
-			}
+			markSeason(item, rank.getDate().getSokkerDate().getSeason());
 		}
 		Collections.reverse(alDouble);
 

@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.widgets.tables.SVTable;
 
@@ -81,8 +82,8 @@ public class TableLabelsListener<T> implements Listener {
 						tip = new Shell(shell, SWT.ON_TOP | SWT.TOOL);
 						tip.setLayout(new FillLayout());
 						label = new Label(tip, SWT.NONE);
-						label.setForeground(shell.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-						label.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+						label.setForeground(Colors.getPopupText());
+						label.setBackground(Colors.getPopupBackground());
 						label.setData("_TABLEITEM", item); 
 						label.addListener(SWT.MouseExit, labelListener);
 						label.addListener(SWT.MouseDown, labelListener);

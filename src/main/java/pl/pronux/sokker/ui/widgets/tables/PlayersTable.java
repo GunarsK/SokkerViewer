@@ -288,8 +288,8 @@ public class PlayersTable extends SVTable<Player> implements IViewSort<Player> {
 				item.setBackground(2, ConfigBean.getColorNewTableObject());
 			}
 			if (player.getTransferList() > 0) {
-				item.setBackground(1, ConfigBean.getColorTransferList());
-				item.setBackground(2, ConfigBean.getColorTransferList());
+				item.setBackground(1, Colors.getTransferList());
+				item.setBackground(2, Colors.getTransferList());
 			}
 		}
 		this.layoutColumns();

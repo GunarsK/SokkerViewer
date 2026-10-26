@@ -21,8 +21,8 @@ import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 
@@ -124,8 +124,8 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 		text1 = String.format("%8s%s %s ", getNumberSkill(begin, now), value, name); 
 		text2 = getPopSkill(before, now);
 		this.addText(String.format("%-35s", text1 + text2)); 
-		addStyle(offset + 8, value.length(), ColorResources.getBlack(), SWT.BOLD);
-		addStyle(offset, 8, ColorResources.getDarkGray(), SWT.NONE);
+		addStyle(offset + 8, value.length(), null, SWT.BOLD);
+		addStyle(offset, 8, Colors.getMutedText(), SWT.NONE);
 		if (now > before) {
 			addStyle(offset + 8, value.length(), ConfigBean.getColorIncreaseDescription(), SWT.BOLD);
 			addStyle(offset + text1.length(), text2.length(), ConfigBean.getColorIncreaseDescription(), SWT.NONE);
@@ -164,28 +164,28 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 
 		int start = 2;
 		int length = player.getName().length() + player.getSurname().length() + 1;
-		addStyle(start, length, ColorResources.getBlack(), SWT.BOLD);
+		addStyle(start, length, null, SWT.BOLD);
 		start += length + Messages.getString("player.age").length() + 4; 
 		length = String.valueOf(age(player.getSkills()[max], atTraining)).length();
-		addStyle(start, length, ColorResources.getBlack(), SWT.BOLD);
+		addStyle(start, length, null, SWT.BOLD);
 
 		if (max > 0) {
 			int ageDifference = age(player.getSkills()[max], atTraining) - age(player.getSkills()[0], atTraining);
 			if (ageDifference > 0) {
 				text = String.format("[%s]", SVNumberFormat.formatIntegerWithSignZero(ageDifference)); 
 				this.addText(text);
-				addStyle(getText().length() - text.length(), text.length(), ColorResources.getDarkGray(), SWT.NONE);
+				addStyle(getText().length() - text.length(), text.length(), Colors.getMutedText(), SWT.NONE);
 			}
 		}
 
 		text = String.format("  (ID %d)", player.getId()); 
 		this.addText(text);
-		addStyle(getText().length() - text.length(), text.length(), ColorResources.getDarkGray(), SWT.NONE);
+		addStyle(getText().length() - text.length(), text.length(), Colors.getMutedText(), SWT.NONE);
 		this.addText(NEW_LINE);
 
 		text = String.format(" %s: %d cm", Messages.getString("player.height"), player.getHeight());
 		this.addText(text);
-		addStyle(getText().length() - String.valueOf(player.getHeight()).length() - 3, String.valueOf(player.getHeight()).length(), ColorResources.getBlack(), SWT.BOLD);
+		addStyle(getText().length() - String.valueOf(player.getHeight()).length() - 3, String.valueOf(player.getHeight()).length(), null, SWT.BOLD);
 		
 		String lastWeight = String.format("%.2f", player.getSkills()[max].getWeight());
 		text = String.format(", %s: %s kg", Messages.getString("player.weight"), lastWeight);
@@ -207,7 +207,7 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 				addStyle(offset, text.length(), ConfigBean.getColorDecreaseDescription(), SWT.NONE);
 				addStyle(offset - lastWeight.length() - 3, lastWeight.length(), ConfigBean.getColorDecreaseDescription(), SWT.BOLD);
 			} else {
-				addStyle(offset  - lastWeight.length() - 3, lastWeight.length(), ColorResources.getBlack(), SWT.BOLD);
+				addStyle(offset  - lastWeight.length() - 3, lastWeight.length(), null, SWT.BOLD);
 			}
 		}
 
@@ -231,14 +231,14 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 				addStyle(offset, text.length(), ConfigBean.getColorDecreaseDescription(), SWT.NONE);
 				addStyle(offset - lastBmi.length(), lastBmi.length(), ConfigBean.getColorDecreaseDescription(), SWT.BOLD);
 			} else {
-				addStyle(offset - lastBmi.length(), lastBmi.length(), ColorResources.getBlack(), SWT.BOLD);
+				addStyle(offset - lastBmi.length(), lastBmi.length(), null, SWT.BOLD);
 			}
 		}
 		
 		this.addText(NEW_LINE);
 		
 		this.addText(String.format(" %s: %s", Messages.getString("player.value"), player.getSkills()[max].getValue().formatIntegerCurrencySymbol()));  
-		addStyle(getText().length() - player.getSkills()[max].getValue().formatIntegerCurrencySymbol().length(), player.getSkills()[max].getValue().formatIntegerCurrencySymbol().length(), ColorResources.getBlack(), SWT.BOLD);
+		addStyle(getText().length() - player.getSkills()[max].getValue().formatIntegerCurrencySymbol().length(), player.getSkills()[max].getValue().formatIntegerCurrencySymbol().length(), null, SWT.BOLD);
 
 		this.addText(String.format(", %s: %s", Messages.getString("player.salary"), player.getSkills()[max].getSalary().formatIntegerCurrencySymbol()));  
 		this.addText(NEW_LINE);
@@ -317,7 +317,6 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 			addImage(images[i], offset);
 			lastOffset = offset + 1;
 		}
-		// parseText(getText());
 
 		this.setRedraw(true);
 
@@ -342,7 +341,7 @@ public class PlayerHistoryDescription extends StyledText implements IDescription
 			addStyle(offset, value.length() + 1, ConfigBean.getColorDecreaseDescription(), SWT.BOLD);
 			addStyle(offset + text1.length(), text2.length(), ConfigBean.getColorDecreaseDescription(), SWT.NONE);
 		} else {
-			addStyle(offset, value.length() + 1, ColorResources.getBlack(), SWT.BOLD);
+			addStyle(offset, value.length() + 1, null, SWT.BOLD);
 		}
 
 	}

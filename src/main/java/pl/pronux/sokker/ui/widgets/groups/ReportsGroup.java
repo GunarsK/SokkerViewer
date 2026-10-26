@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -13,7 +14,6 @@ import pl.pronux.sokker.model.Report;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class ReportsGroup extends Group {
 	private StyledText styledText;
@@ -38,27 +38,24 @@ public class ReportsGroup extends Group {
 			addText(String.format("%s %s\r\n", report.getDate().toDateTimeString(), report.getMessage())); 
 			int length = styledText.getText().length() - start;
 			
-			if(report.getStatus() == Report.COST) {
-				if (!report.isChecked()) {
-					styledText.setStyleRange(new StyleRange(start + 19, length - 19, ColorResources.getRed(), styledText.getBackground(), SWT.BOLD));
-				} else {
-					styledText.setStyleRange(new StyleRange(start + 19, length - 19, ColorResources.getRed(), styledText.getBackground(), SWT.NORMAL));	
-				}
-			} else if (report.getStatus() == Report.INCOME) {
-				if (!report.isChecked()) {
-					styledText.setStyleRange(new StyleRange(start + 19, length - 19, ColorResources.getDarkGreen(), styledText.getBackground(), SWT.BOLD));
-				} else {
-					styledText.setStyleRange(new StyleRange(start + 19, length - 19, ColorResources.getDarkGreen(), styledText.getBackground(), SWT.NORMAL));
-				}
-			} else if (report.getStatus() == Report.INFO) {
-				if (!report.isChecked()) {
-					styledText.setStyleRange(new StyleRange(start + 19, length - 19, ColorResources.getColor(59, 91, 253), styledText.getBackground(), SWT.BOLD));
-				} else {
-					styledText.setStyleRange(new StyleRange(start + 19, length - 19, ColorResources.getColor(59, 91, 253), styledText.getBackground(), SWT.NORMAL));
-				}
+			Color color = statusColor(report.getStatus());
+			if (color != null) {
+				styledText.setStyleRange(new StyleRange(start + 19, length - 19, color, styledText.getBackground(), report.isChecked() ? SWT.NORMAL : SWT.BOLD));
 			}
 			i++;
 		}
+	}
+
+	/** Text colour of a report's message by its status, null for none */
+	private Color statusColor(int status) {
+		if (status == Report.COST) {
+			return Colors.getRedText();
+		} else if (status == Report.INCOME) {
+			return Colors.getGreenText();
+		} else if (status == Report.INFO) {
+			return Colors.getInfoText();
+		}
+		return null;
 	}
 
 	private void addText(String text) {

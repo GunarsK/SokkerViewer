@@ -19,7 +19,6 @@ import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.listeners.PaintStarListener;
 import pl.pronux.sokker.ui.listeners.SortTableListener;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.interfaces.IViewSort;
@@ -146,8 +145,8 @@ public class MatchPlayersDetailsTable extends SVTable<PlayerStats> implements IV
 			}
 
 			if (playerStats.getTimePlayed() == 0) {
-				item.setForeground(ColorResources.getDarkGray());
-				item.setBackground(ColorResources.getWhite());
+				item.setForeground(Colors.getMutedText());
+				item.setBackground(Colors.getListBackground());
 			}
 			item.setText(i++, playerStats.getTimePlayed() + "'"); 
 

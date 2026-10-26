@@ -42,12 +42,12 @@ import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.DescriptionDoubleComposite;
 import pl.pronux.sokker.ui.widgets.composites.TabComposite;
@@ -151,7 +151,6 @@ public class ViewTrash implements IPlugin, Sort {
 	}
 
 	public void setSettings(SokkerViewerSettings sokkerViewerSettings) {
-		// this.confProperties = confProperties;
 	}
 
 	public void setTreeItem(TreeItem treeItem) {
@@ -203,7 +202,6 @@ public class ViewTrash implements IPlugin, Sort {
 		coaches = Cache.getCoachesTrash();
 		juniors = Cache.getJuniorsTrash();
 
-		// addFans((TabComposite)cTabItemFans.getControl());
 		addPlayers((TabComposite) cTabItemPlayers.getControl());
 		addCoaches((TabComposite) cTabItemCoaches.getControl());
 		addJuniors((TabComposite) cTabItemJuniors.getControl());
@@ -420,7 +418,6 @@ public class ViewTrash implements IPlugin, Sort {
 			column.setResizable(false);
 
 			if (titles[i].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -537,7 +534,6 @@ public class ViewTrash implements IPlugin, Sort {
 			column.setResizable(false);
 
 			if (title[i].isEmpty()) {
-				// column.setWidth(70);
 				if (SettingsHandler.IS_LINUX) {
 					column.pack();
 				}
@@ -772,11 +768,6 @@ public class ViewTrash implements IPlugin, Sort {
 		menuClear = new Menu(composite.getShell(), SWT.POP_UP);
 
 	}
-
-	// private void addFans(TabComposite tabComposite) {
-	// Table tempTable = tabComposite.getViewTable();
-	//
-	// }
 
 	private void addPopupMenuTree() {
 		// added popup menu
@@ -1448,8 +1439,6 @@ public class ViewTrash implements IPlugin, Sort {
 			description.addLeftText(values[i]);
 		}
 
-		// statsLeft.setStyleRanges(leftStyle);
-
 		values = new String[10][2];
 		values[0][0] = Messages.getString("coach.training");
 		values[1][0] = Messages.getString("coach.stamina");
@@ -1522,7 +1511,6 @@ public class ViewTrash implements IPlugin, Sort {
 		int maxSkill = player.getSkills().length;
 
 		int diffrents = 0;
-		// int maxSkill = player.getSkills().length;
 		int textSize = 0;
 
 		String cards = "\u2588";
@@ -1610,7 +1598,7 @@ public class ViewTrash implements IPlugin, Sort {
 
 		diffrents = player.getSkills()[maxSkill - 1].getCards();
 		if (diffrents < 3 && diffrents > 0) {
-			description.leftColorText(textSize, values[9][1].length(), ColorResources.getYellow());
+			description.leftColorText(textSize, values[9][1].length(), Colors.getYellowText());
 		} else if (diffrents >= 3) {
 			description.leftColorText(textSize, values[9][1].length(), ConfigBean.getColorDecreaseDescription());
 		}
@@ -1629,7 +1617,7 @@ public class ViewTrash implements IPlugin, Sort {
 		}
 
 		if (player.getSkills()[maxSkill - 1].getInjurydays() > 0) {
-			description.leftColorText(textSize, values[10][1].length(), ConfigBean.getColorInjuryBg(), ConfigBean.getColorInjuryFg());
+			description.leftColorText(textSize, values[10][1].length(), ConfigBean.getColorInjuryText(), ConfigBean.getColorInjuryBackground());
 		}
 
 		textSize = textSize + description.checkLeftSecondTextSize(values[10][1]);

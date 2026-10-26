@@ -36,6 +36,7 @@ public class SokkerViewerSettingsDao {
 		properties.setProperty("sv.startup", flag(sokkerViewerSettings.isStartup()));
 		properties.setProperty("sv.version", sokkerViewerSettings.getLastVersion());
 		properties.setProperty("lang.code", sokkerViewerSettings.getLangCode());
+		properties.setProperty("look.theme", sokkerViewerSettings.getTheme());
 
 		// saves the file with the proxy settings
 		new ProxyDao(properties).updateProxySettings(sokkerViewerSettings.getProxySettings());

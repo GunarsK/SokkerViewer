@@ -26,6 +26,7 @@ import pl.pronux.sokker.actions.SettingsManager;
 import pl.pronux.sokker.interfaces.SVComparator;
 import pl.pronux.sokker.interfaces.Sort;
 import pl.pronux.sokker.model.Person;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.listeners.NoteTableListener;
 import pl.pronux.sokker.ui.listeners.TableLabelsListener;
@@ -255,6 +256,18 @@ public abstract class SVTable<T> extends Table {
 	public static void markTraining(TableItem item, boolean trained) {
 		item.setForeground(trained ? null : ConfigBean.getColorUntrainedFg());
 		item.setBackground(trained ? null : ConfigBean.getColorUntrainedBg());
+	}
+
+	/** Stripes the rows whose index has this parity; the rest keep the table's background */
+	public static void stripeRows(Table table, int parity) {
+		for (int i = 0; i < table.getItemCount(); i++) {
+			table.getItem(i).setBackground(i % 2 == parity ? Colors.getStripe() : null);
+		}
+	}
+
+	/** Shades the first cell of a row from an even season */
+	public static void markSeason(TableItem item, int season) {
+		item.setBackground(0, season % 2 == 0 ? Colors.getSeasonShade() : null);
 	}
 
 	public void openNote(TableItem item, String identifier, int column) {

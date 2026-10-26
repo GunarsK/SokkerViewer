@@ -37,51 +37,13 @@ public class SpyArenaComposite extends Composite {
 		data.grabExcessHorizontalSpace = true;
 		data.grabExcessVerticalSpace = true;
 
-		CLabel label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.NW, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.N, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.NE, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.W, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.FIELD, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.E, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.SW, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.S, label);
-
-		label = new CLabel(this, SWT.BORDER | SWT.CENTER);
-		label.setLayoutData(data);
-		label.setFont(ConfigBean.getFontMain());
-		labels.put(Stand.SE, label);
-
+		// the stands around the field, row by row
+		for (int location : new int[] {Stand.NW, Stand.N, Stand.NE, Stand.W, Stand.FIELD, Stand.E, Stand.SW, Stand.S, Stand.SE}) {
+			CLabel label = new CLabel(this, SWT.BORDER | SWT.CENTER);
+			label.setLayoutData(data);
+			label.setFont(ConfigBean.getFontMain());
+			labels.put(location, label);
+		}
 	}
 
 	public void fill(Arena arena) {
@@ -98,11 +60,13 @@ public class SpyArenaComposite extends Composite {
 			}
 			
 			label.setBackground(getColor(stand.getType()));
+			label.setForeground(ColorResources.getBlack());
 			label.setToolTipText(getLabel(stand));
 		}
-		
+
 		label = labels.get(Stand.FIELD);
 		label.setBackground(getColor(Stand.FIELD));
+		label.setForeground(ColorResources.getBlack());
 		label.setToolTipText(String.format("%s\r\n%s: %s", arena.getArenaNames().get(arena.getArenaNames().size()-1).getArenaName(), Messages.getString("arena.maxEarns"), Money.formatDoubleCurrencySymbol(arena.getIncome())));
 		this.setRedraw(true);
 	}
@@ -114,7 +78,7 @@ public class SpyArenaComposite extends Composite {
 			case Stand.TYPE_SEATS:
 				return Colors.getArenaSeats();
 			case Stand.TYPE_TERRACES:
-				return ColorResources.getGray();
+				return Colors.getArenaTerraces();
 			case Stand.FIELD:
 				return Colors.getArenaField();
 			case Stand.TYPE_STANDING:

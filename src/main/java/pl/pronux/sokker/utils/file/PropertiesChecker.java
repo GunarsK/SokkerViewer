@@ -92,6 +92,7 @@ public class PropertiesChecker {
 		hmValues.put("sv.version", "");
 		hmValues.put("info.update", "1");
 		hmValues.put("info.close", "1");
+		hmValues.put("look.theme", "system");
 
 		Set<String> keys = hmValues.keySet();
 		String value;

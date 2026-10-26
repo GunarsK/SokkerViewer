@@ -13,7 +13,6 @@ import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.TrainingLabels;
 
 public class TrainingDescription extends StyledText implements IDescription {
@@ -48,7 +47,7 @@ public class TrainingDescription extends StyledText implements IDescription {
 		String type = TrainingLabels.describe(training);
 		text = String.format("%s: %s" , Messages.getString("training.type"), type);  
 		this.addText(text);
-		this.addStyle(this.getText().length() - type.length(), type.length(), ColorResources.getColor(48, 121, 182), this.getBackground(), SWT.NORMAL);
+		this.addStyle(this.getText().length() - type.length(), type.length(), Colors.getTrainingType(), this.getBackground(), SWT.NORMAL);
 		this.addText(NEW_LINE);
 		this.addText(NEW_LINE);
 
@@ -56,40 +55,32 @@ public class TrainingDescription extends StyledText implements IDescription {
 			String skill = getSkill(training.getHeadCoach().getGeneralskill());
 			text = String.format("%-25s %s", Messages.getString("coach.job.head"), skill);  
 			this.addText(text);
-			this.addStyle(this.getText().length() - skill.length(), 4, Colors.getGray(), this.getBackground(), SWT.NORMAL);
+			this.addStyle(this.getText().length() - skill.length(), 4, Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
 			this.addStyle(this.getText().length() - skill.length() + 4, skill.length() - 4, Colors.getTrainerGeneralSkill(), this.getBackground(), SWT.BOLD);
 		} else {
 			text = String.format("%-25s %s", Messages.getString("coach.job.head"), "-");   
 			this.addText(text);
-			this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
+			this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
 		}
 
 		this.addText(NEW_LINE);
 		
-		if(training.getAssistants().size() > 3) {
-			for(int i=0; i < 3; i++) {
-				text = String.format("%-25s %s", Messages.getString("coach.job.assistant"), "-");   
-				this.addText(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
-				this.addText(NEW_LINE);
-			}
-		} else {
-			List<Coach> assistants = training.getAssistants();
-			for(Coach trainer : assistants) {
-				String skill = getSkill(trainer.getGeneralskill());
-				text = String.format("%-25s %s", Messages.getString("coach.job.assistant"), skill);   
-				this.addText(text);
-				this.addStyle(this.getText().length() - skill.length(), 4, Colors.getGray(), this.getBackground(), SWT.NORMAL);
-				this.addStyle(this.getText().length() - skill.length() + 4, skill.length() - 4, Colors.getTrainerGeneralSkill(), this.getBackground(), SWT.NORMAL);
-				this.addText(NEW_LINE);
-			}
-			
-			for(int i = assistants.size(); i < 3; i++ ) {
-				text = String.format("%-25s %s", Messages.getString("coach.job.assistant"), "-");   
-				this.addText(text);
-				this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
-				this.addText(NEW_LINE);
-			}
+		// up to three assistants; more than three shows none, then dashes fill the three lines
+		List<Coach> assistants = training.getAssistants();
+		int shown = assistants.size() > 3 ? 0 : assistants.size();
+		for (int i = 0; i < shown; i++) {
+			String skill = getSkill(assistants.get(i).getGeneralskill());
+			text = String.format("%-25s %s", Messages.getString("coach.job.assistant"), skill);
+			this.addText(text);
+			this.addStyle(this.getText().length() - skill.length(), 4, Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
+			this.addStyle(this.getText().length() - skill.length() + 4, skill.length() - 4, Colors.getTrainerGeneralSkill(), this.getBackground(), SWT.NORMAL);
+			this.addText(NEW_LINE);
+		}
+		for (int i = shown; i < 3; i++) {
+			text = String.format("%-25s %s", Messages.getString("coach.job.assistant"), "-");
+			this.addText(text);
+			this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
+			this.addText(NEW_LINE);
 		}
 		
 		this.addText(NEW_LINE);
@@ -115,41 +106,7 @@ public class TrainingDescription extends StyledText implements IDescription {
 			addSkill(trainer.getScorers(), Messages.getString("coach.scorer"));
 			this.addText(NEW_LINE);
 		}
-		
-//		text = String.format("%-25s%-15s" + NEW_LINE, Messages.getString("training.date"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).toDateString());  
-//		this.addText(text);
-//
-//		text = String.format("%-25s%-15s" + NEW_LINE, Messages.getString("training.date.insert"), training.getDate().toDateString());  
-//		this.addText(text);	
-//
-//		text = String.format("%-25s%-15d" + NEW_LINE, Messages.getString("training.week"), training.getDate().getTrainingDate(SokkerDate.THURSDAY).getSokkerDate().getSeasonWeek());  
-//		this.addText(text);
-//		
-//
-//		
-//		String headCoachStats = getHeadCoachStats(training);
-//		int rightColumn = 15;
-//		text = String.format("%-25s%-" + rightColumn + "s" + NEW_LINE, Messages.getString("coach.job.head"), headCoachStats);   
-//		this.addText(text);
-//
-//		if (training.getHeadCoach() != null) {
-//			if(headCoachStats.length() > rightColumn) {
-//				addStyle(getText().length() - NEW_LINE.length() - headCoachStats.length() + getIndexOfTrainedSkill(training), getLengthOfTrainedSkill(training), ColorResources.getBlack(), ColorResources.getWhite(), SWT.NONE);
-//			} else {
-//				addStyle(getText().length() - NEW_LINE.length() - rightColumn + getIndexOfTrainedSkill(training), getLengthOfTrainedSkill(training), ColorResources.getBlack(), ColorResources.getWhite(), SWT.NONE);				
-//			}
-//		}
-//
-//		text = String.format("%-25s%-15s" + NEW_LINE, Messages.getString("training.assistants"), getAssistantsStats(training));  
-//		this.addText(text);
-//		
-//		if (training.getJuniorCoach() != null) {
-//			text = String.format("%-25s%-15s" + NEW_LINE, Messages.getString("coach.job.juniors"), Messages.getString("skill.a" + training.getJuniorCoach().getGeneralskill()) + " [" + training.getJuniorCoach().getGeneralskill() + "]");     
-//		} else {
-//			text = "-"; 
-//		}
-//		this.addText(text);
-		
+
 		this.setRedraw(true);
 	}
 	
@@ -158,7 +115,7 @@ public class TrainingDescription extends StyledText implements IDescription {
 		String skillFormatted = String.format("%s %s", skillValue, skillName.toLowerCase());
 		String text = String.format("%-30s", skillFormatted);
 		this.addText(text);
-		this.addStyle(this.getText().length() - text.length(), 4, Colors.getGray(), this.getBackground(), SWT.NORMAL);
+		this.addStyle(this.getText().length() - text.length(), 4, Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
 		this.addStyle(this.getText().length() - text.length() + 4, skillValue.length() - 4, Colors.getTrainerSkill(), this.getBackground(), SWT.NORMAL);
 
 	}
@@ -175,85 +132,4 @@ public class TrainingDescription extends StyledText implements IDescription {
 		range.length = length;
 		this.setStyleRange(range);
 	}
-
-//	private String getHeadCoachStats(Training training) {
-//		if (training.getHeadCoach() != null) {
-//			Coach coach = training.getHeadCoach();
-//			return coach.getGeneralskill() + " " + coach.getStamina() + " " + coach.getPace() + " " + coach.getTechnique() + " " + coach.getPassing() + " " + coach.getKeepers() + " "
-//					+ coach.getDefenders() + " " + coach.getPlaymakers() + " " + coach.getScorers();
-//		} else {
-//			return "-";
-//		}
-//	}
-
-//	private int getLengthOfTrainedSkill(Training training) {
-//		if (training.getHeadCoach() != null) {
-//			Coach coach = training.getHeadCoach();
-//			switch (training.getType()) {
-//			case Training.TYPE_STAMINA:
-//				return String.valueOf(coach.getStamina()).length();
-//			case Training.TYPE_KEEPER:
-//				return String.valueOf(coach.getKeepers()).length();
-//			case Training.TYPE_PLAYMAKING:
-//				return String.valueOf(coach.getPlaymakers()).length();
-//			case Training.TYPE_PASSING:
-//				return String.valueOf(coach.getPassing()).length();
-//			case Training.TYPE_TECHNIQUE:
-//				return String.valueOf(coach.getTechnique()).length();
-//			case Training.TYPE_DEFENDING:
-//				return String.valueOf(coach.getDefenders()).length();
-//			case Training.TYPE_STRIKER:
-//				return String.valueOf(coach.getScorers()).length();
-//			case Training.TYPE_PACE:
-//				return String.valueOf(coach.getPace()).length();
-//			}
-//		}
-//		return 0;
-//	}
-
-//	private int getIndexOfTrainedSkill(Training training) {
-//		if (training.getHeadCoach() != null) {
-//			Coach coach = training.getHeadCoach();
-//			String position = String.valueOf(coach.getGeneralskill()) + " ";
-//			switch (training.getType()) {
-//			case Training.TYPE_STAMINA:
-//				return position.length();
-//			case Training.TYPE_KEEPER:
-//				position += coach.getStamina() + " " + coach.getPace() + " " + coach.getTechnique() + " " + coach.getPassing() + " ";
-//				return position.length();
-//			case Training.TYPE_PLAYMAKING:
-//				position += coach.getStamina() + " " + coach.getPace() + " " + coach.getTechnique() + " " + coach.getPassing() + " " + coach.getKeepers() + " " + coach.getDefenders() + " ";
-//				return position.length();
-//			case Training.TYPE_PASSING:
-//				position += coach.getStamina() + " " + coach.getPace() + " " + coach.getTechnique() + " ";
-//				return position.length();
-//			case Training.TYPE_TECHNIQUE:
-//				position += coach.getStamina() + " " + coach.getPace() + " ";
-//				return position.length();
-//			case Training.TYPE_DEFENDING:
-//				position += coach.getStamina() + " " + coach.getPace() + " " + coach.getTechnique() + " " + coach.getPassing() + " " + coach.getKeepers() + " ";
-//				return position.length();
-//			case Training.TYPE_STRIKER:
-//				position += coach.getStamina() + " " + coach.getPace() + " " + coach.getTechnique() + " " + coach.getPassing() + " " + coach.getKeepers() + " " + coach.getDefenders() + " "
-//						+ coach.getPlaymakers() + " ";
-//				return position.length();
-//			case Training.TYPE_PACE:
-//				position += coach.getStamina() + " ";
-//				return position.length();
-//			}
-//		}
-//		return 0;
-//	}
-
-//	private String getAssistantsStats(Training training) {
-//		String assistants = "";
-//		if (training.getAssistants().size() > 0) {
-//			for (Coach coach : training.getAssistants()) {
-//				assistants += coach.getGeneralskill() + " ";
-//			}
-//			return assistants;
-//		} else {
-//			return "-";
-//		}
-//	}
 }

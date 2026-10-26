@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.TableItem;
 import pl.pronux.sokker.model.Club;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class OpponentTeamInformationTable extends SVTable<Club> {
 
@@ -20,7 +19,6 @@ public class OpponentTeamInformationTable extends SVTable<Club> {
 		this.setLinesVisible(false);
 		this.setHeaderVisible(false);
 		this.setBackground(parent.getBackground());
-		// this.setFont(ConfigBean.getFontTable());
 		this.setFont(ConfigBean.getFontMain());
 
 		String[] column = {
@@ -50,11 +48,7 @@ public class OpponentTeamInformationTable extends SVTable<Club> {
 			this.getColumn(i).setWidth(this.getColumn(i).getWidth() + 15);
 		}
 
-		for (int i = 0; i < this.getItemCount(); i++) {
-			if ((i % 2) == 0) {
-				this.getItem(i).setBackground(ColorResources.getGray());
-			}
-		}
+		stripeRows(this, 0);
 
 	}
 
@@ -79,11 +73,6 @@ public class OpponentTeamInformationTable extends SVTable<Club> {
 		item = this.getItem(c++);
 		text = String.format("%s [%d]", club.getClubName().get(club.getClubName().size() - 1).getName(), club.getId()); 
 		item.setText(secondColumn, text);
-
-		// item = this.getItem(c++);
-		// item.setText(fourthColumn,
-		// club.getArena().getAlArenaName().get(club.getArena().getAlArenaName().size()
-		// - 1).getArenaName());
 
 		item = this.getItem(c++);
 		if (club.getDateCreated() != null) {

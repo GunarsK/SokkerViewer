@@ -10,7 +10,6 @@ import pl.pronux.sokker.model.Club;
 import pl.pronux.sokker.model.SokkerDate;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class StatisticsEarnsTable extends SVTable<Club> {
 
@@ -53,11 +52,7 @@ public class StatisticsEarnsTable extends SVTable<Club> {
 			item.setData("date", club.getClubBudget().get(i).getDate()); 
 			item.setText(0, club.getClubBudget().get(i).getDate().getTrainingDate(SokkerDate.SATURDAY).toDateString());
 			item.setText(1, club.getClubBudget().get(i).getMoney().formatIntegerCurrency());
-			if (club.getClubBudget().get(i).getDate().getSokkerDate().getSeason() % 2 == 0) {
-				item.setBackground(0, ColorResources.getColor(240, 240, 240));
-			} else {
-				item.setBackground(0, ColorResources.getWhite());
-			}
+			markSeason(item, club.getClubBudget().get(i).getDate().getSokkerDate().getSeason());
 		}
 
 		int[] columns = { 1 };

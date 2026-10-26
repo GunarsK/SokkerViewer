@@ -16,9 +16,9 @@ import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.listeners.SortTableListener;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.widgets.interfaces.IViewSort;
 
 public class JuniorsTrainedTable extends SVTable<Junior> implements IViewSort<Junior> {
@@ -141,7 +141,7 @@ public class JuniorsTrainedTable extends SVTable<Junior> implements IViewSort<Ju
 				if (junior.getPops() > 1) {
 					item.setText(c++, SVNumberFormat.formatDouble(junior.getAveragePops()));
 				} else {
-					item.setForeground(c, ColorResources.getDarkGray());
+					item.setForeground(c, Colors.getMutedText());
 					item.setText(c++, "~" + SVNumberFormat.formatDouble(junior.getAveragePops())); 
 				}
 			}

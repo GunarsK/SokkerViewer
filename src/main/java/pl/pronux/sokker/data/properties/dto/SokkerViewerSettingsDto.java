@@ -29,6 +29,8 @@ public class SokkerViewerSettingsDto extends SokkerViewerSettings {
 		this.setUpdate(flag(properties, "conf.getXML", false));
 		String lastVersion = properties.getProperty("sv.version");
 		this.setLastVersion(lastVersion == null ? "" : lastVersion);
+		String theme = properties.getProperty("look.theme");
+		this.setTheme(theme == null ? "system" : theme);
 	}
 
 	/** "1" as true; a missing key gives the default */

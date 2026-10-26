@@ -12,7 +12,6 @@ import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class ClubInfoTable extends SVTable<Club> {
 
@@ -59,14 +58,7 @@ public class ClubInfoTable extends SVTable<Club> {
 		}
 
 		packAllColumns();
-
-		for (int i = 0; i < this.getItemCount(); i++) {
-			if ((i % 2) == 0) {
-				this.getItem(i).setBackground(ColorResources.getGray());
-			} else {
-				this.getItem(i).setBackground(this.getBackground());
-			}
-		}
+		stripeRows(this, 0);
 
 	}
 	

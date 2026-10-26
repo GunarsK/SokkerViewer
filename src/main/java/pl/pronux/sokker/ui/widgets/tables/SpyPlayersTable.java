@@ -19,6 +19,7 @@ import pl.pronux.sokker.model.Player;
 import pl.pronux.sokker.model.PlayerSkills;
 import pl.pronux.sokker.model.PlayerStats;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.listeners.PaintStarListener;
 import pl.pronux.sokker.ui.listeners.SortTableListener;
@@ -167,8 +168,8 @@ public class SpyPlayersTable extends SVTable<Player> implements IViewSort<Player
 			}
 
 			if (player.getTransferList() > 0) {
-				item.setBackground(1, ConfigBean.getColorTransferList());
-				item.setBackground(2, ConfigBean.getColorTransferList());
+				item.setBackground(1, Colors.getTransferList());
+				item.setBackground(2, Colors.getTransferList());
 			}
 		}
 		this.layoutColumns();

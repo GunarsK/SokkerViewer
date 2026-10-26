@@ -12,8 +12,8 @@ import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.model.JuniorSkills;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 
 public class JuniorDescription extends StyledText implements IDescription {
 
@@ -25,7 +25,6 @@ public class JuniorDescription extends StyledText implements IDescription {
 	public JuniorDescription(Composite parent, int style) {
 		super(parent, style);
 		this.setBackground(parent.getBackground());
-		// this.setFont(ConfigBean.getFontTable());
 		this.setFont(ConfigBean.getFontDescription());
 		// use a verify listener to keep the offsets up to date
 
@@ -52,11 +51,11 @@ public class JuniorDescription extends StyledText implements IDescription {
 		String text = ""; 
 		text = String.format("%8s%s %s", getNumberSkill(begin, now), value, name); 
 		this.addText(text);
-		addStyle(offset, 8, ColorResources.getDarkGray(), SWT.NONE);
+		addStyle(offset, 8, Colors.getMutedText(), SWT.NONE);
 		if (now > before) {
 			addStyle(offset + 8, value.length(), ConfigBean.getColorIncreaseDescription(), SWT.BOLD);
 		} else {
-			addStyle(offset + 8, value.length(), ColorResources.getBlack(), SWT.BOLD);
+			addStyle(offset + 8, value.length(), null, SWT.BOLD);
 		}
 	}
 
@@ -94,7 +93,7 @@ public class JuniorDescription extends StyledText implements IDescription {
 
 		text = String.format(" %s %s ", junior.getName(), junior.getSurname()); 
 		this.addText(text);
-		addStyle(getText().length() - text.length(), text.length(), ColorResources.getBlack(), SWT.BOLD);
+		addStyle(getText().length() - text.length(), text.length(), null, SWT.BOLD);
 
 		text = String.format("%s: ", Messages.getString("player.age"));
 		this.addText(text);
@@ -108,7 +107,7 @@ public class JuniorDescription extends StyledText implements IDescription {
 
 		text = String.format("\t(ID %d)", junior.getId()); 
 		this.addText(text);
-		addStyle(getText().length() - text.length(), text.length(), ColorResources.getDarkGray(), SWT.NONE);
+		addStyle(getText().length() - text.length(), text.length(), Colors.getMutedText(), SWT.NONE);
 		this.addText(NEW_LINE);
 
 		if (max > 0) {
@@ -133,7 +132,7 @@ public class JuniorDescription extends StyledText implements IDescription {
 			this.addText(NEW_LINE);
 			text = String.format("%s", Messages.getString("junior.ready"));  
 			this.addText(text);
-			addStyle(getText().length() - text.length(), text.length(), ColorResources.getBlue(), SWT.BOLD);
+			addStyle(getText().length() - text.length(), text.length(), Colors.getBlueText(), SWT.BOLD);
 		}
 		this.addText(NEW_LINE);
 		this.addText(NEW_LINE);
@@ -143,7 +142,7 @@ public class JuniorDescription extends StyledText implements IDescription {
 
 		text = String.format("\t(%s)", junior.getEndDate().toDateString()); 
 		this.addText(text);
-		addStyle(getText().length() - text.length(), text.length(), ColorResources.getDarkGray(), SWT.NORMAL);
+		addStyle(getText().length() - text.length(), text.length(), Colors.getMutedText(), SWT.NORMAL);
 		this.addText(NEW_LINE);
 
 		text = String
@@ -170,9 +169,9 @@ public class JuniorDescription extends StyledText implements IDescription {
 		text = String.format("%.2f", new BigDecimal(junior.getAveragePops()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue()); 
 		this.addText(text);
 		if (junior.getPops() < 2) {
-			this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getDarkGray(), SWT.BOLD);
+			this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getMutedText(), SWT.BOLD);
 		} else {
-			this.addStyle(this.getText().length() - text.length(), text.length(), ColorResources.getColor(142, 3, 121), SWT.BOLD);
+			this.addStyle(this.getText().length() - text.length(), text.length(), Colors.getJuniorAccent(), SWT.BOLD);
 		}
 
 		this.addText(NEW_LINE);
@@ -183,7 +182,7 @@ public class JuniorDescription extends StyledText implements IDescription {
 		text2 = String.format("[%d]", junior.getSkills()[0].getSkill()); 
 		text = String.format(" %s%s", text2, text1);
 		this.addText(text);
-		addStyle(getText().length() - text1.length(), text1.length(), ColorResources.getDarkGray(), SWT.NORMAL);
+		addStyle(getText().length() - text1.length(), text1.length(), Colors.getMutedText(), SWT.NORMAL);
 		this.addText(NEW_LINE);
 
 		if (junior.getSkills()[0].getWeeks() != 0) {
@@ -196,11 +195,11 @@ public class JuniorDescription extends StyledText implements IDescription {
 		if (junior.getPops() < 2) {
 			text = String.format(" ~%s%s", text2, text1);
 			this.addText(text);
-			addStyle(getText().length() - text1.length(), text1.length(), ColorResources.getDarkGray(), SWT.BOLD);
+			addStyle(getText().length() - text1.length(), text1.length(), Colors.getMutedText(), SWT.BOLD);
 		} else {
 			text = String.format(" %s%s", text2, text1);
 			this.addText(text);
-			addStyle(getText().length() - text1.length(), text1.length(), ColorResources.getBlack(), SWT.BOLD);
+			addStyle(getText().length() - text1.length(), text1.length(), null, SWT.BOLD);
 		}
 
 		this.addText(NEW_LINE);
@@ -218,9 +217,9 @@ public class JuniorDescription extends StyledText implements IDescription {
 			String value = String.valueOf(junior.getSkills()[i].getSkill());
 			text = String.format("%s ", value); 
 			this.addText(text);
-			this.addStyle(this.getText().length() - value.length() - 1, value.length(), ColorResources.getDarkGray(), SWT.NORMAL);
+			this.addStyle(this.getText().length() - value.length() - 1, value.length(), Colors.getMutedText(), SWT.NORMAL);
 			if (i > 0 && (junior.getSkills()[i].getSkill() - junior.getSkills()[i - 1].getSkill() > 0)) {
-				this.addStyle(this.getText().length() - value.length() - 1, value.length(), ColorResources.getBlack(), SWT.BOLD);
+				this.addStyle(this.getText().length() - value.length() - 1, value.length(), null, SWT.BOLD);
 			}
 		}
 		this.setRedraw(true);

@@ -25,6 +25,7 @@ import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.ViewComposite;
+import pl.pronux.sokker.ui.widgets.tables.SVTable;
 import pl.pronux.sokker.ui.widgets.tables.TransfersTable;
 
 public class ViewTransfers implements IPlugin {
@@ -154,19 +155,10 @@ public class ViewTransfers implements IPlugin {
 			descriptionTable.getColumn(i).setWidth(descriptionTable.getColumn(i).getWidth() + 15);
 		}
 
-		for (int i = 0; i < descriptionTable.getItemCount(); i++) {
-			if ((i % 2) == 0) {
-				descriptionTable.getItem(i).setBackground(descriptionTable.getDisplay().getSystemColor(SWT.COLOR_GRAY));
-			}
-		}
+		SVTable.stripeRows(descriptionTable, 0);
 	}
 
 	private void addView(Composite composite) {
-		// FormData formData = new FormData();
-		// formData.left = new FormAttachment(0,0);
-		// formData.top = new FormAttachment(0,0);
-		// formData.right = new FormAttachment(100,0);
-		// formData.bottom = new FormAttachment(100,0);
 		table = new TransfersTable(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
 		table.setLayoutData(viewFormData);
 	}

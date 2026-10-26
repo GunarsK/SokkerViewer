@@ -147,11 +147,7 @@ public class MatchSummaryTable extends SVTable<Match> {
 											   "%s [%d]", Messages.getString("skill.b" + awayTeamStats.getRatingDefending()), awayTeamStats.getRatingDefending())  
 			});
 
-		for (int i = 0; i < this.getItemCount(); i++) {
-			if ((i % 2) == 1) {
-				this.getItem(i).setBackground(this.getDisplay().getSystemColor(SWT.COLOR_GRAY));
-			}
-		}
+		stripeRows(this, 1);
 		this.setRedraw(true);
 
 	}

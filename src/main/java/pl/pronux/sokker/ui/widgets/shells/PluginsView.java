@@ -19,13 +19,11 @@ import org.eclipse.swt.widgets.TableItem;
 
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.resources.Messages;
-import pl.pronux.sokker.ui.resources.ColorResources;
+import pl.pronux.sokker.ui.beans.Colors;
 
 public class PluginsView extends Shell {
 
 	private Button button;
-
-//	private String login;
 
 	private Table pluginsTable;
 
@@ -59,12 +57,6 @@ public class PluginsView extends Shell {
 		formData.left = new FormAttachment(0, 0);
 		formData.right = new FormAttachment(100, 0);
 		formData.bottom = new FormAttachment(100, 0);
-
-		// formData = new FormData();
-		// formData.top = new FormAttachment(0, 30);
-		// formData.left = new FormAttachment(0, 20);
-		// formData.right = new FormAttachment(100, -20);
-		// formData.height = 450;
 
 		pluginsTable = new Table(this, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
 		pluginsTable.setHeaderVisible(true);
@@ -104,7 +96,7 @@ public class PluginsView extends Shell {
 			item.setData("plugin", plugins[i]); 
 
 			if(!pluginsProperties.getProperty(viewName + ".turn").equals("1")) {  
-				item.setForeground(ColorResources.getGray());
+				item.setForeground(Colors.getDisabledText());
 			}
 		}
 
@@ -120,7 +112,6 @@ public class PluginsView extends Shell {
 
 		this.setDefaultButton(button);
 
-		// shell.pack();
 		this.computeSize(this.getClientArea().width, SWT.DEFAULT);
 
 	}

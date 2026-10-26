@@ -17,8 +17,8 @@ import pl.pronux.sokker.interfaces.Sort;
 import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.model.SVNumberFormat;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 
@@ -120,7 +120,7 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 				if(junior.getPops() > 1) {
 					item.setText(c++, SVNumberFormat.formatDouble(junior.getAveragePops()));	
 				} else {
-					item.setForeground(c, ColorResources.getDarkGray());
+					item.setForeground(c, Colors.getMutedText());
 					item.setText(c++, "~" + SVNumberFormat.formatDouble(junior.getAveragePops()));
 				}
 			}
@@ -130,7 +130,7 @@ public class JuniorsTable extends SVTable<Junior> implements Sort {
 			if(junior.getPops() > 1 || junior.getEstimatedSkill() == junior.getSkills()[maxSkill].getSkill() ) {
 				item.setText(c++, String.valueOf(junior.getEstimatedSkill()));
 			} else {
-				item.setForeground(c, ColorResources.getDarkGray());
+				item.setForeground(c, Colors.getMutedText());
 				item.setText(c++, "~" + junior.getEstimatedSkill()); 
 			}
 			item.setText(c++, String.valueOf(junior.getPops()));

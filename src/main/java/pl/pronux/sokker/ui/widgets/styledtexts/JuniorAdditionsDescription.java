@@ -22,7 +22,6 @@ import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 
 public class JuniorAdditionsDescription extends StyledText implements IDescription {
@@ -39,7 +38,6 @@ public class JuniorAdditionsDescription extends StyledText implements IDescripti
 	public JuniorAdditionsDescription(Composite parent, int style) {
 		super(parent, style);
 		this.setBackground(parent.getBackground());
-		// this.setFont(ConfigBean.getFontTable());
 		this.setFont(ConfigBean.getFontDescription());
 
 		this.addVerifyListener(new VerifyListener() {
@@ -119,8 +117,8 @@ public class JuniorAdditionsDescription extends StyledText implements IDescripti
 			this.addText(imageText);
 			this.addText(String.format(" %s %s, %s: %d ", trainer.getName(), trainer.getSurname(), Messages.getString("player.age"), trainer.getAge()));  
 
-			addStyle(2, trainer.getName().length() + trainer.getSurname().length() + 1, ColorResources.getBlack(), SWT.BOLD);
-			addStyle(getText().length() - 3, 2, ColorResources.getBlack(), SWT.BOLD);
+			addStyle(2, trainer.getName().length() + trainer.getSurname().length() + 1, null, SWT.BOLD);
+			addStyle(getText().length() - 3, 2, null, SWT.BOLD);
 			this.addText(NEW_LINE);
 
 			text = String.format("[%d]", trainer.getGeneralskill()); 
@@ -136,7 +134,7 @@ public class JuniorAdditionsDescription extends StyledText implements IDescripti
 			value = trainer.getSalary().formatIntegerCurrencySymbol();
 			text = String.format("%s: %s", Messages.getString("coach.salary"), value);  
 			this.addText(text);
-			addStyle(this.getText().length() - value.length(), value.length(), ColorResources.getBlack(), SWT.BOLD);
+			addStyle(this.getText().length() - value.length(), value.length(), null, SWT.BOLD);
 			
 			this.addText(NEW_LINE);
 			this.addText(NEW_LINE);

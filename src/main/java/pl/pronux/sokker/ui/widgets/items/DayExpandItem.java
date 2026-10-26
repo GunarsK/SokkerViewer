@@ -13,16 +13,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 
 public class DayExpandItem extends ExpandItem {
 
 	private Table table;
-
-	public DayExpandItem(ExpandBar bar, int styles) {
-		super(bar, styles);
-		init(bar);
-	}
 
 	public DayExpandItem(ExpandBar bar, int styles, int index) {
 		super(bar, styles, index);
@@ -31,7 +27,7 @@ public class DayExpandItem extends ExpandItem {
 
 	private void init(ExpandBar bar) {
 		Composite composite = new Composite(bar, SWT.NONE);
-		composite.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		composite.setBackground(Colors.getListBackground());
 		composite.setLayout(new FormLayout());
 		FormData formData = new FormData();
 		formData.left = new FormAttachment(0, 0);
@@ -44,7 +40,6 @@ public class DayExpandItem extends ExpandItem {
 		table.setLinesVisible(false);
 		table.setHeaderVisible(false);
 		table.setFont(ConfigBean.getFontTable());
-		table.setForeground(this.getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		new TableColumn(table, SWT.LEFT);
 
 		this.setControl(composite);
@@ -58,7 +53,8 @@ public class DayExpandItem extends ExpandItem {
 	}
 
 	public void fill(List<String> values) {
-		table.setForeground(this.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+		// the parent's colour, not null: null would undo the dark theme's text colour
+		table.setForeground(table.getParent().getForeground());
 		table.removeAll();
 		for (String value : values) {
 			new TableItem(table, SWT.NONE).setText("- " + value);
@@ -70,17 +66,13 @@ public class DayExpandItem extends ExpandItem {
 		new TableItem(table, SWT.NONE).setText(value);
 	}
 
-	public Table getTable() {
-		return table;
-	}
-
 	public void pack() {
 		this.table.pack();
 		this.setHeight(table.getParent().computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 5);
 	}
 
 	public void mark() {
-		table.setForeground(this.getDisplay().getSystemColor(SWT.COLOR_RED));
+		table.setForeground(Colors.getRedText());
 		this.setExpanded(true);
 	}
 

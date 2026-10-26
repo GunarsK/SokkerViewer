@@ -26,11 +26,11 @@ import org.eclipse.swt.widgets.TreeItem;
 import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 
 public class Configurator {
@@ -88,12 +88,6 @@ public class Configurator {
 		int y = (displayRect.height - shellRect.height) / 2;
 		shell.setLocation(x, y);
 
-		// shell.addDisposeListener(new DisposeListener() {
-		// public void widgetDisposed(DisposeEvent arg0) {
-		// parent.setEnabled(true);
-		// }
-		// });
-
 		shell.addListener(SWT.Close, new Listener() {
 
 			public void handleEvent(Event event) {
@@ -113,22 +107,12 @@ public class Configurator {
 		cancelButton.setText(Messages.getString("button.cancel")); 
 		applyButton.setText(Messages.getString("button.apply")); 
 		restoreDefaultButton.setText(Messages.getString("button.restore")); 
-		// restoreDefaultButton.pack();
-		// applyButton.pack();
-		// cancelButton.pack();
-		// okButton.pack();
 		info.setText(Messages.getString("message.information.restart")); 
 
 		if (views.get(0).getComposite() != null) {
 			header.setText(views.get(0).getTreeItem().getText());
 			currentComposite.getComposite().layout();
 		}
-		// shell.open();
-
-		// while (!shell.isDisposed()) {
-		// if (!shell.getDisplay().readAndDispatch())
-		// shell.getDisplay().sleep();
-		// }
 
 	}
 
@@ -137,7 +121,6 @@ public class Configurator {
 		formData.top = new FormAttachment(100, -40);
 		formData.left = new FormAttachment(0, 1);
 		formData.right = new FormAttachment(100, -1);
-		// formData.height = 0;
 
 		footerLine = new Label(shell, SWT.SEPARATOR | SWT.HORIZONTAL);
 		footerLine.setLayoutData(formData);
@@ -242,7 +225,7 @@ public class Configurator {
 		header = new CLabel(shell, SWT.NONE);
 		header.setLayoutData(formData);
 		header.setAlignment(SWT.CENTER);
-		header.setBackground(ColorResources.getColor(248, 247, 243));
+		header.setBackground(Colors.getDialogHeader());
 		header.setFont(Fonts.getFont(shell.getDisplay(), "Arial", 13, SWT.BOLD)); 
 
 		formData = new FormData();
@@ -262,7 +245,7 @@ public class Configurator {
 		formData.left = new FormAttachment(0, 150);
 
 		sash = new Sash(shell, SWT.VERTICAL);
-		sash.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		sash.setBackground(Colors.getListBackground());
 		sash.setLayoutData(formData);
 		sash.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
@@ -329,7 +312,6 @@ public class Configurator {
 		views.add(new ViewProxy());
 		views.add(new ViewPassword());
 		views.add(new ViewBackup());
-//		alView.add(new ViewTemplates());
 
 		List<IPlugin> plugins = ViewerHandler.getViewer().getPlugins();
 

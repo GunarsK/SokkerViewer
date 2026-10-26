@@ -1,6 +1,7 @@
 package pl.pronux.sokker.ui.configure;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 
 import org.eclipse.swt.SWT;
@@ -18,7 +19,9 @@ import pl.pronux.sokker.enums.Language;
 import pl.pronux.sokker.exceptions.SVException;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
+import pl.pronux.sokker.ui.resources.Theme;
 import pl.pronux.sokker.ui.widgets.shells.BugReporter;
 
 public class ViewGeneral implements IViewConfigure {
@@ -35,13 +38,13 @@ public class ViewGeneral implements IViewConfigure {
 
 	private Button downloadButton;
 
-	private Label confShellLangTypeLabel;
-
 	private Combo confShellLangTypeCombo;
 
 	private Button closeButton;
 
 	private Button updateCheckButton;
+
+	private Combo themeCombo;
 
 	public void clear() {
 
@@ -101,7 +104,7 @@ public class ViewGeneral implements IViewConfigure {
 
 		updateCheckButton.pack();
 
-		confShellLangTypeLabel = new Label(composite, SWT.VERTICAL | SWT.SHADOW_NONE);
+		Label confShellLangTypeLabel = new Label(composite, SWT.VERTICAL | SWT.SHADOW_NONE);
 		confShellLangTypeLabel.setText(Messages.getString("confShell.langtype"));
 
 		formData = new FormData();
@@ -121,6 +124,29 @@ public class ViewGeneral implements IViewConfigure {
 
 		confShellLangTypeLabel.setLayoutData(formData);
 		confShellLangTypeLabel.pack();
+
+		Label themeLabel = new Label(composite, SWT.VERTICAL | SWT.SHADOW_NONE);
+		themeLabel.setText(Messages.getString("configure.theme"));
+
+		formData = new FormData();
+		formData.top = new FormAttachment(confShellLangTypeCombo, 10);
+		formData.left = new FormAttachment(themeLabel, 20);
+		formData.right = new FormAttachment(100, -20);
+
+		themeCombo = new Combo(composite, SWT.BORDER | SWT.READ_ONLY);
+		for (String mode : Theme.MODES) {
+			themeCombo.add(Messages.getString("configure.theme." + mode));
+		}
+		themeCombo.setLayoutData(formData);
+		themeCombo.pack();
+
+		formData = new FormData();
+		formData.top = new FormAttachment(themeCombo, 0, SWT.CENTER);
+		formData.left = new FormAttachment(0, 20);
+		formData.height = 15;
+
+		themeLabel.setLayoutData(formData);
+		themeLabel.pack();
 
 		setWidgets();
 		startupButton.setText(Messages.getString("configure.startup"));
@@ -142,6 +168,7 @@ public class ViewGeneral implements IViewConfigure {
 			confShellLangTypeCombo.setText(language);
 			confShellLangTypeCombo.pack();
 		}
+		themeCombo.select(Math.max(0, Arrays.asList(Theme.MODES).indexOf(settings.getTheme())));
 	}
 
 	public void setSettings(SokkerViewerSettings sokkerViewerSettings) {
@@ -161,6 +188,11 @@ public class ViewGeneral implements IViewConfigure {
 		settings.setInfoClose(closeButton.getSelection());
 		settings.setInfoUpdate(updateCheckButton.getSelection());
 		settings.setUpdate(downloadButton.getSelection());
+		String theme = Theme.MODES[themeCombo.getSelectionIndex()];
+		if (!theme.equals(settings.getTheme())) {
+			settings.setTheme(theme);
+			ViewerHandler.getViewer().getConfigurator().rebuildOnClose();
+		}
 
 		String text = confShellLangTypeCombo.getItem(confShellLangTypeCombo.getSelectionIndex());
 		String langCode = Language.getLanguageCode(text);

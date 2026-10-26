@@ -11,7 +11,6 @@ import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.TrainingLabels;
 
 public class TrainingSeasonField extends StyledText implements IDescription {
@@ -25,6 +24,8 @@ public class TrainingSeasonField extends StyledText implements IDescription {
 		super(parent, style);
 		this.setBackground(parent.getBackground());
 		this.setFont(ConfigBean.getFontDescription());
+		// set before disabling, or StyledText paints plain text in the system's disabled colour
+		this.setForeground(Colors.getMutedText());
 		this.setEnabled(false);
 	}
 	
@@ -37,7 +38,7 @@ public class TrainingSeasonField extends StyledText implements IDescription {
 		this.setText("");
 		if (training == null) {
 			this.append(String.format("%s %-30s", date, Messages.getString("training.notavailable")));
-			this.addStyle(date.length(), this.getText().length() - date.length(), Colors.getGray(), this.getBackground(), SWT.NORMAL);
+			this.addStyle(date.length(), this.getText().length() - date.length(), Colors.getMutedText(), this.getBackground(), SWT.NORMAL);
 		} else {
 			if (training.getHeadCoach() != null && training.getAssistants().size() < 4) {
 				description = TrainingLabels.describeWithHeadCoach(training);
@@ -60,7 +61,7 @@ public class TrainingSeasonField extends StyledText implements IDescription {
 		
 			} else {
 				this.append(String.format("%s %s", date, Messages.getString("training.failed")));
-				this.addStyle(date.length(), this.getText().length() - date.length(), ColorResources.getRed(), this.getBackground(), SWT.NORMAL);
+				this.addStyle(date.length(), this.getText().length() - date.length(), Colors.getRedText(), this.getBackground(), SWT.NORMAL);
 			}
 			if (training.getJuniorCoach() != null) {
 				this.append(String.format(" jr[%d]", training.getJuniorCoach().getGeneralskill()));

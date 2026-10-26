@@ -26,10 +26,12 @@ import org.eclipse.swt.widgets.TreeItem;
 import pl.pronux.sokker.bean.SvBean;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
 import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
+import pl.pronux.sokker.ui.resources.Theme;
 import pl.pronux.sokker.ui.widgets.items.ColorToolItem;
 
 public class ViewBBCode implements IPlugin {
@@ -98,30 +100,24 @@ public class ViewBBCode implements IPlugin {
 
 		final ToolBar toolBar = new ToolBar(composite2, SWT.HORIZONTAL | SWT.FLAT);
 		toolBar.setLayoutData(formData);
-
-		formData = new FormData(20, 20);
-		formData.left = new FormAttachment(0, 5);
-		formData.top = new FormAttachment(0, 5);
+		// the B, I and U images are black, so in the dark theme the toolbar takes the editors' paper
+		if (Theme.isDark()) {
+			toolBar.setBackground(Colors.getForumPaper());
+		}
 
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(ImageResources.getImageResources("bold_mini.png"));
-		// item.setLayoutData(formData);
 		item.setWidth(30);
-		// item.setFont(SokkerBean.getFontBold());
 
 		item.addListener(SWT.Selection, new Listener() {
 
 			public void handleEvent(Event arg0) {
-				// styledText.get
 				checkRanges(styledText, styledText.getSelectionRange().x, styledText.getSelectionCount(), BOLD);
 				text2BBCode(styledText);
 			}
 
 		});
 
-		// formData = new FormData(30,30);
-		// formData.left = new FormAttachment(boldButton,5);
-		// formData.top = new FormAttachment(0,5);
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(ImageResources.getImageResources("italic_mini.png"));
@@ -130,14 +126,11 @@ public class ViewBBCode implements IPlugin {
 		item.addListener(SWT.Selection, new Listener() {
 
 			public void handleEvent(Event arg0) {
-				// styledText.get
-
 				checkRanges(styledText, styledText.getSelectionRange().x, styledText.getSelectionCount(), ITALIC);
 				text2BBCode(styledText);
 			}
 
 		});
-		//
 		new ToolItem(toolBar, SWT.SEPARATOR);
 		item = new ToolItem(toolBar, SWT.PUSH);
 		item.setImage(ImageResources.getImageResources("underline_mini.png"));
@@ -146,7 +139,6 @@ public class ViewBBCode implements IPlugin {
 		item.addListener(SWT.Selection, new Listener() {
 
 			public void handleEvent(Event arg0) {
-				// styledText.get
 				checkRanges(styledText, styledText.getSelectionRange().x, styledText.getSelectionCount(), UNDERLINE);
 				text2BBCode(styledText);
 
@@ -200,7 +192,9 @@ public class ViewBBCode implements IPlugin {
 
 		styledText = new StyledText(composite2, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL);
 		styledText.setLayoutData(formData);
-		styledText.setBackground(ColorResources.getColor(243, 247, 237));
+		// forum paper in every theme; black text keeps [color] out of the output
+		styledText.setBackground(Colors.getForumPaper());
+		styledText.setForeground(ColorResources.getBlack());
 
 		styledText.addListener(SWT.Modify, new Listener() {
 
@@ -218,7 +212,8 @@ public class ViewBBCode implements IPlugin {
 
 		formattedText = new StyledText(composite2, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
 		formattedText.setLayoutData(formData);
-		formattedText.setBackground(ColorResources.getColor(243, 247, 237));
+		formattedText.setBackground(Colors.getForumPaper());
+		formattedText.setForeground(ColorResources.getBlack());
 
 		styledText.setText(draft);
 		styledText.setStyleRanges(draftStyles);
@@ -360,94 +355,22 @@ public class ViewBBCode implements IPlugin {
 
 		StyleRange[] ranges = styleText.getStyleRanges();
 
-		for (int i = 0; i < ranges.length; i++) {
+		for (StyleRange range : ranges) {
+			text += styleText.getTextRange(start, range.start - start);
+			start = range.start + range.length;
 
-			text += styleText.getTextRange(start, ranges[i].start - start);
-
-			start = ranges[i].start + ranges[i].length;
-
-			if (ranges[i].fontStyle == SWT.BOLD) {
-				text += "[b]";
-
-				if (ranges[i].underline) {
-					text += "[u]";
-				}
-
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[color=" + ColorResources.rgb2hex(ranges[i].foreground) + "]";
-				}
-
-				text += styleText.getTextRange(ranges[i].start, ranges[i].length);
-
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[/color]";
-				}
-
-				if (ranges[i].underline) {
-					text += "[/u]";
-				}
-
-				text += "[/b]";
-
-			} else if (ranges[i].fontStyle == SWT.ITALIC) {
-				text += "[i]";
-				if (ranges[i].underline) {
-					text += "[u]";
-				}
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[color=" + ColorResources.rgb2hex(ranges[i].foreground) + "]";
-				}
-
-				text += styleText.getTextRange(ranges[i].start, ranges[i].length);
-
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[/color]";
-				}
-
-				if (ranges[i].underline) {
-					text += "[/u]";
-				}
-				text += "[/i]";
-			} else if (ranges[i].fontStyle == SWT.NORMAL) {
-
-				if (ranges[i].underline) {
-					text += "[u]";
-				}
-
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[color=" + ColorResources.rgb2hex(ranges[i].foreground) + "]";
-				}
-
-				text += styleText.getTextRange(ranges[i].start, ranges[i].length);
-
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[/color]";
-				}
-
-				if (ranges[i].underline) {
-					text += "[/u]";
-				}
-			} else if (ranges[i].fontStyle == (SWT.BOLD | SWT.ITALIC)) {
-				text += "[b][i]";
-				if (ranges[i].underline) {
-					text += "[u]";
-				}
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[color=" + ColorResources.rgb2hex(ranges[i].foreground) + "]";
-				}
-
-				text += styleText.getTextRange(ranges[i].start, ranges[i].length);
-
-				if (!ranges[i].foreground.equals(composite.getDisplay().getSystemColor(SWT.COLOR_BLACK))) {
-					text += "[/color]";
-				}
-
-				if (ranges[i].underline) {
-					text += "[/u]";
-				}
-				text += "[/i][/b]";
-
+			boolean bold = (range.fontStyle & SWT.BOLD) != 0;
+			boolean italic = (range.fontStyle & SWT.ITALIC) != 0;
+			boolean colored = !range.foreground.equals(ColorResources.getBlack());
+			text += (bold ? "[b]" : "") + (italic ? "[i]" : "") + (range.underline ? "[u]" : "");
+			if (colored) {
+				text += "[color=" + ColorResources.rgb2hex(range.foreground) + "]";
 			}
+			text += styleText.getTextRange(range.start, range.length);
+			if (colored) {
+				text += "[/color]";
+			}
+			text += (range.underline ? "[/u]" : "") + (italic ? "[/i]" : "") + (bold ? "[/b]" : "");
 		}
 		text += styleText.getTextRange(start, styleText.getText().length() - start);
 
@@ -474,14 +397,6 @@ public class ViewBBCode implements IPlugin {
 			text = text.replaceAll(matcher.group(), "[url]" + matcher.group().replaceAll("/", "&#47;") + "[/url]");
 			j++;
 		}
-		// if(matcher.find()) {
-		//
-		// matcher.
-		// for(int i=0; i < matcher.groupCount(); i++) {
-		// text = text.replaceAll(matcher.group(i), "[url]" +
-		// matcher.group(i).replaceAll("/", "&#47;") + "[/url]");
-		// }
-		// }
 
 		text = text.replaceAll("%", "&#37;");
 		text = text.replaceAll("<", "&lt;");

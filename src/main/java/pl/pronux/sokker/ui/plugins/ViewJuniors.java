@@ -44,11 +44,11 @@ import pl.pronux.sokker.model.Junior;
 import pl.pronux.sokker.model.Money;
 import pl.pronux.sokker.model.SokkerViewerSettings;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.composites.ChartDateComposite;
@@ -127,7 +127,7 @@ public class ViewJuniors implements IPlugin, Sort {
 
 			spinner = new Spinner(composite, SWT.READ_ONLY | SWT.BORDER);
 			spinner.setValues(45, 30, 100, 1, 1, 1);
-			spinner.setBackground(ColorResources.getWhite());
+			spinner.setBackground(Colors.getListBackground());
 			spinner.setLayoutData(formData);
 		}
 
@@ -220,7 +220,6 @@ public class ViewJuniors implements IPlugin, Sort {
 		descriptionComposite.setLayoutData(descriptionFormData);
 		descriptionComposite.setVisible(true);
 
-		// descriptionComposite.setDescriptionStringFormat(40, 15);
 		descriptionComposite.setDescriptionStringFormat("%-40s%-15s\r\n"); 
 		descriptionComposite.setFirstColumnSize(40);
 		descriptionComposite.setSecondColumnSize(15);
@@ -259,10 +258,8 @@ public class ViewJuniors implements IPlugin, Sort {
 
 						if (event.button == 3) {
 
-							// setCbData(juniorDesc);
 							menuPopUp.setData("item", item); 
 							_treeItem.getParent().setMenu(menuPopUp);
-							// _treeItem.getParent().getMenu()._setVisible(true);
 							_treeItem.getParent().getMenu().setVisible(true);
 						}
 
@@ -456,8 +453,6 @@ public class ViewJuniors implements IPlugin, Sort {
 		comboGraph.setLayoutData(formData);
 		comboGraph.pack();
 
-		// comboGraph.addListener(SWT.Selection, );
-
 	}
 
 	private void addViewComposite() {
@@ -592,7 +587,6 @@ public class ViewJuniors implements IPlugin, Sort {
 
 		for (int i = 0; i < junior.size(); i++) {
 			TreeItem item = new TreeItem(_treeItem, SWT.NONE);
-			// item.setData("id", junior.get(i).getId());
 			item.setData(Junior.class.getName(), junior.get(i)); 
 			item.setText(junior.get(i).getSurname() + " " + junior.get(i).getName()); 
 			item.setImage(FlagsResources.getFlag(Cache.getClub().getCountry()));
@@ -661,7 +655,6 @@ public class ViewJuniors implements IPlugin, Sort {
 					tempIntTable[x] = Integer.parseInt(tempTable.getItem(x).getText(k));
 					tempDateTable[x] = tempTable.getItem(x).getText(0);
 				}
-				// graphComposite.setGraph(tempIntTable, 17);
 
 				graphComposite.setColumn(k);
 
@@ -726,11 +719,9 @@ public class ViewJuniors implements IPlugin, Sort {
 
 			public void handleEvent(Event event) {
 				if (event.button == 3) {
-					// Rectangle clientArea = allCoachesTable.getClientArea();
 					Point pt = new Point(event.x, event.y);
 					TableItem item = juniorsTable.getItem(pt);
 					if (item != null) {
-						// Junior junior = (Junior) item.getData(Junior.class.getName());
 						menuPopUp.setData("item", item); 
 						juniorsTable.setMenu(menuPopUp);
 						juniorsTable.getMenu().setVisible(true);
@@ -743,95 +734,6 @@ public class ViewJuniors implements IPlugin, Sort {
 			}
 		};
 	}
-
-	// private void setStatsJuniorInfo(Junior junior, DescriptionDoubleComposite
-	// description, int index) {
-	//
-	// int maxSkill = junior.getSkills().length - 1 - index;
-	//
-	// description.clearAll();
-	//
-	// // int maxSkill = junior.getSkills().length - 1;
-	//
-	// String[][] values;
-	//
-	// values = new String[11][2];
-	// values[0][0] = langResource.getString("junior.id");
-	// values[1][0] = langResource.getString("junior.name");
-	// values[2][0] = langResource.getString("junior.surname");
-	// values[3][0] = langResource.getString("junior.skill");
-	// values[4][0] = langResource.getString("junior.weeksLeft");
-	// values[5][0] = langResource.getString("junior.weeksPast");
-	// values[6][0] = langResource.getString("junior.weeksAll");
-	// values[7][0] = langResource.getString("junior.numberOfJumps");
-	// values[8][0] = langResource.getString("junior.averageJumps");
-	// values[9][0] = langResource.getString("junior.propablyOutLevelSkill");
-	// values[10][0] = langResource.getString("junior.trainer");
-	//
-	// values[0][1] = String.valueOf(junior.getId());
-	// values[1][1] = junior.getName();
-	// values[2][1] = junior.getSurname();
-	// values[3][1] = langResource.getString("skill.a" +
-	// junior.getSkills()[maxSkill].getSkill()) + " [" +
-	// junior.getSkills()[maxSkill].getSkill() + "]";
-	// values[4][1] = String.valueOf(junior.getSkills()[maxSkill].getWeeks());
-	// values[5][1] = String.valueOf(junior.getSkills()[0].getWeeks() -
-	// junior.getSkills()[maxSkill].getWeeks());
-	// values[6][1] = String.valueOf(junior.getSkills()[0].getWeeks());
-	// values[7][1] = String.valueOf(junior.getJumps());
-	// values[8][1] = String.valueOf(new
-	// BigDecimal(junior.getAverageJumps()).setScale(2,
-	// BigDecimal.ROUND_HALF_UP));
-	// values[9][1] = langResource.getString("skill.a" +
-	// junior.getPropablySkill()) + " [" + junior.getPropablySkill() + "]";
-	// if (junior.getJumps() < 2) {
-	// values[9][1] = "~" + langResource.getString("skill.a" +
-	// junior.getPropablySkill()) + " [" + junior.getPropablySkill() + "]";
-	// } else {
-	// values[9][1] = langResource.getString("skill.a" +
-	// junior.getPropablySkill()) + " [" + junior.getPropablySkill() + "]";
-	// }
-	//
-	// if (junior.getSkills()[maxSkill].getTraining() != null) {
-	// Coach coach =
-	// junior.getSkills()[maxSkill].getTraining().getJuniorCoach();
-	// if (coach != null) {
-	// int value = coach.getGeneralskill();
-	// values[10][1] = langResource.getString("skill.a" + value) + " [" + value
-	// + "]";
-	// } else {
-	// values[10][1] = "-";
-	// }
-	// } else {
-	// values[10][1] = "-";
-	// }
-	//
-	// for (int i = 0; i < values.length; i++) {
-	// description.addLeftText(values[i]);
-	// }
-	//
-	// values = new String[6][2];
-	// values[0][0] = langResource.getString("junior.money.spent");
-	// values[1][0] = langResource.getString("junior.money.left");
-	// values[2][0] = langResource.getString("junior.money.all");
-	// values[3][0] = langResource.getString("junior.exit.date");
-	// values[4][0] = langResource.getString("junior.weeks.withoutJump");
-	// values[5][0] = langResource.getString("junior.skill.begin");
-	//
-	// values[0][1] = junior.getMoneySpent().formatIntegerCurrencySymbol();
-	// values[1][1] =
-	// junior.getRestMoneyToSpend().formatIntegerCurrencySymbol();
-	// values[2][1] = junior.getAllMoneyToSpend().formatIntegerCurrencySymbol();
-	// values[3][1] = junior.getEndDate().toDateString();
-	// values[4][1] = String.valueOf(junior.getWeeksWithoutJump());
-	// values[5][1] = langResource.getString("skill.a" +
-	// junior.getSkills()[0].getSkill()) + " [" +
-	// junior.getSkills()[0].getSkill() + "]";
-	//
-	// for (int i = 0; i < values.length; i++) {
-	// description.addRightText(values[i]);
-	// }
-	// }
 
 	private void openNote(Item item) {
 		Junior junior = (Junior) item.getData(Junior.class.getName());
@@ -863,7 +765,6 @@ public class ViewJuniors implements IPlugin, Sort {
 					Junior junior = (Junior) event.item.getData(Junior.class.getName()); 
 					juniorDesc.setStatsJuniorInfo(junior);
 					showDescription(juniorDesc);
-					// setCbData(juniorDesc);
 				}
 			}
 
@@ -889,8 +790,6 @@ public class ViewJuniors implements IPlugin, Sort {
 		juniorView.setVisible(false);
 
 		juniorView.addListener(SWT.MouseDoubleClick, viewMouseDoubleClickListener(_treeItem, juniorsTable, descriptionComposite));
-
-		// juniorView.addListener(SWT.MouseDown, historyBackListener);
 
 		juniorView.addListener(SWT.MouseDown, new Listener() {
 
@@ -963,7 +862,6 @@ public class ViewJuniors implements IPlugin, Sort {
 	}
 
 	public void setSettings(SokkerViewerSettings sokkerViewerSettings) {
-		// this.confProperties = confProperties;
 
 	}
 
@@ -976,11 +874,6 @@ public class ViewJuniors implements IPlugin, Sort {
 		_treeItem.setText(Messages.getString("tree.ViewJuniors")); 
 		_treeItem.setImage(ImageResources.getImageResources("junior.png")); 
 	}
-
-	//FIXME: 
-//	private void setCbData(DescriptionDoubleComposite juniorDesc) {
-//		cbData = juniorDesc.getText();
-//	}
 
 	protected void showDescription(Composite composite) {
 		if (!(currentDesc instanceof ChartDateComposite)) {
@@ -998,7 +891,6 @@ public class ViewJuniors implements IPlugin, Sort {
 		if (currentComposite != null) {
 			currentComposite.setVisible(false);
 		}
-		// currentComposite.setVisible(false);
 		currentComposite = composite;
 		currentComposite.setVisible(true);
 

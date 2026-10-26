@@ -14,10 +14,10 @@ import pl.pronux.sokker.handlers.SettingsHandler;
 import pl.pronux.sokker.interfaces.SVComparator;
 import pl.pronux.sokker.model.Report;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.handlers.DisplayHandler;
 import pl.pronux.sokker.ui.listeners.SortTableListener;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 import pl.pronux.sokker.ui.resources.ImageResources;
 import pl.pronux.sokker.ui.widgets.interfaces.IViewSort;
@@ -89,11 +89,11 @@ public class ReportsTable extends SVTable<Report> implements IViewSort<Report> {
 			}
 			
 			if(report.getStatus() == Report.COST) {
-				item.setBackground(ColorResources.getColor(252,242,242));
+				item.setBackground(Colors.getReportCost());
 			} else if (report.getStatus() == Report.INCOME) {
-				item.setBackground(ColorResources.getColor(239,250,236));
+				item.setBackground(Colors.getReportIncome());
 			} else if (report.getStatus() == Report.INFO) {
-				item.setBackground(ColorResources.getColor(229,232,249));
+				item.setBackground(Colors.getReportInfo());
 			}
 		}
 

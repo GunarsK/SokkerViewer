@@ -16,6 +16,8 @@ public class SokkerViewerSettings {
 	private boolean infoUpdate;
 	/** the version that last ran, empty before the first */
 	private String lastVersion = "";
+	/** Appearance: system, light or dark */
+	private String theme;
 	private ProxySettings proxySettings;
 
 	public boolean isSavePassword() {
@@ -112,6 +114,14 @@ public class SokkerViewerSettings {
 
 	public void setLastVersion(String lastVersion) {
 		this.lastVersion = lastVersion;
+	}
+
+	public String getTheme() {
+		return theme;
+	}
+
+	public void setTheme(String theme) {
+		this.theme = theme;
 	}
 
 	public ProxySettings getProxySettings() {

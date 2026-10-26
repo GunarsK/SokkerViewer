@@ -53,13 +53,13 @@ import pl.pronux.sokker.model.TalentEstimator;
 import pl.pronux.sokker.model.TalentFactors;
 import pl.pronux.sokker.model.TalentFactors.Factor;
 import pl.pronux.sokker.resources.Messages;
+import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
 import pl.pronux.sokker.ui.events.TranslateEvent;
 import pl.pronux.sokker.ui.handlers.ViewerHandler;
 import pl.pronux.sokker.ui.interfaces.IEvents;
 import pl.pronux.sokker.ui.interfaces.IPlugin;
 import pl.pronux.sokker.ui.interfaces.IViewConfigure;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.CursorResources;
 import pl.pronux.sokker.ui.resources.FlagsResources;
 import pl.pronux.sokker.ui.resources.ImageResources;
@@ -407,7 +407,7 @@ public class ViewPlayers implements IPlugin, Sort {
 
 			if (players.get(i).getSkills()[players.get(i).getSkills().length - 1].getCards() > 2
 				|| players.get(i).getSkills()[players.get(i).getSkills().length - 1].getInjurydays() > 0) {
-				item.setForeground(ColorResources.getRed());
+				item.setForeground(Colors.getRedText());
 			}
 
 			itemMap.put(players.get(i).getId(), item);

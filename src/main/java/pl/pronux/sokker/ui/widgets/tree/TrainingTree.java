@@ -15,7 +15,6 @@ import pl.pronux.sokker.model.Training;
 import pl.pronux.sokker.resources.Messages;
 import pl.pronux.sokker.ui.beans.Colors;
 import pl.pronux.sokker.ui.beans.ConfigBean;
-import pl.pronux.sokker.ui.resources.ColorResources;
 import pl.pronux.sokker.ui.resources.Fonts;
 
 public class TrainingTree extends Tree {
@@ -81,16 +80,8 @@ public class TrainingTree extends Tree {
 			for (int position = Training.FORMATION_GK; position <= Training.FORMATION_ATT; position++) {
 				item.setText(c++, positionTypeText(training, position));
 			}
-			if (training.getHeadCoach() != null) {
-				item.setText(c++, "1");
-			} else {
-				item.setText(c++, "0");
-			}
-			if (training.getJuniorCoach() != null) {
-				item.setText(c++, "1");
-			} else {
-				item.setText(c++, "0");
-			}
+			item.setText(c++, training.getHeadCoach() != null ? "1" : "0");
+			item.setText(c++, training.getJuniorCoach() != null ? "1" : "0");
 			item.setText(c++, String.valueOf(training.getAssistants().size()));
 			if (training.isApiConfirmed()) {
 				item.setText(c, Messages.getString("training.source.api"));
@@ -114,28 +105,26 @@ public class TrainingTree extends Tree {
 		treeItem.getParent().setRedraw(false);
 
 		TreeItem item = new TreeItem(treeItem, SWT.NONE);
-		item.setBackground(Colors.getGray());
+		item.setBackground(Colors.getTreeHeader());
 		fillTreeItemVirtualColumns(item);
 
 		if (training.getHeadCoach() != null) {
 			item = new TreeItem(treeItem, SWT.NONE);
-			item.setBackground(ColorResources.getColor(236, 213, 202));
+			item.setBackground(Colors.getCoachHead());
 			Coach coach = training.getHeadCoach();
 			fillTreeItem(item, coach, Coach.JOB_HEAD, training);
 		}
 		if (training.getJuniorCoach() != null) {
 			Coach coach = training.getJuniorCoach();
 			item = new TreeItem(treeItem, SWT.NONE);
-			item.setBackground(ColorResources.getColor(237, 240, 225));
+			item.setBackground(Colors.getCoachJuniors());
 			fillTreeItem(item, coach, Coach.JOB_JUNIORS, training);
 		}
 
-		if (training.getAssistants().size() > 0) {
-			for (Coach coach : training.getAssistants()) {
-				item = new TreeItem(treeItem, SWT.NONE);
-				item.setBackground(ColorResources.getColor(252, 250, 245));
-				fillTreeItem(item, coach, Coach.JOB_ASSISTANT, training);
-			}
+		for (Coach coach : training.getAssistants()) {
+			item = new TreeItem(treeItem, SWT.NONE);
+			item.setBackground(Colors.getCoachAssistant());
+			fillTreeItem(item, coach, Coach.JOB_ASSISTANT, training);
 		}
 
 		treeItem.getParent().setRedraw(true);
@@ -188,37 +177,33 @@ public class TrainingTree extends Tree {
 		item.setText(c++, String.valueOf(coach.getPlaymakers()));
 		item.setText(c++, String.valueOf(coach.getScorers()));
 
-		if (job != Coach.JOB_HEAD) {
-			item.setFont(3, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-		} else {
-			switch (training.getEffectiveType()) {
-			case Training.TYPE_STAMINA:
-				item.setFont(4, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_PACE:
-				item.setFont(5, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_TECHNIQUE:
-				item.setFont(6, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_PASSING:
-				item.setFont(7, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_KEEPER:
-				item.setFont(8, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_DEFENDING:
-				item.setFont(9, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_PLAYMAKING:
-				item.setFont(10, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			case Training.TYPE_STRIKER:
-				item.setFont(11, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
-				break;
-			default:
-				break;
-			}
+		int boldColumn = job != Coach.JOB_HEAD ? 3 : trainedColumn(training.getEffectiveType());
+		if (boldColumn >= 0) {
+			item.setFont(boldColumn, Fonts.getBoldFont(this.getDisplay(), this.getFont().getFontData()));
+		}
+	}
+
+	/** The head coach's column of the skill the week trained, -1 for none */
+	private int trainedColumn(int type) {
+		switch (type) {
+		case Training.TYPE_STAMINA:
+			return 4;
+		case Training.TYPE_PACE:
+			return 5;
+		case Training.TYPE_TECHNIQUE:
+			return 6;
+		case Training.TYPE_PASSING:
+			return 7;
+		case Training.TYPE_KEEPER:
+			return 8;
+		case Training.TYPE_DEFENDING:
+			return 9;
+		case Training.TYPE_PLAYMAKING:
+			return 10;
+		case Training.TYPE_STRIKER:
+			return 11;
+		default:
+			return -1;
 		}
 	}
 }
