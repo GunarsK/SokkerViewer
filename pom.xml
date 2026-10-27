@@ -4,7 +4,7 @@
 	<groupId>SokkerViewer</groupId>
 	<artifactId>SokkerViewer</artifactId>
 	<name>SokkerViewer</name>
-	<version>0.15.8</version>
+	<version>0.15.9</version>
 	<properties>
 		<!-- newest SWT that still starts on Windows 8.1 -->
 		<swt.version>3.129.0</swt.version>
@@ -146,7 +146,8 @@
 			<id>bundle</id>
 			<properties>
 				<bundle.windows.dir>${basedir}/packages/bundle/windows/SokkerViewer</bundle.windows.dir>
-				<bundle.modules>java.base,java.desktop,java.naming,java.sql,jdk.charsets,jdk.crypto.ec,jdk.localedata</bundle.modules>
+				<!-- jdk.accessibility: the charts' AWT fails to start without it when Windows has Java Access Bridge turned on -->
+				<bundle.modules>java.base,java.desktop,java.naming,java.sql,jdk.accessibility,jdk.charsets,jdk.crypto.ec,jdk.localedata</bundle.modules>
 				<!-- the languages SokkerViewer is translated into, see src/main/resources/lang -->
 				<bundle.locales>en,bg,cs,da,de,el,es,et,fr,hu,it,pl,pt,ro,ru,tr,zh</bundle.locales>
 				<!-- the jlink options every runtime is linked with -->
